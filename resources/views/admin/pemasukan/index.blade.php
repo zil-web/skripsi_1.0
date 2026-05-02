@@ -23,16 +23,16 @@
         $formatRupiah = fn ($value) => rupiah((int) $value);
     @endphp
 
-    <div class="space-y-4" x-data="{ showFlash: true }">
+    <div class="space-y-4" x-data="{ showFlash: true, modalOpen: {{ $errors->any() ? 'true' : 'false' }} }" @keydown.escape.window="modalOpen = false">
         <div class="flex items-start justify-between gap-4">
             <div>
                 <h1 class="text-base font-medium text-gray-800">Pemasukan</h1>
                 <p class="text-xs text-gray-400 mt-0.5">Kelola semua data pemasukan sekolah</p>
             </div>
-            <a href="{{ route('admin.transaksi.create') }}" class="inline-flex items-center gap-2 bg-[var(--accent)] text-white rounded-lg px-4 py-2 text-sm font-medium">
-                <span>+</span>
+            <button @click="modalOpen = true" class="inline-flex items-center gap-2 bg-[#1D9E75] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#0F6E56] transition-colors">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 <span>Tambah Pemasukan</span>
-            </a>
+            </button>
         </div>
 
         @if(session('success'))
@@ -155,9 +155,9 @@
                                     <td class="text-sm px-4 py-2.5 font-medium text-emerald-600">{{ $formatRupiah($item->jumlah) }}</td>
                                     <td class="text-sm px-4 py-2.5">
                                         @if($item->bukti_transaksi)
-                                            <a href="{{ Storage::url($item->bukti_transaksi) }}" target="_blank" class="text-[11px] px-3 py-1 rounded-lg border font-medium border-gray-200 text-gray-600 hover:bg-gray-50">Detail</a>
+                                            <a href="{{ Storage::url($item->bukti_transaksi) }}" target="_blank" class="text-[11px] px-3 py-1 rounded-lg border font-medium border-gray-200 text-gray-600 hover:bg-gray-50">Lihat</a>
                                         @else
-                                            <span class="text-gray-400">-</span>
+                                            <span class="text-gray-400">—</span>
                                         @endif
                                     </td>
                                     <td class="text-sm px-4 py-2.5">
@@ -181,8 +181,182 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <h3 class="text-sm text-gray-400 mb-2">Belum ada data pemasukan</h3>
-                <a href="{{ route('admin.transaksi.create') }}" class="inline-flex items-center gap-2 bg-[var(--accent)] text-white rounded-lg px-4 py-2 text-sm font-medium">+ Tambah Pemasukan</a>
+                <button @click="modalOpen = true" class="inline-flex items-center gap-2 bg-[#1D9E75] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#0F6E56]">+ Tambah Pemasukan</button>
             </div>
         @endif
     </div>
+
+    <!-- MODAL TAMBAH PEMASUKAN -->
+    <div x-show="modalOpen" class="fixed inset-0 z-50" @click="modalOpen = false" style="display: none;">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm"></div>
+
+        <!-- Modal Box -->
+        <div class="fixed inset-0 flex items-center justify-center p-4" @click.stop>
+            <div x-show="modalOpen" x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="bg-white rounded-2xl w-full max-w-lg shadow-xl" @click.stop>
+                <!-- Header -->
+                <div class="flex items-start justify-between gap-4 p-6 border-b border-gray-100">
+                    <div>
+                        <h2 class="text-base font-semibold text-gray-800">Tambah Pemasukan</h2>
+                        <p class="text-xs text-gray-500 mt-1">Isi form di bawah untuk menambah transaksi pemasukan baru</p>
+                    </div>
+                    <button @click="modalOpen = false" class="text-gray-400 hover:bg-gray-100 rounded-lg p-1.5 transition-colors">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+
+                <!-- Content -->
+                <form method="POST" action="{{ route('admin.pemasukan.store') }}" enctype="multipart/form-data" x-data="formData()" class="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+                    @csrf
+
+                    <!-- Tanggal -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal</label>
+                        <input type="date" name="tanggal" value="{{ old('tanggal', now()->format('Y-m-d')) }}" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent" required>
+                        @error('tanggal')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Jumlah -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah</label>
+                        <div class="flex gap-2">
+                            <div class="flex-1 relative">
+                                <span class="absolute left-3 top-2.5 text-sm text-gray-500">Rp</span>
+                                <input type="text" x-model="rupiah.display" @input="rupiah.format()" placeholder="0" class="w-full text-sm border border-gray-200 rounded-lg pl-8 pr-3 py-2.5 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent">
+                                <input type="hidden" name="jumlah" x-model="rupiah.raw">
+                            </div>
+                        </div>
+                        @if($errors->has('jumlah'))
+                            <p class="text-xs text-red-500 mt-1">{{ $errors->first('jumlah') }}</p>
+                        @endif
+                    </div>
+
+                    <!-- Keterangan -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Keterangan <span class="text-xs text-gray-400">(<span x-text="keterangan.length"></span>/500)</span></label>
+                        <textarea name="keterangan" x-model="keterangan" maxlength="500" rows="3" placeholder="Deskripsi pemasukan..." class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent resize-none"></textarea>
+                        @error('keterangan')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Siswa -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Siswa <span class="text-xs text-gray-400">(Opsional)</span></label>
+                        <select name="id_siswa" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent">
+                            <option value="">-- Pilih Siswa --</option>
+                            @foreach($siswas as $siswa)
+                                <option value="{{ $siswa->id }}" {{ old('id_siswa') == $siswa->id ? 'selected' : '' }}>{{ $siswa->nama }} ({{ $siswa->kelas }})</option>
+                            @endforeach
+                        </select>
+                        @error('id_siswa')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Upload Bukti -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Upload Bukti <span class="text-xs text-gray-400">(Opsional)</span></label>
+                        <div x-data="fileUpload()" class="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:border-[#1D9E75] transition-colors"
+                             @dragover.prevent="$el.classList.add('border-[#1D9E75]', 'bg-emerald-50')"
+                             @dragleave.prevent="$el.classList.remove('border-[#1D9E75]', 'bg-emerald-50')"
+                             @drop.prevent="handleDrop($event); $el.classList.remove('border-[#1D9E75]', 'bg-emerald-50')">
+                            
+                            <input type="file" @change="handleFile($event)" x-ref="fileInput" class="hidden" accept="image/*,.pdf" name="bukti_transaksi">
+
+                            <template x-if="!preview">
+                                <div @click="$refs.fileInput.click()" class="py-3">
+                                    <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    <p class="text-sm text-gray-600">Drag atau klik untuk upload file</p>
+                                    <p class="text-xs text-gray-400 mt-1">Gambar atau PDF</p>
+                                </div>
+                            </template>
+
+                            <template x-if="preview">
+                                <div class="py-3">
+                                    <template x-if="isImage">
+                                        <img :src="preview" class="h-20 mx-auto mb-2 rounded">
+                                    </template>
+                                    <template x-if="!isImage">
+                                        <div class="w-10 h-10 bg-red-50 rounded mx-auto mb-2 flex items-center justify-center">
+                                            <span class="text-xs text-red-600 font-medium">PDF</span>
+                                        </div>
+                                    </template>
+                                    <p class="text-sm font-medium text-gray-800" x-text="fileName"></p>
+                                    <button type="button" @click="clearFile()" class="text-xs text-red-500 hover:text-red-700 mt-2">Hapus File</button>
+                                </div>
+                            </template>
+                        </div>
+                        @error('bukti_transaksi')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Hidden Inputs -->
+                    <input type="hidden" name="status" value="pending">
+                    <input type="hidden" name="jenis" value="pemasukan">
+
+                    <!-- Footer -->
+                    <div class="flex gap-2 pt-6 border-t border-gray-100">
+                        <button type="button" @click="modalOpen = false" class="flex-1 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg px-4 py-2 hover:bg-gray-50 transition-colors">Batal</button>
+                        <button type="submit" class="flex-1 text-sm font-medium text-white bg-[#1D9E75] rounded-lg px-4 py-2 hover:bg-[#0F6E56] transition-colors">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function formData() {
+            return {
+                rupiah: {
+                    display: '{{ old('jumlah') ? number_format(old('jumlah')) : '' }}',
+                    raw: '{{ old('jumlah') ?? '' }}',
+                    format() {
+                        let angka = this.display.replace(/\D/g, '');
+                        this.raw = angka;
+                        this.display = angka ? parseInt(angka).toLocaleString('id-ID') : '';
+                    }
+                },
+                keterangan: '{{ old('keterangan') ?? '' }}'
+            }
+        }
+
+        function fileUpload() {
+            return {
+                preview: null,
+                fileName: '',
+                isImage: false,
+                handleFile(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    this.fileName = file.name;
+                    this.isImage = file.type.startsWith('image/');
+                    if (this.isImage) {
+                        const reader = new FileReader();
+                        reader.onload = e => this.preview = e.target.result;
+                        reader.readAsDataURL(file);
+                    } else {
+                        this.preview = 'pdf';
+                    }
+                },
+                handleDrop(event) {
+                    const file = event.dataTransfer.files[0];
+                    if (!file) return;
+                    this.$refs.fileInput.files = event.dataTransfer.files;
+                    this.handleFile({ target: { files: [file] } });
+                },
+                clearFile() {
+                    this.preview = null;
+                    this.fileName = '';
+                    this.isImage = false;
+                    this.$refs.fileInput.value = '';
+                }
+            }
+        }
+    </script>
 @endsection

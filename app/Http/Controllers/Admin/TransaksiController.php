@@ -16,30 +16,34 @@ use Illuminate\Support\Facades\Storage;
 class TransaksiController extends Controller
 {
     /**
-     * Display a listing of pemasukan transactions for the authenticated admin.
+     * Display a listing of all transactions (pemasukan + pengeluaran) for monitoring.
      *
-     * Supports filters: tanggal (from, to), status, search on keterangan.
-     * Also computes statistics: total_jumlah, total_pending, total_approved.
+     * Supports filters: tanggal_dari, tanggal_sampai, jenis, status, search on keterangan.
+     * All transactions viewable (read-only).
      */
     public function index(Request $request)
     {
         $userId = Auth::id();
 
-        // Base query: pemasukan milik admin yang sedang login
+        // Base query: all transactions (both pemasukan and pengeluaran)
         $query = Transaksi::query()
-            ->where('jenis', 'pemasukan')
             ->where('id_admin', $userId);
 
-        // Filter by tanggal range (tanggal_from, tanggal_to)
-        if ($request->filled('tanggal_from') && $request->filled('tanggal_to')) {
-            $from = Carbon::parse($request->input('tanggal_from'))->startOfDay()->toDateString();
-            $to = Carbon::parse($request->input('tanggal_to'))->endOfDay()->toDateString();
-            $query->whereBetween('tanggal', [$from, $to]);
+        // Filter by jenis (pemasukan / pengeluaran)
+        if ($request->filled('jenis')) {
+            $query->where('jenis', $request->input('jenis'));
         }
 
         // Filter by status
         if ($request->filled('status')) {
             $query->where('status', $request->input('status'));
+        }
+
+        // Filter by tanggal range
+        if ($request->filled('tanggal_dari') && $request->filled('tanggal_sampai')) {
+            $from = Carbon::parse($request->input('tanggal_dari'))->startOfDay()->toDateString();
+            $to = Carbon::parse($request->input('tanggal_sampai'))->endOfDay()->toDateString();
+            $query->whereBetween('tanggal', [$from, $to]);
         }
 
         // Search keterangan
@@ -48,23 +52,26 @@ class TransaksiController extends Controller
             $query->where('keterangan', 'like', "%{$search}%");
         }
 
-        // Clone query for statistics before pagination
+        // Clone query for statistics
         $statsQuery = (clone $query);
 
-        $total_jumlah = $statsQuery->sum('jumlah');
-        $total_pending = (clone $query)->where('status', 'pending')->sum('jumlah');
-        $total_approved = (clone $query)->where('status', 'approved')->sum('jumlah');
+        // Calculate statistics based on filter (only approved transactions)
+        $total_pemasukan = $statsQuery->clone()->where('jenis', 'pemasukan')->where('status', 'approved')->sum('jumlah');
+        $total_pengeluaran = $statsQuery->clone()->where('jenis', 'pengeluaran')->where('status', 'approved')->sum('jumlah');
+        $saldo_bersih = $total_pemasukan - $total_pengeluaran;
+        $total_count = $query->clone()->count();
 
         // Pagination 10 per page, sorted by latest
-        $transaksis = $query->orderBy('created_at', 'desc')
+        $transaksis = $query->orderBy('tanggal', 'desc')
             ->paginate(10)
             ->withQueryString();
 
         return view('admin.transaksi.index', compact(
             'transaksis',
-            'total_jumlah',
-            'total_pending',
-            'total_approved'
+            'total_pemasukan',
+            'total_pengeluaran',
+            'saldo_bersih',
+            'total_count'
         ));
     }
 
