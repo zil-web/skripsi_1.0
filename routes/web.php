@@ -46,7 +46,7 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name
 Route::middleware(['auth.admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('transaksi', TransaksiController::class)->only(['index', 'create', 'store']);
-    Route::get('pemasukan', [PemasukanController::class, 'index'])->name('pemasukan.index');
+    Route::resource('pemasukan', PemasukanController::class)->only(['index', 'create', 'store']);
     Route::resource('pengeluaran', PengeluaranController::class)->only(['index', 'create', 'store']);
 });
 
