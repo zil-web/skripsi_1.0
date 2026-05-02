@@ -62,11 +62,15 @@ class PengeluaranController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        // Ambil daftar siswa untuk dropdown di modal form
+        $siswas = Siswa::select('id', 'nama', 'kelas')->get();
+
         return view('admin.pengeluaran.index', [
             'pengeluarans' => $pengeluarans,
             'totalPengeluaran' => $totalPengeluaran,
             'totalPending' => $totalPending,
             'totalApproved' => $totalApproved,
+            'siswas' => $siswas,
         ]);
     }
 
