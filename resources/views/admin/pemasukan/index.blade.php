@@ -1,421 +1,428 @@
 @extends('layouts.admin')
-
-@section('page-title', 'Pemasukan')
-@section('page-subtitle', 'Kelola semua data pemasukan sekolah')
-
-@section('sidebar-menu')
-    <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded mb-1 text-gray-700 hover:bg-gray-100">Dashboard</a>
-    <a href="{{ route('admin.pemasukan.index') }}" class="block px-3 py-2 rounded mb-1 bg-[var(--accent)] text-white">Pemasukan</a>
-    <a href="{{ route('admin.pengeluaran.index') }}" class="block px-3 py-2 rounded mb-1 text-gray-700 hover:bg-gray-100">Pengeluaran</a>
-    <a href="{{ route('admin.transaksi.index') }}" class="block px-3 py-2 rounded mb-1 text-gray-700 hover:bg-gray-100">Transaksi</a>
-@endsection
-
 @section('content')
-    @php
-        $statusValue = fn ($value) => $value instanceof \BackedEnum ? $value->value : $value;
-        $statusLabel = fn ($value) => ucfirst($statusValue($value));
-        $statusClass = fn ($value) => match ($statusValue($value)) {
-            'pending' => 'bg-amber-50 text-amber-700',
-            'approved' => 'bg-emerald-50 text-emerald-700',
-            'rejected' => 'bg-red-50 text-red-700',
-            default => 'bg-gray-100 text-gray-700',
-        };
-        $formatRupiah = fn ($value) => rupiah((int) $value);
-    @endphp
 
-    <div class="space-y-4" x-data="{ showFlash: true }" @keydown.escape.window="document.getElementById('modalTambahPemasukan')?.classList.add('hidden')">
-        <div class="flex items-start justify-between gap-4">
-            <div>
-                <h1 class="text-base font-medium text-gray-800">Pemasukan</h1>
-                <p class="text-xs text-gray-400 mt-0.5">Kelola semua data pemasukan sekolah</p>
+@php
+    $formatRupiah = fn ($value) => rupiah((int) $value);
+@endphp
+
+<!-- PAGE HEADER -->
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+    <div>
+        <h1 style="font-size:16px; font-weight:500; color:#1f2937; margin:0;">
+            Daftar Pemasukan
+        </h1>
+        <p style="font-size:12px; color:#9ca3af; margin:4px 0 0;">
+            Kelola semua transaksi pemasukan sekolah
+        </p>
+    </div>
+    <!-- TOMBOL TRIGGER MODAL -->
+    <button 
+        id="btnBukaModal"
+        onclick="bukaModal()"
+        style="display:flex; align-items:center; gap:8px; 
+               background:#1D9E75; color:white; 
+               font-size:13px; font-weight:500;
+               border:none; padding:8px 16px; 
+               border-radius:8px; cursor:pointer;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>Tambah Pemasukan</span>
+    </button>
+</div>
+
+<!-- STAT CARDS -->
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:24px;">
+    <!-- Total Pemasukan -->
+    <div style="background:white; border:1px solid #f3f4f6; border-radius:12px; padding:16px;">
+        <p style="font-size:11px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 8px;">
+            Total Pemasukan
+        </p>
+        <p style="font-size:18px; font-weight:600; color:#059669; margin:0;">
+            {{ $formatRupiah($totalPemasukan) }}
+        </p>
+    </div>
+
+    <!-- Total Pending -->
+    <div style="background:white; border:1px solid #f3f4f6; border-radius:12px; padding:16px;">
+        <p style="font-size:11px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 8px;">
+            Pending Review
+        </p>
+        <p style="font-size:18px; font-weight:600; color:#d97706; margin:0;">
+            {{ $formatRupiah($totalPending) }}
+        </p>
+    </div>
+
+    <!-- Total Approved -->
+    <div style="background:white; border:1px solid #f3f4f6; border-radius:12px; padding:16px;">
+        <p style="font-size:11px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 8px;">
+            Sudah Disetujui
+        </p>
+        <p style="font-size:18px; font-weight:600; color:#059669; margin:0;">
+            {{ $formatRupiah($totalApproved) }}
+        </p>
+    </div>
+
+    <!-- Total Rows -->
+    <div style="background:white; border:1px solid #f3f4f6; border-radius:12px; padding:16px;">
+        <p style="font-size:11px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 8px;">
+            Total Transaksi
+        </p>
+        <p style="font-size:18px; font-weight:600; color:#4b5563; margin:0;">
+            {{ $pemasukkans->total() }}
+        </p>
+    </div>
+</div>
+
+<!-- TABEL PEMASUKAN -->
+<div style="background:white; border:1px solid #f3f4f6; border-radius:12px; overflow:hidden;">
+    @if($pemasukkans->count() > 0)
+        <table style="width:100%; font-size:13px;">
+            <thead>
+                <tr style="background:#f9fafb; border-bottom:1px solid #f3f4f6;">
+                    <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">No</th>
+                    <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">Tanggal</th>
+                    <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">Keterangan</th>
+                    <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">Jumlah</th>
+                    <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">Siswa</th>
+                    <th style="text-align:center; padding:12px 16px; font-weight:500; color:#6b7280;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($pemasukkans as $idx => $transaksi)
+                    <tr style="border-bottom:1px solid #f3f4f6; {{ $loop->last ? 'border-bottom:none;' : '' }}">
+                        <td style="text-align:left; padding:12px 16px; color:#6b7280;">
+                            {{ ($pemasukkans->currentPage() - 1) * $pemasukkans->perPage() + $loop->iteration }}
+                        </td>
+                        <td style="text-align:left; padding:12px 16px; color:#1f2937;">
+                            {{ \Carbon\Carbon::parse($transaksi->tanggal)->format('d M Y') }}
+                        </td>
+                        <td style="text-align:left; padding:12px 16px; color:#1f2937; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                            {{ $transaksi->keterangan }}
+                        </td>
+                        <td style="text-align:left; padding:12px 16px; color:#059669; font-weight:500;">
+                            + {{ $formatRupiah($transaksi->jumlah) }}
+                        </td>
+                        <td style="text-align:left; padding:12px 16px; color:#6b7280;">
+                            {{ $transaksi->siswa?->nama ?? '—' }}
+                        </td>
+                        <td style="text-align:center; padding:12px 16px;">
+                            <span style="display:inline-block; padding:4px 8px; border-radius:4px; font-size:11px; font-weight:500; {{ match($transaksi->status) {
+                                'pending' => 'background:#fef3c7; color:#92400e;',
+                                'approved' => 'background:#d1fae5; color:#065f46;',
+                                'rejected' => 'background:#fee2e2; color:#991b1b;',
+                                default => 'background:#f3f4f6; color:#4b5563;'
+                            } }}">
+                                {{ ucfirst($transaksi->status) }}
+                            </span>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+
+        <!-- PAGINATION -->
+        <div style="padding:16px; border-top:1px solid #f3f4f6; display:flex; justify-content:space-between; align-items:center;">
+            <p style="font-size:12px; color:#9ca3af; margin:0;">
+                Menampilkan {{ $pemasukkans->firstItem() }} - {{ $pemasukkans->lastItem() }} dari {{ $pemasukkans->total() }} data
+            </p>
+            <div style="display:flex; gap:4px;">
+                @if($pemasukkans->onFirstPage())
+                    <button style="padding:6px 10px; border:1px solid #e5e7eb; background:white; color:#9ca3af; border-radius:4px; cursor:not-allowed; font-size:12px;" disabled>← Sebelumnya</button>
+                @else
+                    <a href="{{ $pemasukkans->previousPageUrl() }}" style="padding:6px 10px; border:1px solid #e5e7eb; background:white; color:#1f2937; border-radius:4px; cursor:pointer; font-size:12px; text-decoration:none;">← Sebelumnya</a>
+                @endif
+
+                @if($pemasukkans->hasMorePages())
+                    <a href="{{ $pemasukkans->nextPageUrl() }}" style="padding:6px 10px; border:1px solid #e5e7eb; background:white; color:#1f2937; border-radius:4px; cursor:pointer; font-size:12px; text-decoration:none;">Selanjutnya →</a>
+                @else
+                    <button style="padding:6px 10px; border:1px solid #e5e7eb; background:white; color:#9ca3af; border-radius:4px; cursor:not-allowed; font-size:12px;" disabled>Selanjutnya →</button>
+                @endif
             </div>
-            <button id="btnTambahPemasukan" class="inline-flex items-center gap-2 bg-[#1D9E75] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#0F6E56] transition-colors">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                <span>Tambah Pemasukan</span>
+        </div>
+    @else
+        <div style="text-align:center; padding:48px 24px;">
+            <svg style="width:64px; height:64px; color:#d1d5db; margin:0 auto 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 style="font-size:14px; color:#d1d5db; margin:0 0 12px;">
+                Belum ada data pemasukan
+            </h3>
+            <button 
+                onclick="bukaModal()"
+                style="background:#1D9E75; color:white; 
+                       font-size:13px; font-weight:500;
+                       border:none; padding:8px 16px; 
+                       border-radius:8px; cursor:pointer;">
+                + Tambah Pemasukan Pertama
+            </button>
+        </div>
+    @endif
+</div>
+
+<!-- ================================ -->
+<!-- MODAL — Tambah Pemasukan        -->
+<!-- ================================ -->
+<div id="modalTambah"
+    style="display:none; position:fixed; inset:0; 
+           z-index:9999; align-items:center; 
+           justify-content:center;">
+    
+    <!-- Backdrop -->
+    <div 
+        onclick="tutupModal()"
+        style="position:absolute; inset:0; 
+               background:rgba(0,0,0,0.45);">
+    </div>
+
+    <!-- Box Modal -->
+    <div style="position:relative; background:white; 
+                border-radius:16px; width:100%; 
+                max-width:520px; margin:0 16px; 
+                max-height:90vh; overflow-y:auto; 
+                z-index:10000;">
+
+        <!-- Header Modal -->
+        <div style="display:flex; align-items:center; 
+                    justify-content:space-between;
+                    padding:16px 24px; 
+                    border-bottom:1px solid #f3f4f6;">
+            <div>
+                <p style="font-size:14px; font-weight:500; 
+                          color:#1f2937; margin:0;">
+                    Tambah Pemasukan
+                </p>
+                <p style="font-size:11px; color:#9ca3af; margin:4px 0 0;">
+                    Isi data transaksi dengan lengkap
+                </p>
+            </div>
+            <button onclick="tutupModal()"
+                style="width:28px; height:28px; border:none;
+                       background:#f9fafb; border-radius:8px;
+                       cursor:pointer; font-size:16px; 
+                       color:#6b7280; line-height:1;">
+                &times;
             </button>
         </div>
 
-        @if(session('success'))
-            <div x-show="showFlash" x-init="setTimeout(() => showFlash = false, 4000)" class="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-lg px-4 py-3 mb-4">
-                {{ session('success') }}
-            </div>
-        @endif
-        @if(session('error'))
-            <div x-show="showFlash" x-init="setTimeout(() => showFlash = false, 4000)" class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3 mb-4">
-                {{ session('error') }}
-            </div>
-        @endif
+        <!-- Form -->
+        <form method="POST" 
+              action="{{ route('admin.pemasukan.store') }}"
+              enctype="multipart/form-data"
+              style="padding:20px 24px;">
+            @csrf
+            <input type="hidden" name="jenis" value="pemasukan">
+            <input type="hidden" name="status" value="pending">
 
-        <div class="grid grid-cols-4 gap-3 mb-4">
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
-                <div class="flex items-start justify-between gap-3">
-                    <div>
-                        <div class="text-xs text-gray-400">Total Pemasukan bulan ini</div>
-                        <div class="mt-1 text-xl font-medium text-gray-800">{{ $formatRupiah($total_pemasukan) }}</div>
-                        <div class="text-xs text-gray-400 mt-1">Dari transaksi yang sudah disetujui</div>
-                    </div>
-                    <div class="rounded-lg p-2 w-8 h-8 bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12l5-5 4 4 5-5M5 19h14" /></svg>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
-                <div class="flex items-start justify-between gap-3">
-                    <div>
-                        <div class="text-xs text-gray-400">Menunggu Approval</div>
-                        <div class="mt-1 text-xl font-medium text-gray-800">{{ $transaksis->where('status', 'pending')->count() }}</div>
-                        <div class="text-xs text-gray-400 mt-1">Transaksi pending</div>
-                    </div>
-                    <div class="rounded-lg p-2 w-8 h-8 bg-amber-50 text-amber-600 flex items-center justify-center">
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m-3-9a9 9 0 100 18 9 9 0 000-18z" /></svg>
-                    </div>
-                </div>
+            <!-- Tanggal -->
+            <div style="margin-bottom:16px;">
+                <label style="display:block; font-size:11px; 
+                              font-weight:500; color:#6b7280; 
+                              text-transform:uppercase; 
+                              letter-spacing:0.05em; 
+                              margin-bottom:4px;">
+                    Tanggal
+                </label>
+                <input type="date" name="tanggal"
+                    value="{{ old('tanggal', date('Y-m-d')) }}"
+                    style="width:100%; font-size:13px; 
+                           border:1px solid #e5e7eb; 
+                           border-radius:8px; padding:8px 12px; 
+                           height:36px; box-sizing:border-box;
+                           outline:none;">
+                @error('tanggal')
+                    <p style="font-size:11px;color:#ef4444;margin:4px 0 0;">
+                        {{ $message }}
+                    </p>
+                @enderror
             </div>
 
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
-                <div class="flex items-start justify-between gap-3">
-                    <div>
-                        <div class="text-xs text-gray-400">Sudah Disetujui</div>
-                        <div class="mt-1 text-xl font-medium text-gray-800">{{ $transaksis->where('status', 'approved')->count() }}</div>
-                        <div class="text-xs text-gray-400 mt-1">Transaksi approved</div>
-                    </div>
-                    <div class="rounded-lg p-2 w-8 h-8 bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-                    </div>
+            <!-- Jumlah -->
+            <div style="margin-bottom:16px;">
+                <label style="display:block; font-size:11px; 
+                              font-weight:500; color:#6b7280;
+                              text-transform:uppercase; 
+                              letter-spacing:0.05em; 
+                              margin-bottom:4px;">
+                    Jumlah
+                </label>
+                <div style="position:relative;">
+                    <span style="position:absolute; left:12px; 
+                                 top:50%; transform:translateY(-50%);
+                                 font-size:13px; color:#9ca3af;">
+                        Rp
+                    </span>
+                    <input type="number" name="jumlah" 
+                        id="inputJumlah"
+                        value="{{ old('jumlah') }}"
+                        min="1" placeholder="0"
+                        style="width:100%; font-size:13px; 
+                               border:1px solid #e5e7eb; 
+                               border-radius:8px; 
+                               padding:8px 12px 8px 36px;
+                               height:36px; box-sizing:border-box;
+                               outline:none;">
                 </div>
+                @error('jumlah')
+                    <p style="font-size:11px;color:#ef4444;margin:4px 0 0;">
+                        {{ $message }}
+                    </p>
+                @enderror
             </div>
 
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
-                <div class="flex items-start justify-between gap-3">
-                    <div>
-                        <div class="text-xs text-gray-400">Ditolak</div>
-                        <div class="mt-1 text-xl font-medium text-gray-800">{{ $transaksis->where('status', 'rejected')->count() }}</div>
-                        <div class="text-xs text-gray-400 mt-1">Transaksi rejected</div>
-                    </div>
-                    <div class="rounded-lg p-2 w-8 h-8 bg-red-50 text-red-600 flex items-center justify-center">
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                    </div>
-                </div>
+            <!-- Keterangan -->
+            <div style="margin-bottom:16px;">
+                <label style="display:block; font-size:11px; 
+                              font-weight:500; color:#6b7280;
+                              text-transform:uppercase; 
+                              letter-spacing:0.05em; 
+                              margin-bottom:4px;">
+                    Keterangan
+                </label>
+                <textarea name="keterangan" rows="3"
+                    id="inputKeterangan"
+                    maxlength="500"
+                    placeholder="Tulis keterangan transaksi..."
+                    oninput="hitungKarakter()"
+                    style="width:100%; font-size:13px; 
+                           border:1px solid #e5e7eb; 
+                           border-radius:8px; padding:8px 12px;
+                           resize:none; box-sizing:border-box;
+                           outline:none;">{{ old('keterangan') }}</textarea>
+                <p style="font-size:10px;color:#9ca3af;
+                          text-align:right;margin:2px 0 0;">
+                    <span id="hitungChar">0</span>/500
+                </p>
+                @error('keterangan')
+                    <p style="font-size:11px;color:#ef4444;margin:4px 0 0;">
+                        {{ $message }}
+                    </p>
+                @enderror
             </div>
-        </div>
 
-        <div class="bg-white border border-gray-100 rounded-xl p-4 mb-4">
-            <form method="GET" class="flex flex-wrap gap-2 items-end">
-                <div>
-                    <label class="block text-sm text-gray-600 mb-1">Dari Tanggal</label>
-                    <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari') }}" class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-[#1D9E75] h-9">
-                </div>
-                <div>
-                    <label class="block text-sm text-gray-600 mb-1">Sampai Tanggal</label>
-                    <input type="date" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}" class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-[#1D9E75] h-9">
-                </div>
-                <div>
-                    <label class="block text-sm text-gray-600 mb-1">Status</label>
-                    <select name="status" class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-[#1D9E75] h-9 min-w-32">
-                        <option value="">Semua</option>
-                        <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved</option>
-                        <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm text-gray-600 mb-1">Keterangan</label>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari keterangan..." class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-[#1D9E75] h-9">
-                </div>
-                <button type="submit" class="bg-[#1D9E75] text-white text-xs rounded-lg px-4 h-9">Filter</button>
-                <a href="{{ route('admin.pemasukan.index') }}" class="bg-white border border-gray-200 text-xs rounded-lg px-4 h-9 inline-flex items-center">Reset</a>
-            </form>
-        </div>
-
-        @if($transaksis->count() > 0)
-            <div class="bg-white border border-gray-100 rounded-xl overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead>
-                            <tr>
-                                <th class="text-[10px] uppercase tracking-wide text-gray-400 font-medium px-4 py-3 border-b border-gray-50 text-left">No</th>
-                                <th class="text-[10px] uppercase tracking-wide text-gray-400 font-medium px-4 py-3 border-b border-gray-50 text-left">Tanggal</th>
-                                <th class="text-[10px] uppercase tracking-wide text-gray-400 font-medium px-4 py-3 border-b border-gray-50 text-left">Keterangan</th>
-                                <th class="text-[10px] uppercase tracking-wide text-gray-400 font-medium px-4 py-3 border-b border-gray-50 text-left">Siswa</th>
-                                <th class="text-[10px] uppercase tracking-wide text-gray-400 font-medium px-4 py-3 border-b border-gray-50 text-left">Jumlah</th>
-                                <th class="text-[10px] uppercase tracking-wide text-gray-400 font-medium px-4 py-3 border-b border-gray-50 text-left">Bukti</th>
-                                <th class="text-[10px] uppercase tracking-wide text-gray-400 font-medium px-4 py-3 border-b border-gray-50 text-left">Status</th>
-                                <th class="text-[10px] uppercase tracking-wide text-gray-400 font-medium px-4 py-3 border-b border-gray-50 text-left">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($transaksis as $index => $item)
-                                @php $jenis = $statusValue($item->jenis); @endphp
-                                <tr class="hover:bg-gray-50 border-b border-gray-50 last:border-b-0">
-                                    <td class="text-sm px-4 py-2.5">{{ $transaksis->firstItem() + $index }}</td>
-                                    <td class="text-sm px-4 py-2.5">{{ optional($item->tanggal)->format('d/m/Y') }}</td>
-                                    <td class="text-sm px-4 py-2.5">{{ $item->keterangan }}</td>
-                                    <td class="text-sm px-4 py-2.5">{{ $item->siswa?->nama ?? '-' }}</td>
-                                    <td class="text-sm px-4 py-2.5 font-medium text-emerald-600">{{ $formatRupiah($item->jumlah) }}</td>
-                                    <td class="text-sm px-4 py-2.5">
-                                        @if($item->bukti_transaksi)
-                                            <a href="{{ Storage::url($item->bukti_transaksi) }}" target="_blank" class="text-[11px] px-3 py-1 rounded-lg border font-medium border-gray-200 text-gray-600 hover:bg-gray-50">Lihat</a>
-                                        @else
-                                            <span class="text-gray-400">—</span>
-                                        @endif
-                                    </td>
-                                    <td class="text-sm px-4 py-2.5">
-                                        <span class="text-[10px] font-medium px-2 py-0.5 rounded-full {{ $statusClass($item->status) }}">{{ $statusLabel($item->status) }}</span>
-                                    </td>
-                                    <td class="text-sm px-4 py-2.5">
-                                        <a href="#" class="text-[11px] px-3 py-1 rounded-lg border font-medium border-gray-200 text-gray-600 hover:bg-gray-50">Detail</a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-                <div class="px-4 py-3 border-t border-gray-50">
-                    {{ $transaksis->withQueryString()->links() }}
-                </div>
+            <!-- Siswa -->
+            <div style="margin-bottom:16px;">
+                <label style="display:block; font-size:11px; 
+                              font-weight:500; color:#6b7280;
+                              text-transform:uppercase; 
+                              letter-spacing:0.05em; 
+                              margin-bottom:4px;">
+                    Siswa 
+                    <span style="color:#d1d5db;
+                                 text-transform:none;">
+                        (opsional)
+                    </span>
+                </label>
+                <select name="id_siswa"
+                    style="width:100%; font-size:13px; 
+                           border:1px solid #e5e7eb; 
+                           border-radius:8px; padding:0 12px;
+                           height:36px; box-sizing:border-box;
+                           outline:none; background:white;">
+                    <option value="">-- Tidak ada --</option>
+                    @foreach($siswas as $siswa)
+                        <option value="{{ $siswa->id }}"
+                            {{ old('id_siswa') == $siswa->id 
+                               ? 'selected' : '' }}>
+                            {{ $siswa->nama }} - Kelas {{ $siswa->kelas }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
-        @else
-            <div class="bg-white border border-gray-100 rounded-xl p-12 text-center">
-                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <h3 class="text-sm text-gray-400 mb-2">Belum ada data pemasukan</h3>
-                <button id="btnTambahPemasukanEmpty" class="inline-flex items-center gap-2 bg-[#1D9E75] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#0F6E56]">+ Tambah Pemasukan</button>
+
+            <!-- Upload Bukti -->
+            <div style="margin-bottom:20px;">
+                <label style="display:block; font-size:11px; 
+                              font-weight:500; color:#6b7280;
+                              text-transform:uppercase; 
+                              letter-spacing:0.05em; 
+                              margin-bottom:4px;">
+                    Bukti Transaksi
+                    <span style="color:#d1d5db;
+                                 text-transform:none;">
+                        (opsional)
+                    </span>
+                </label>
+                <input type="file" name="bukti_transaksi"
+                    accept=".jpg,.jpeg,.png,.pdf"
+                    style="width:100%; font-size:12px; 
+                           border:1px solid #e5e7eb; 
+                           border-radius:8px; padding:6px 12px;
+                           box-sizing:border-box;">
+                <p style="font-size:10px;color:#9ca3af;margin:4px 0 0;">
+                    JPG, PNG, PDF maksimal 2MB
+                </p>
+                @error('bukti_transaksi')
+                    <p style="font-size:11px;color:#ef4444;margin:4px 0 0;">
+                        {{ $message }}
+                    </p>
+                @enderror
             </div>
-        @endif
-    </div>
 
-    <!-- MODAL TAMBAH PEMASUKAN -->
-    <div id="modalTambahPemasukan" class="hidden fixed inset-0 z-[999] flex items-center justify-center">
-        <!-- Backdrop -->
-        <div class="absolute inset-0 bg-black/40"></div>
-
-        <!-- Modal Box -->
-        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto z-[1000]">
-            <!-- Header -->
-            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                <h2 class="text-base font-semibold text-gray-800">Tambah Pemasukan</h2>
-                <button class="btnClosePemasukan text-gray-400 hover:bg-gray-100 rounded-lg p-1.5 transition-colors">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <!-- Footer Tombol -->
+            <div style="display:flex; gap:8px; 
+                        padding-top:16px; 
+                        border-top:1px solid #f3f4f6;">
+                <button type="button" onclick="tutupModal()"
+                    style="flex:1; font-size:13px; 
+                           border:1px solid #e5e7eb;
+                           background:white; color:#6b7280;
+                           border-radius:8px; padding:9px;
+                           cursor:pointer;">
+                    Batal
+                </button>
+                <button type="submit"
+                    style="flex:1; font-size:13px; 
+                           background:#1D9E75; color:white;
+                           border:none; border-radius:8px; 
+                           padding:9px; cursor:pointer;
+                           font-weight:500;">
+                    Simpan Transaksi
                 </button>
             </div>
 
-            <!-- Content -->
-            <form method="POST" action="{{ route('admin.pemasukan.store') }}" enctype="multipart/form-data" class="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
-                @csrf
-
-                <!-- Tanggal -->
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal</label>
-                    <input type="date" name="tanggal" value="{{ old('tanggal', now()->format('Y-m-d')) }}" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent" required>
-                    @error('tanggal')
-                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Jumlah -->
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah</label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-2.5 text-sm text-gray-500">Rp</span>
-                        <input type="text" id="inputRupiah" placeholder="0" class="w-full text-sm border border-gray-200 rounded-lg pl-8 pr-3 py-2.5 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent">
-                        <input type="hidden" name="jumlah" id="inputRupiahRaw">
-                    </div>
-                    @error('jumlah')
-                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Keterangan -->
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Keterangan <span class="text-xs text-gray-400">(<span id="charCount">0</span>/500)</span></label>
-                    <textarea name="keterangan" id="inputKeterangan" maxlength="500" rows="3" placeholder="Deskripsi pemasukan..." class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent resize-none">{{ old('keterangan') }}</textarea>
-                    @error('keterangan')
-                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Siswa -->
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Siswa <span class="text-xs text-gray-400">(Opsional)</span></label>
-                    <select name="id_siswa" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent">
-                        <option value="">-- Pilih Siswa --</option>
-                        @foreach($siswas as $siswa)
-                            <option value="{{ $siswa->id }}" {{ old('id_siswa') == $siswa->id ? 'selected' : '' }}>{{ $siswa->nama }} ({{ $siswa->kelas }})</option>
-                        @endforeach
-                    </select>
-                    @error('id_siswa')
-                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Upload Bukti -->
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Upload Bukti <span class="text-xs text-gray-400">(Opsional)</span></label>
-                    <div class="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:border-[#1D9E75] transition-colors" id="dropZone">
-                        <input type="file" id="inputFile" class="hidden" accept="image/*,.pdf" name="bukti_transaksi">
-                        
-                        <div id="emptyState">
-                            <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                            </svg>
-                            <p class="text-sm text-gray-600">Drag atau klik untuk upload file</p>
-                            <p class="text-xs text-gray-400 mt-1">Gambar atau PDF</p>
-                        </div>
-
-                        <div id="previewState" style="display: none;">
-                            <img id="imgPreview" style="display: none;" class="h-20 mx-auto mb-2 rounded">
-                            <div id="pdfPreview" style="display: none;" class="w-10 h-10 bg-red-50 rounded mx-auto mb-2 flex items-center justify-center">
-                                <span class="text-xs text-red-600 font-medium">PDF</span>
-                            </div>
-                            <p class="text-sm font-medium text-gray-800" id="fileName"></p>
-                            <button type="button" class="text-xs text-red-500 hover:text-red-700 mt-2" id="btnClearFile">Hapus File</button>
-                        </div>
-                    </div>
-                    @error('bukti_transaksi')
-                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Hidden Inputs -->
-                <input type="hidden" name="status" value="pending">
-                <input type="hidden" name="jenis" value="pemasukan">
-
-                <!-- Footer -->
-                <div class="flex gap-2 pt-6 border-t border-gray-100">
-                    <button type="button" class="btnClosePemasukan flex-1 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg px-4 py-2 hover:bg-gray-50 transition-colors">Batal</button>
-                    <button type="submit" class="flex-1 text-sm font-medium text-white bg-[#1D9E75] rounded-lg px-4 py-2 hover:bg-[#0F6E56] transition-colors">Simpan</button>
-                </div>
-            </form>
-        </div>
+        </form>
     </div>
+</div>
 
-    {{-- Auto open modal jika ada error validasi --}}
+@endsection
+
+@push('scripts')
+<script>
+    function bukaModal() {
+        var modal = document.getElementById('modalTambah');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function tutupModal() {
+        var modal = document.getElementById('modalTambah');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    function hitungKarakter() {
+        var txt = document.getElementById('inputKeterangan');
+        var counter = document.getElementById('hitungChar');
+        if (txt && counter) {
+            counter.textContent = txt.value.length;
+        }
+    }
+
+    // Tutup modal dengan tombol ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') tutupModal();
+    });
+
+    // Buka otomatis jika ada error validasi
     @if($errors->any())
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('modalTambahPemasukan').classList.remove('hidden');
-        });
-    </script>
+        window.addEventListener('load', function() { bukaModal(); });
     @endif
 
-    @push('scripts')
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Modal control
-        const modal = document.getElementById('modalTambahPemasukan');
-        const btnOpen = document.getElementById('btnTambahPemasukan');
-        const btnOpenEmpty = document.getElementById('btnTambahPemasukanEmpty');
-        const btnClose = document.querySelectorAll('.btnClosePemasukan');
-
-        function openModal() {
-            modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal() {
-            modal.classList.add('hidden');
-            document.body.style.overflow = '';
-        }
-
-        btnOpen?.addEventListener('click', openModal);
-        btnOpenEmpty?.addEventListener('click', openModal);
-        btnClose.forEach(btn => btn.addEventListener('click', closeModal));
-        
-        // Close on backdrop click
-        modal?.addEventListener('click', function(e) {
-            if (e.target === modal) closeModal();
-        });
-
-        // Close on ESC
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
-                closeModal();
-            }
-        });
-
-        // Rupiah formatting
-        const inputRupiah = document.getElementById('inputRupiah');
-        const inputRupiahRaw = document.getElementById('inputRupiahRaw');
-        inputRupiah?.addEventListener('input', function() {
-            let value = this.value.replace(/\D/g, '');
-            inputRupiahRaw.value = value;
-            this.value = value ? parseInt(value).toLocaleString('id-ID') : '';
-        });
-
-        // Character counter
-        const inputKeterangan = document.getElementById('inputKeterangan');
-        const charCount = document.getElementById('charCount');
-        inputKeterangan?.addEventListener('input', function() {
-            charCount.textContent = this.value.length;
-        });
-        charCount.textContent = inputKeterangan?.value.length || 0;
-
-        // File upload
-        const dropZone = document.getElementById('dropZone');
-        const inputFile = document.getElementById('inputFile');
-        const emptyState = document.getElementById('emptyState');
-        const previewState = document.getElementById('previewState');
-        const imgPreview = document.getElementById('imgPreview');
-        const pdfPreview = document.getElementById('pdfPreview');
-        const fileName = document.getElementById('fileName');
-        const btnClearFile = document.getElementById('btnClearFile');
-
-        function handleFile(file) {
-            if (!file) return;
-            fileName.textContent = file.name;
-            emptyState.style.display = 'none';
-            previewState.style.display = 'block';
-
-            if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imgPreview.src = e.target.result;
-                    imgPreview.style.display = 'block';
-                    pdfPreview.style.display = 'none';
-                };
-                reader.readAsDataURL(file);
-            } else {
-                imgPreview.style.display = 'none';
-                pdfPreview.style.display = 'flex';
-            }
-        }
-
-        dropZone?.addEventListener('click', () => inputFile.click());
-        inputFile?.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) handleFile(file);
-        });
-
-        dropZone?.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('border-[#1D9E75]', 'bg-emerald-50');
-        });
-
-        dropZone?.addEventListener('dragleave', () => {
-            dropZone.classList.remove('border-[#1D9E75]', 'bg-emerald-50');
-        });
-
-        dropZone?.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('border-[#1D9E75]', 'bg-emerald-50');
-            const file = e.dataTransfer.files[0];
-            if (file) {
-                inputFile.files = e.dataTransfer.files;
-                handleFile(file);
-            }
-        });
-
-        btnClearFile?.addEventListener('click', (e) => {
-            e.preventDefault();
-            inputFile.value = '';
-            emptyState.style.display = 'block';
-            previewState.style.display = 'none';
-            imgPreview.src = '';
-            pdfPreview.style.display = 'none';
-        });
+    // Init character counter
+    window.addEventListener('load', function() {
+        hitungKarakter();
     });
-    </script>
-    @endpush
-@endsection
+</script>
+@endpush
