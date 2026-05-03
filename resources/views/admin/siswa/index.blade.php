@@ -33,12 +33,12 @@
       Kelola data siswa dan orang tua
     </p>
   </div>
-  <button onclick="bukaModal('tambah')"
+  <button 
+    id="btnTambahSiswa"
     style="display:flex; align-items:center; gap:6px;
-           background:#1D9E75; color:white;
-           border:none; border-radius:8px;
-           padding:8px 16px; font-size:13px;
-           font-weight:500; cursor:pointer;">
+           background:#1D9E75; color:white; border:none;
+           border-radius:8px; padding:8px 16px;
+           font-size:13px; font-weight:500; cursor:pointer;">
     + Tambah Siswa
   </button>
 </div>
@@ -355,7 +355,7 @@
           <div style="color:#9ca3af; font-size:13px;">
             Belum ada data siswa
           </div>
-          <button onclick="bukaModal('tambah')"
+          <button type="button" id="btnTambahSiswaEmpty"
             style="margin-top:12px; background:#1D9E75;
                    color:white; border:none;
                    border-radius:8px; padding:8px 16px;
@@ -385,7 +385,275 @@
          z-index:9999; align-items:center;
          justify-content:center;">
 
-  <div onclick="tutupModal('tambah')"
+  <div id="backdropTambah"
+    style="position:absolute; inset:0;
+           background:rgba(0,0,0,0.45);">
+  </div>
+
+  <div style="position:relative; background:white;
+              border-radius:16px; width:100%;
+              max-width:560px; margin:0 16px;
+              max-height:90vh; overflow-y:auto;
+              z-index:10000;">
+
+    {{-- Header --}}
+    <div style="display:flex; align-items:center;
+                justify-content:space-between;
+                padding:16px 24px;
+                border-bottom:1px solid #f3f4f6;
+                position:sticky; top:0;
+                background:white; z-index:1;">
+      <div>
+        <p style="font-size:14px; font-weight:500;
+                  color:#1f2937; margin:0;">
+          Tambah Data Siswa
+        </p>
+        <p style="font-size:11px; color:#9ca3af;
+                  margin:4px 0 0;">
+          Kolom bertanda * wajib diisi
+        </p>
+      </div>
+      <button id="closeTambah"
+        style="width:28px; height:28px; border:none;
+               background:#f9fafb; border-radius:8px;
+               cursor:pointer; font-size:18px;
+               color:#6b7280; line-height:1;">
+        &times;
+      </button>
+    </div>
+
+    {{-- Form --}}
+    <form method="POST"
+      action="{{ route('admin.siswa.store') }}"
+      style="padding:20px 24px;">
+      @csrf
+
+      {{-- NIK + Kelas --}}
+      <div style="display:grid;
+                  grid-template-columns:1fr 1fr;
+                  gap:12px; margin-bottom:14px;">
+        <div>
+          <label style="display:block; font-size:11px;
+                        font-weight:500; color:#6b7280;
+                        text-transform:uppercase;
+                        letter-spacing:0.05em;
+                        margin-bottom:4px;">
+            NIK * (16 digit)
+          </label>
+          <input type="text" name="nik"
+            value="{{ old('nik') }}"
+            maxlength="16"
+            placeholder="3271XXXXXXXXXXXX"
+            oninput="this.value=
+              this.value.replace(/\D/g,'')"
+            style="width:100%; font-size:13px;
+                   border:1px solid #e5e7eb;
+                   border-radius:8px;
+                   padding:8px 12px; height:36px;
+                   box-sizing:border-box; outline:none;
+                   font-family:monospace;">
+          @error('nik')
+            <p style="font-size:11px; color:#ef4444;
+                      margin:4px 0 0;">
+              {{ $message }}
+            </p>
+          @enderror
+        </div>
+
+        <div>
+          <label style="display:block; font-size:11px;
+                        font-weight:500; color:#6b7280;
+                        text-transform:uppercase;
+                        letter-spacing:0.05em;
+                        margin-bottom:4px;">
+            Kelas *
+          </label>
+          <select name="kelas"
+            style="width:100%; font-size:13px;
+                   border:1px solid #e5e7eb;
+                   border-radius:8px; padding:0 12px;
+                   height:36px; box-sizing:border-box;
+                   outline:none; background:white;">
+            <option value="">-- Pilih --</option>
+            @foreach(['7A','7B','7C','8A','8B','8C',
+                      '9A','9B','9C'] as $k)
+              <option value="{{ $k }}"
+                {{ old('kelas')==$k ? 'selected':'' }}>
+                Kelas {{ $k }}
+              </option>
+            @endforeach
+          </select>
+          @error('kelas')
+            <p style="font-size:11px; color:#ef4444;
+                      margin:4px 0 0;">
+              {{ $message }}
+            </p>
+          @enderror
+        </div>
+      </div>
+
+      {{-- Nama Siswa --}}
+      <div style="margin-bottom:14px;">
+        <label style="display:block; font-size:11px;
+                      font-weight:500; color:#6b7280;
+                      text-transform:uppercase;
+                      letter-spacing:0.05em;
+                      margin-bottom:4px;">
+          Nama Siswa *
+        </label>
+        <input type="text" name="nama"
+          value="{{ old('nama') }}"
+          placeholder="Nama lengkap siswa"
+          style="width:100%; font-size:13px;
+                 border:1px solid #e5e7eb;
+                 border-radius:8px; padding:8px 12px;
+                 height:36px; box-sizing:border-box;
+                 outline:none;">
+        @error('nama')
+          <p style="font-size:11px; color:#ef4444;
+                    margin:4px 0 0;">
+            {{ $message }}
+          </p>
+        @enderror
+      </div>
+
+      {{-- Nama Orang Tua --}}
+      <div style="margin-bottom:14px;">
+        <label style="display:block; font-size:11px;
+                      font-weight:500; color:#6b7280;
+                      text-transform:uppercase;
+                      letter-spacing:0.05em;
+                      margin-bottom:4px;">
+          Nama Orang Tua *
+        </label>
+        <input type="text" name="nama_orangtua"
+          value="{{ old('nama_orangtua') }}"
+          placeholder="Nama lengkap orang tua / wali"
+          style="width:100%; font-size:13px;
+                 border:1px solid #e5e7eb;
+                 border-radius:8px; padding:8px 12px;
+                 height:36px; box-sizing:border-box;
+                 outline:none;">
+        @error('nama_orangtua')
+          <p style="font-size:11px; color:#ef4444;
+                    margin:4px 0 0;">
+            {{ $message }}
+          </p>
+        @enderror
+      </div>
+
+      {{-- Jenis Kelamin + No Telepon --}}
+      <div style="display:grid;
+                  grid-template-columns:1fr 1fr;
+                  gap:12px; margin-bottom:14px;">
+        <div>
+          <label style="display:block; font-size:11px;
+                        font-weight:500; color:#6b7280;
+                        text-transform:uppercase;
+                        letter-spacing:0.05em;
+                        margin-bottom:4px;">
+            Jenis Kelamin
+          </label>
+          <select name="jenis_kelamin"
+            style="width:100%; font-size:13px;
+                   border:1px solid #e5e7eb;
+                   border-radius:8px; padding:0 12px;
+                   height:36px; box-sizing:border-box;
+                   outline:none; background:white;">
+            <option value="">-- Pilih --</option>
+            <option value="L"
+              {{ old('jenis_kelamin')=='L'
+                 ? 'selected':'' }}>
+              Laki-laki
+            </option>
+            <option value="P"
+              {{ old('jenis_kelamin')=='P'
+                 ? 'selected':'' }}>
+              Perempuan
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display:block; font-size:11px;
+                        font-weight:500; color:#6b7280;
+                        text-transform:uppercase;
+                        letter-spacing:0.05em;
+                        margin-bottom:4px;">
+            No. Telepon Ortu
+          </label>
+          <input type="text" name="no_telepon"
+            value="{{ old('no_telepon') }}"
+            maxlength="15"
+            placeholder="08xxxxxxxxxx"
+            oninput="this.value=
+              this.value.replace(/[^0-9\+\-]/g,'')"
+            style="width:100%; font-size:13px;
+                   border:1px solid #e5e7eb;
+                   border-radius:8px; padding:8px 12px;
+                   height:36px; box-sizing:border-box;
+                   outline:none;">
+          @error('no_telepon')
+            <p style="font-size:11px; color:#ef4444;
+                      margin:4px 0 0;">
+              {{ $message }}
+            </p>
+          @enderror
+        </div>
+      </div>
+
+      {{-- Alamat --}}
+      <div style="margin-bottom:20px;">
+        <label style="display:block; font-size:11px;
+                      font-weight:500; color:#6b7280;
+                      text-transform:uppercase;
+                      letter-spacing:0.05em;
+                      margin-bottom:4px;">
+          Alamat (opsional)
+        </label>
+        <textarea name="alamat" rows="2"
+          placeholder="Alamat lengkap siswa..."
+          style="width:100%; font-size:13px;
+                 border:1px solid #e5e7eb;
+                 border-radius:8px; padding:8px 12px;
+                 resize:none; box-sizing:border-box;
+                 outline:none;">{{ old('alamat') }}</textarea>
+      </div>
+
+      {{-- Footer --}}
+      <div style="display:flex; gap:8px;
+                  padding-top:16px;
+                  border-top:1px solid #f3f4f6;">
+        <button type="button" id="btnBatalTambah"
+          style="flex:1; font-size:13px;
+                 border:1px solid #e5e7eb;
+                 background:white; color:#6b7280;
+                 border-radius:8px; padding:9px;
+                 cursor:pointer;">
+          Batal
+        </button>
+        <button type="submit"
+          style="flex:1; font-size:13px;
+                 background:#1D9E75; color:white;
+                 border:none; border-radius:8px;
+                 padding:9px; cursor:pointer;
+                 font-weight:500;">
+          Simpan Data Siswa
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{{-- ══════════════════════════════ --}}
+{{-- MODAL EDIT                    --}}
+{{-- ══════════════════════════════ --}}
+<div id="modalEditSiswa"
+  style="display:none; position:fixed; inset:0;
+         z-index:9999; align-items:center;
+         justify-content:center;">
+
+  <div id="backdropEdit"
     style="position:absolute; inset:0;
            background:rgba(0,0,0,0.45);">
   </div>
@@ -405,14 +673,14 @@
       <div>
         <p style="font-size:14px; font-weight:500;
                   color:#1f2937; margin:0;">
-          Tambah Data Siswa
+          Edit Data Siswa
         </p>
         <p style="font-size:11px; color:#9ca3af;
                   margin:4px 0 0;">
-          Isi semua kolom yang wajib diisi (*)
+          Perbarui data siswa yang dipilih
         </p>
       </div>
-      <button onclick="tutupModal('tambah')"
+      <button id="closeEdit"
         style="width:28px; height:28px; border:none;
                background:#f9fafb; border-radius:8px;
                cursor:pointer; font-size:18px;
@@ -421,39 +689,32 @@
       </button>
     </div>
 
-    <form method="POST"
-      action="{{ route('admin.siswa.store') }}"
+    <form id="formEditSiswa" method="POST"
       style="padding:20px 24px;">
       @csrf
+      @method('PUT')
 
-      {{-- NIK + Kelas (2 kolom) --}}
+      {{-- NIK + Kelas --}}
       <div style="display:grid;
                   grid-template-columns:1fr 1fr;
-                  gap:14px; margin-bottom:14px;">
+                  gap:12px; margin-bottom:14px;">
         <div>
           <label style="display:block; font-size:11px;
                         font-weight:500; color:#6b7280;
                         text-transform:uppercase;
                         letter-spacing:0.05em;
                         margin-bottom:4px;">
-            NIK <span style="color:#ef4444;">*</span>
-            <span style="text-transform:none;
-                         color:#9ca3af;">(16 digit)</span>
+            NIK * (16 digit)
           </label>
-          <input type="text" name="nik"
-            value="{{ old('nik') }}"
+          <input type="text" id="editNik" name="nik"
             maxlength="16"
-            placeholder="3271XXXXXXXXXXXX"
-            oninput="this.value=this.value.replace(/\D/g,'')"
+            oninput="this.value=
+              this.value.replace(/\D/g,'')"
             style="width:100%; font-size:13px;
                    border:1px solid #e5e7eb;
                    border-radius:8px; padding:8px 12px;
                    height:36px; box-sizing:border-box;
                    outline:none; font-family:monospace;">
-          @error('nik')
-            <p style="font-size:11px; color:#ef4444;
-                      margin:4px 0 0;">{{ $message }}</p>
-          @enderror
         </div>
 
         <div>
@@ -462,97 +723,78 @@
                         text-transform:uppercase;
                         letter-spacing:0.05em;
                         margin-bottom:4px;">
-            Kelas <span style="color:#ef4444;">*</span>
+            Kelas *
           </label>
-          <select name="kelas"
+          <select id="editKelas" name="kelas"
             style="width:100%; font-size:13px;
                    border:1px solid #e5e7eb;
                    border-radius:8px; padding:0 12px;
                    height:36px; box-sizing:border-box;
                    outline:none; background:white;">
-            <option value="">-- Pilih Kelas --</option>
-            @foreach(['7A','7B','7C','8A','8B','8C','9A','9B','9C'] as $k)
-              <option value="{{ $k }}"
-                {{ old('kelas') == $k ? 'selected' : '' }}>
+            <option value="">-- Pilih --</option>
+            @foreach(['7A','7B','7C','8A','8B','8C',
+                      '9A','9B','9C'] as $k)
+              <option value="{{ $k }}">
                 Kelas {{ $k }}
               </option>
             @endforeach
           </select>
-          @error('kelas')
-            <p style="font-size:11px; color:#ef4444;
-                      margin:4px 0 0;">{{ $message }}</p>
-          @enderror
         </div>
       </div>
 
-      {{-- Nama Siswa --}}
       <div style="margin-bottom:14px;">
         <label style="display:block; font-size:11px;
                       font-weight:500; color:#6b7280;
                       text-transform:uppercase;
-                      letter-spacing:0.05em; margin-bottom:4px;">
-          Nama Siswa <span style="color:#ef4444;">*</span>
+                      letter-spacing:0.05em;
+                      margin-bottom:4px;">
+          Nama Siswa *
         </label>
-        <input type="text" name="nama"
-          value="{{ old('nama') }}"
-          placeholder="Nama lengkap siswa"
+        <input type="text" id="editNama" name="nama"
           style="width:100%; font-size:13px;
-                 border:1px solid #e5e7eb; border-radius:8px;
-                 padding:8px 12px; height:36px;
-                 box-sizing:border-box; outline:none;">
-        @error('nama')
-          <p style="font-size:11px; color:#ef4444;
-                    margin:4px 0 0;">{{ $message }}</p>
-        @enderror
+                 border:1px solid #e5e7eb;
+                 border-radius:8px; padding:8px 12px;
+                 height:36px; box-sizing:border-box;
+                 outline:none;">
       </div>
 
-      {{-- Nama Orang Tua --}}
       <div style="margin-bottom:14px;">
         <label style="display:block; font-size:11px;
                       font-weight:500; color:#6b7280;
                       text-transform:uppercase;
-                      letter-spacing:0.05em; margin-bottom:4px;">
-          Nama Orang Tua <span style="color:#ef4444;">*</span>
+                      letter-spacing:0.05em;
+                      margin-bottom:4px;">
+          Nama Orang Tua *
         </label>
-        <input type="text" name="nama_orangtua"
-          value="{{ old('nama_orangtua') }}"
-          placeholder="Nama lengkap orang tua / wali"
+        <input type="text" id="editNamaOrtu"
+          name="nama_orangtua"
           style="width:100%; font-size:13px;
-                 border:1px solid #e5e7eb; border-radius:8px;
-                 padding:8px 12px; height:36px;
-                 box-sizing:border-box; outline:none;">
-        @error('nama_orangtua')
-          <p style="font-size:11px; color:#ef4444;
-                    margin:4px 0 0;">{{ $message }}</p>
-        @enderror
+                 border:1px solid #e5e7eb;
+                 border-radius:8px; padding:8px 12px;
+                 height:36px; box-sizing:border-box;
+                 outline:none;">
       </div>
 
-      {{-- Jenis Kelamin + No Telepon (2 kolom) --}}
       <div style="display:grid;
                   grid-template-columns:1fr 1fr;
-                  gap:14px; margin-bottom:14px;">
+                  gap:12px; margin-bottom:14px;">
         <div>
           <label style="display:block; font-size:11px;
                         font-weight:500; color:#6b7280;
                         text-transform:uppercase;
-                        letter-spacing:0.05em; margin-bottom:4px;">
+                        letter-spacing:0.05em;
+                        margin-bottom:4px;">
             Jenis Kelamin
           </label>
-          <select name="jenis_kelamin"
+          <select id="editJK" name="jenis_kelamin"
             style="width:100%; font-size:13px;
-                   border:1px solid #e5e7eb; border-radius:8px;
-                   padding:0 12px; height:36px;
-                   box-sizing:border-box; outline:none;
-                   background:white;">
+                   border:1px solid #e5e7eb;
+                   border-radius:8px; padding:0 12px;
+                   height:36px; box-sizing:border-box;
+                   outline:none; background:white;">
             <option value="">-- Pilih --</option>
-            <option value="L"
-              {{ old('jenis_kelamin')=='L' ? 'selected':'' }}>
-              Laki-laki
-            </option>
-            <option value="P"
-              {{ old('jenis_kelamin')=='P' ? 'selected':'' }}>
-              Perempuan
-            </option>
+            <option value="L">Laki-laki</option>
+            <option value="P">Perempuan</option>
           </select>
         </div>
 
@@ -560,59 +802,71 @@
           <label style="display:block; font-size:11px;
                         font-weight:500; color:#6b7280;
                         text-transform:uppercase;
-                        letter-spacing:0.05em; margin-bottom:4px;">
-            No. Telepon Orang Tua
+                        letter-spacing:0.05em;
+                        margin-bottom:4px;">
+            No. Telepon Ortu
           </label>
-          <input type="text" name="no_telepon"
-            value="{{ old('no_telepon') }}"
-            maxlength="15" placeholder="08xxxxxxxxxx"
-            oninput="this.value=this.value.replace(/[^0-9\+\-]/g,'')"
+          <input type="text" id="editTelp"
+            name="no_telepon" maxlength="15"
+            oninput="this.value=
+              this.value.replace(/[^0-9\+\-]/g,'')"
             style="width:100%; font-size:13px;
-                   border:1px solid #e5e7eb; border-radius:8px;
-                   padding:8px 12px; height:36px;
-                   box-sizing:border-box; outline:none;">
-          @error('no_telepon')
-            <p style="font-size:11px; color:#ef4444;
-                      margin:4px 0 0;">{{ $message }}</p>
-          @enderror
+                   border:1px solid #e5e7eb;
+                   border-radius:8px; padding:8px 12px;
+                   height:36px; box-sizing:border-box;
+                   outline:none;">
         </div>
       </div>
 
-      {{-- Alamat --}}
-      <div style="margin-bottom:20px;">
+      <div style="margin-bottom:14px;">
         <label style="display:block; font-size:11px;
                       font-weight:500; color:#6b7280;
                       text-transform:uppercase;
-                      letter-spacing:0.05em; margin-bottom:4px;">
+                      letter-spacing:0.05em;
+                      margin-bottom:4px;">
           Alamat
-          <span style="text-transform:none; color:#9ca3af;">
-            (opsional)
-          </span>
         </label>
-        <textarea name="alamat" rows="2"
-          placeholder="Alamat lengkap siswa..."
+        <textarea id="editAlamat" name="alamat"
+          rows="2"
           style="width:100%; font-size:13px;
-                 border:1px solid #e5e7eb; border-radius:8px;
-                 padding:8px 12px; resize:none;
-                 box-sizing:border-box; outline:none;">{{ old('alamat') }}</textarea>
+                 border:1px solid #e5e7eb;
+                 border-radius:8px; padding:8px 12px;
+                 resize:none; box-sizing:border-box;
+                 outline:none;"></textarea>
       </div>
 
-      {{-- Footer Tombol --}}
-      <div style="display:flex; gap:8px; padding-top:16px;
+      <div style="margin-bottom:20px;
+                  display:flex; align-items:center;
+                  gap:8px;">
+        <input type="checkbox" id="editIsActive"
+          name="is_active" value="1"
+          style="width:16px; height:16px;
+                 cursor:pointer; accent-color:#1D9E75;">
+        <label for="editIsActive"
+          style="font-size:13px; color:#374151;
+                 cursor:pointer;">
+          Siswa masih aktif
+        </label>
+      </div>
+
+      <div style="display:flex; gap:8px;
+                  padding-top:16px;
                   border-top:1px solid #f3f4f6;">
-        <button type="button"
-          onclick="tutupModal('tambah')"
+        <button type="button" id="btnBatalEdit"
           style="flex:1; font-size:13px;
-                 border:1px solid #e5e7eb; background:white;
-                 color:#6b7280; border-radius:8px;
-                 padding:9px; cursor:pointer;">
+                 border:1px solid #e5e7eb;
+                 background:white; color:#6b7280;
+                 border-radius:8px; padding:9px;
+                 cursor:pointer;">
           Batal
         </button>
         <button type="submit"
-          style="flex:1; font-size:13px; background:#1D9E75;
-                 color:white; border:none; border-radius:8px;
-                 padding:9px; cursor:pointer; font-weight:500;">
-          Simpan Data Siswa
+          style="flex:1; font-size:13px;
+                 background:#1D9E75; color:white;
+                 border:none; border-radius:8px;
+                 padding:9px; cursor:pointer;
+                 font-weight:500;">
+          Simpan Perubahan
         </button>
       </div>
     </form>
@@ -620,3 +874,131 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+  var mTambah = document.getElementById('modalTambahSiswa');
+  var mEdit   = document.getElementById('modalEditSiswa');
+
+  function buka(el) {
+    el.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+  function tutup(el) {
+    el.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  // Tombol buka modal tambah (dari header)
+  var btnTambah = document.getElementById('btnTambahSiswa');
+  if (btnTambah) {
+    btnTambah.addEventListener('click', function() {
+      buka(mTambah);
+    });
+  }
+
+  // Tombol buka modal tambah (dari tabel kosong)
+  var btnTambahEmpty = document.getElementById('btnTambahSiswaEmpty');
+  if (btnTambahEmpty) {
+    btnTambahEmpty.addEventListener('click', function() {
+      buka(mTambah);
+    });
+  }
+
+  // Tombol tutup modal tambah
+  document.getElementById('closeTambah')
+    .addEventListener('click', function() {
+      tutup(mTambah);
+    });
+  document.getElementById('btnBatalTambah')
+    .addEventListener('click', function() {
+      tutup(mTambah);
+    });
+  document.getElementById('backdropTambah')
+    .addEventListener('click', function() {
+      tutup(mTambah);
+    });
+
+  // Tombol tutup modal edit
+  document.getElementById('closeEdit')
+    .addEventListener('click', function() {
+      tutup(mEdit);
+    });
+  document.getElementById('btnBatalEdit')
+    .addEventListener('click', function() {
+      tutup(mEdit);
+    });
+  document.getElementById('backdropEdit')
+    .addEventListener('click', function() {
+      tutup(mEdit);
+    });
+
+  // Tutup dengan ESC
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      tutup(mTambah);
+      tutup(mEdit);
+    }
+  });
+
+  // Auto buka tambah jika ada error validasi
+  @if($errors->any())
+    buka(mTambah);
+  @endif
+
+  // Auto hide flash message 4 detik
+  var alert = document.getElementById('alertSuccess');
+  if (alert) {
+    setTimeout(function() {
+      alert.style.transition = 'opacity 0.5s';
+      alert.style.opacity = '0';
+      setTimeout(function() { alert.remove(); }, 500);
+    }, 4000);
+  }
+
+});
+
+// Fungsi isi & buka modal edit (dipanggil dari tombol tabel)
+function bukaModalEdit(id, nik, nama, namaOrtu,
+  kelas, jk, telp, alamat, isActive) {
+
+  var form = document.getElementById('formEditSiswa');
+  form.action = '/admin/siswa/' + id;
+
+  document.getElementById('editNik').value    = nik;
+  document.getElementById('editNama').value   = nama;
+  document.getElementById('editNamaOrtu').value = namaOrtu;
+  document.getElementById('editTelp').value   = telp  || '';
+  document.getElementById('editAlamat').value = alamat || '';
+  document.getElementById('editIsActive').checked = isActive;
+
+  var selK = document.getElementById('editKelas');
+  for (var i = 0; i < selK.options.length; i++) {
+    selK.options[i].selected =
+      (selK.options[i].value === kelas);
+  }
+
+  var selJK = document.getElementById('editJK');
+  for (var j = 0; j < selJK.options.length; j++) {
+    selJK.options[j].selected =
+      (selJK.options[j].value === jk);
+  }
+
+  var mEdit = document.getElementById('modalEditSiswa');
+  mEdit.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+// Fungsi konfirmasi hapus
+function konfirmasiHapus(id, nama) {
+  if (confirm(
+    'Hapus data siswa "' + nama + '"?\n\n' +
+    'Data akan dihapus sementara.'
+  )) {
+    document.getElementById('formHapus' + id).submit();
+  }
+}
+</script>
+@endpush
