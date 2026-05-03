@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\TransaksiController;
 use App\Http\Controllers\Admin\PengeluaranController;
 use App\Http\Controllers\Admin\PemasukanController;
 use App\Http\Controllers\Admin\ApprovalController;
+use App\Http\Controllers\Admin\SiswaController;
 use App\Http\Controllers\Kepsek\DashboardKepsekController;
 
 // Home route: redirect based on guard
@@ -48,6 +49,14 @@ Route::middleware(['auth.admin'])->prefix('admin')->name('admin.')->group(functi
     Route::resource('transaksi', TransaksiController::class)->only(['index', 'create', 'store']);
     Route::resource('pemasukan', PemasukanController::class)->only(['index', 'create', 'store']);
     Route::resource('pengeluaran', PengeluaranController::class)->only(['index', 'create', 'store']);
+    Route::resource('siswa', SiswaController::class)
+        ->only(['index', 'store', 'update', 'destroy'])
+        ->names([
+            'index'   => 'admin.siswa.index',
+            'store'   => 'admin.siswa.store',
+            'update'  => 'admin.siswa.update',
+            'destroy' => 'admin.siswa.destroy',
+        ]);
 });
 
 // Kepsek routes (protected by auth.kepsek middleware)
