@@ -44,97 +44,42 @@
 </div>
 
 {{-- STAT CARDS --}}
-<div style="display:grid; grid-template-columns:repeat(3,1fr);
-            gap:12px; margin-bottom:16px;">
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:24px;">
 
   <div style="background:white; border:1px solid #f3f4f6;
               border-radius:12px; padding:16px;">
-    <div style="display:flex; align-items:center;
-                justify-content:space-between; 
-                margin-bottom:10px;">
-      <div style="background:#eff6ff; border-radius:8px;
-                  width:32px; height:32px; display:flex;
-                  align-items:center; justify-content:center;">
-        <svg width="16" height="16" viewBox="0 0 24 24"
-          fill="none" stroke="#2563eb" stroke-width="2">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5
-                   a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
-      </div>
-      <span style="font-size:10px; font-weight:500;
-                   background:#eff6ff; color:#2563eb;
-                   padding:2px 8px; border-radius:10px;">
-        Total
-      </span>
-    </div>
-    <div style="font-size:22px; font-weight:500;
-                color:#1f2937;">
-      {{ $total_siswa }}
-    </div>
-    <div style="font-size:11px; color:#9ca3af; margin-top:2px;">
+    <p style="font-size:11px; color:#9ca3af;
+              text-transform:uppercase; letter-spacing:0.05em;
+              margin:0 0 8px;">
       Total Siswa
-    </div>
+    </p>
+    <p style="font-size:18px; font-weight:600; color:#1f2937; margin:0;">
+      {{ $total_siswa }}
+    </p>
   </div>
 
   <div style="background:white; border:1px solid #f3f4f6;
               border-radius:12px; padding:16px;">
-    <div style="display:flex; align-items:center;
-                justify-content:space-between;
-                margin-bottom:10px;">
-      <div style="background:#f0fdf4; border-radius:8px;
-                  width:32px; height:32px; display:flex;
-                  align-items:center; justify-content:center;">
-        <svg width="16" height="16" viewBox="0 0 24 24"
-          fill="none" stroke="#16a34a" stroke-width="2">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-      </div>
-      <span style="font-size:10px; font-weight:500;
-                   background:#f0fdf4; color:#16a34a;
-                   padding:2px 8px; border-radius:10px;">
-        Aktif
-      </span>
-    </div>
-    <div style="font-size:22px; font-weight:500;
-                color:#1f2937;">
-      {{ $total_aktif }}
-    </div>
-    <div style="font-size:11px; color:#9ca3af; margin-top:2px;">
+    <p style="font-size:11px; color:#9ca3af;
+              text-transform:uppercase; letter-spacing:0.05em;
+              margin:0 0 8px;">
       Siswa Aktif
-    </div>
+    </p>
+    <p style="font-size:18px; font-weight:600; color:#16a34a; margin:0;">
+      {{ $total_aktif }}
+    </p>
   </div>
 
   <div style="background:white; border:1px solid #f3f4f6;
               border-radius:12px; padding:16px;">
-    <div style="display:flex; align-items:center;
-                justify-content:space-between;
-                margin-bottom:10px;">
-      <div style="background:#f9fafb; border-radius:8px;
-                  width:32px; height:32px; display:flex;
-                  align-items:center; justify-content:center;">
-        <svg width="16" height="16" viewBox="0 0 24 24"
-          fill="none" stroke="#6b7280" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="15" y1="9" x2="9" y2="15"/>
-          <line x1="9" y1="9" x2="15" y2="15"/>
-        </svg>
-      </div>
-      <span style="font-size:10px; font-weight:500;
-                   background:#f9fafb; color:#6b7280;
-                   padding:2px 8px; border-radius:10px;">
-        Non-Aktif
-      </span>
-    </div>
-    <div style="font-size:22px; font-weight:500;
-                color:#1f2937;">
-      {{ $total_nonaktif }}
-    </div>
-    <div style="font-size:11px; color:#9ca3af; margin-top:2px;">
+    <p style="font-size:11px; color:#9ca3af;
+              text-transform:uppercase; letter-spacing:0.05em;
+              margin:0 0 8px;">
       Siswa Non-Aktif
-    </div>
+    </p>
+    <p style="font-size:18px; font-weight:600; color:#6b7280; margin:0;">
+      {{ $total_nonaktif }}
+    </p>
   </div>
 
 </div>
@@ -242,21 +187,31 @@
     </thead>
     <tbody>
       @forelse($siswas as $index => $siswa)
-      <tr style="border-bottom:1px solid #f9fafb;"
-          onmouseover="this.style.background='#fafafa'"
+      <tr style="border-bottom:1px solid #f3f4f6; cursor:pointer;"
+          class="siswa-row"
+          data-id="{{ $siswa->id }}"
+          data-nik="{{ $siswa->nik }}"
+          data-nama="{{ $siswa->nama }}"
+          data-nama-orangtua="{{ $siswa->nama_orangtua }}"
+          data-kelas="{{ $siswa->kelas }}"
+          data-jenis-kelamin="{{ $siswa->jenis_kelamin }}"
+          data-no-telepon="{{ $siswa->no_telepon ?? '' }}"
+          data-alamat="{{ $siswa->alamat ?? '' }}"
+          data-is-active="{{ $siswa->is_active ? 'true' : 'false' }}"
+          onmouseover="this.style.background='#f9fafb'"
           onmouseout="this.style.background='white'">
 
         <td style="font-size:12px; color:#9ca3af;
-                   padding:10px 16px;">
+                   padding:12px 16px;">
           {{ $siswas->firstItem() + $index }}
         </td>
 
         <td style="font-size:12px; color:#1f2937;
-                   padding:10px 16px; font-family:monospace;">
+                   padding:12px 16px; font-family:monospace;">
           {{ $siswa->nik }}
         </td>
 
-        <td style="padding:10px 16px;">
+        <td style="padding:12px 16px;">
           <div style="font-size:13px; font-weight:500;
                       color:#1f2937;">
             {{ $siswa->nama }}
@@ -267,72 +222,78 @@
         </td>
 
         <td style="font-size:12px; color:#6b7280;
-                   padding:10px 16px;">
+                   padding:12px 16px;">
           {{ $siswa->nama_orangtua }}
         </td>
 
-        <td style="padding:10px 16px;">
+        <td style="padding:12px 16px;">
           <span style="font-size:11px; font-weight:500;
                        background:#eff6ff; color:#2563eb;
-                       padding:2px 10px; border-radius:10px;">
+                       padding:4px 10px; border-radius:6px;
+                       display:inline-block;">
             {{ $siswa->kelas }}
           </span>
         </td>
 
         <td style="font-size:12px; color:#6b7280;
-                   padding:10px 16px;">
+                   padding:12px 16px;">
           {{ $siswa->no_telepon ?? '—' }}
         </td>
 
-        <td style="padding:10px 16px;">
+        <td style="padding:12px 16px;">
           @if($siswa->is_active)
             <span style="font-size:11px; font-weight:500;
-                         background:#f0fdf4; color:#16a34a;
-                         padding:2px 10px; border-radius:10px;">
+                         background:#d1fae5; color:#065f46;
+                         padding:4px 10px; border-radius:6px;
+                         display:inline-block;">
               Aktif
             </span>
           @else
             <span style="font-size:11px; font-weight:500;
-                         background:#f9fafb; color:#6b7280;
-                         padding:2px 10px; border-radius:10px;">
+                         background:#f3f4f6; color:#6b7280;
+                         padding:4px 10px; border-radius:6px;
+                         display:inline-block;">
               Non-Aktif
             </span>
           @endif
         </td>
 
-        <td style="padding:10px 16px;">
+        <td style="padding:12px 16px;">
           <div style="display:flex; gap:6px;">
 
             {{-- Tombol Edit --}}
             <button
-              onclick="bukaModalEdit(
+              class="btn-edit-action"
+              onclick="event.stopPropagation(); bukaModalEdit(
                 '{{ $siswa->id }}',
                 '{{ $siswa->nik }}',
-                '{{ $siswa->nama }}',
-                '{{ $siswa->nama_orangtua }}',
+                '{{ addslashes($siswa->nama) }}',
+                '{{ addslashes($siswa->nama_orangtua) }}',
                 '{{ $siswa->kelas }}',
                 '{{ $siswa->jenis_kelamin }}',
                 '{{ $siswa->no_telepon }}',
-                '{{ $siswa->alamat }}',
+                '{{ addslashes($siswa->alamat ?? '') }}',
                 {{ $siswa->is_active ? 'true' : 'false' }}
               )"
-              style="font-size:11px; padding:4px 12px;
+              style="font-size:11px; padding:6px 12px;
                      border-radius:6px; cursor:pointer;
                      border:1px solid #e5e7eb;
-                     background:white; color:#374151;">
+                     background:white; color:#374151;
+                     transition:all 0.2s;">
               Edit
             </button>
 
             {{-- Tombol Hapus --}}
             <button
-              onclick="konfirmasiHapus(
+              onclick="event.stopPropagation(); konfirmasiHapus(
                 '{{ $siswa->id }}',
                 '{{ $siswa->nama }}'
               )"
-              style="font-size:11px; padding:4px 12px;
+              style="font-size:11px; padding:6px 12px;
                      border-radius:6px; cursor:pointer;
                      border:1px solid #fecaca;
-                     background:#fff5f5; color:#dc2626;">
+                     background:#fff5f5; color:#dc2626;
+                     transition:all 0.2s;">
               Hapus
             </button>
 
@@ -351,7 +312,7 @@
       @empty
       <tr>
         <td colspan="8" style="text-align:center;
-                                padding:40px 16px;">
+                                padding:48px 16px;">
           <div style="color:#9ca3af; font-size:13px;">
             Belum ada data siswa
           </div>
@@ -370,9 +331,25 @@
 
   {{-- Pagination --}}
   @if($siswas->hasPages())
-  <div style="padding:12px 16px; 
-              border-top:1px solid #f9fafb;">
-    {{ $siswas->withQueryString()->links() }}
+  <div style="padding:16px; border-top:1px solid #f3f4f6;
+              display:flex; justify-content:space-between;
+              align-items:center;">
+    <p style="font-size:12px; color:#9ca3af; margin:0;">
+      Menampilkan {{ $siswas->firstItem() }} - {{ $siswas->lastItem() }} dari {{ $siswas->total() }} data
+    </p>
+    <div style="display:flex; gap:4px;">
+      @if($siswas->onFirstPage())
+        <button style="padding:6px 10px; border:1px solid #e5e7eb; background:white; color:#9ca3af; border-radius:4px; cursor:not-allowed; font-size:12px;" disabled>← Sebelumnya</button>
+      @else
+        <a href="{{ $siswas->previousPageUrl() }}" style="padding:6px 10px; border:1px solid #e5e7eb; background:white; color:#1f2937; border-radius:4px; cursor:pointer; font-size:12px; text-decoration:none;">← Sebelumnya</a>
+      @endif
+
+      @if($siswas->hasMorePages())
+        <a href="{{ $siswas->nextPageUrl() }}" style="padding:6px 10px; border:1px solid #e5e7eb; background:white; color:#1f2937; border-radius:4px; cursor:pointer; font-size:12px; text-decoration:none;">Selanjutnya →</a>
+      @else
+        <button style="padding:6px 10px; border:1px solid #e5e7eb; background:white; color:#9ca3af; border-radius:4px; cursor:not-allowed; font-size:12px;" disabled>Selanjutnya →</button>
+      @endif
+    </div>
   </div>
   @endif
 </div>
@@ -957,6 +934,31 @@ document.addEventListener('DOMContentLoaded', function() {
       setTimeout(function() { alert.remove(); }, 500);
     }, 4000);
   }
+
+  // ─── Click row untuk edit modal ──────────────
+  var siswaRows = document.querySelectorAll('.siswa-row');
+  siswaRows.forEach(function(row) {
+    row.addEventListener('click', function(e) {
+      // Jangan trigger jika klik tombol aksi
+      if (e.target.closest('button') || 
+          e.target.closest('.btn-edit-action')) {
+        return;
+      }
+      
+      var id = this.dataset.id;
+      var nik = this.dataset.nik;
+      var nama = this.dataset.nama;
+      var namaOrangtua = this.dataset['nama-orangtua'];
+      var kelas = this.dataset.kelas;
+      var jk = this.dataset['jenis-kelamin'];
+      var telp = this.dataset['no-telepon'];
+      var alamat = this.dataset.alamat;
+      var isActive = this.dataset['is-active'] === 'true';
+      
+      bukaModalEdit(id, nik, nama, namaOrangtua, 
+                    kelas, jk, telp, alamat, isActive);
+    });
+  });
 
 });
 
