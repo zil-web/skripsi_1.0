@@ -22,7 +22,9 @@ class PemasukanController extends Controller
      */
     public function index(Request $request)
     {
+        $userId = Auth::id();
         $query = Transaksi::where('jenis', 'pemasukan')
+            ->where('id_admin', $userId)
             ->with('siswa')
             ->orderByDesc('tanggal');
 
@@ -45,17 +47,22 @@ class PemasukanController extends Controller
             $query->where('keterangan', 'like', '%' . $request->search . '%');
         }
 
-        $transaksis = $query->paginate(10);
+        // Paginate results
+        $pemasukkans = $query->paginate(10)->withQueryString();
 
-        // Calculate total pemasukan (only approved)
-        $total_pemasukan = Transaksi::where('jenis', 'pemasukan')
-            ->where('status', 'approved')
-            ->sum('jumlah');
+        // Calculate total pemasukan (all, regardless of status)
+        $totalPemasukan = $query->clone()->sum('jumlah');
+
+        // Calculate pending amount
+        $totalPending = $query->clone()->where('status', 'pending')->sum('jumlah');
+
+        // Calculate approved amount
+        $totalApproved = $query->clone()->where('status', 'approved')->sum('jumlah');
 
         // Get siswas for modal form
         $siswas = Siswa::select('id', 'nama', 'kelas')->get();
 
-        return view('admin.pemasukan.index', compact('transaksis', 'total_pemasukan', 'siswas'));
+        return view('admin.pemasukan.index', compact('pemasukkans', 'totalPemasukan', 'totalPending', 'totalApproved', 'siswas'));
     }
 
     /**
