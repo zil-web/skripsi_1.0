@@ -37,13 +37,13 @@
         $statsRejected = (clone $query)->where('status', 'rejected')->count();
     @endphp
 
-    <div class="space-y-4" x-data="{ showFlash: true, modalOpen: {{ $errors->any() ? 'true' : 'false' }} }" @keydown.escape.window="modalOpen = false">
+    <div class="space-y-4" x-data="{ showFlash: true }" @keydown.escape.window="document.getElementById('modalTambahPengeluaran')?.classList.add('hidden')">
         <div class="flex items-start justify-between gap-4">
             <div>
                 <h1 class="text-base font-medium text-gray-800">Pengeluaran</h1>
                 <p class="text-xs text-gray-400 mt-0.5">Kelola semua data pengeluaran sekolah</p>
             </div>
-            <button @click="modalOpen = true" class="inline-flex items-center gap-2 bg-[#1D9E75] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#0F6E56] transition-colors">
+            <button id="btnTambahPengeluaran" class="inline-flex items-center gap-2 bg-[#1D9E75] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#0F6E56] transition-colors">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 <span>Tambah Pengeluaran</span>
             </button>
@@ -195,182 +195,241 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 <h3 class="text-sm text-gray-400 mb-2">Tidak ada data pengeluaran</h3>
-                <button @click="modalOpen = true" class="inline-flex items-center gap-2 bg-[#1D9E75] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#0F6E56]">+ Tambah Pengeluaran</button>
+                <button id="btnTambahPengeluaranEmpty" class="inline-flex items-center gap-2 bg-[#1D9E75] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#0F6E56]">+ Tambah Pengeluaran</button>
             </div>
         @endif
     </div>
 
     <!-- MODAL TAMBAH PENGELUARAN -->
-    <div x-show="modalOpen" class="fixed inset-0 z-50" @click="modalOpen = false" style="display: none;">
+    <div id="modalTambahPengeluaran" class="hidden fixed inset-0 z-[999] flex items-center justify-center">
         <!-- Backdrop -->
-        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 bg-black/40"></div>
 
         <!-- Modal Box -->
-        <div class="fixed inset-0 flex items-center justify-center p-4" @click.stop>
-            <div x-show="modalOpen" x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="bg-white rounded-2xl w-full max-w-lg shadow-xl" @click.stop>
-                <!-- Header -->
-                <div class="flex items-start justify-between gap-4 p-6 border-b border-gray-100">
-                    <div>
-                        <h2 class="text-base font-semibold text-gray-800">Tambah Pengeluaran</h2>
-                        <p class="text-xs text-gray-500 mt-1">Isi form di bawah untuk menambah transaksi pengeluaran baru</p>
-                    </div>
-                    <button @click="modalOpen = false" class="text-gray-400 hover:bg-gray-100 rounded-lg p-1.5 transition-colors">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto z-[1000]">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <h2 class="text-base font-semibold text-gray-800">Tambah Pengeluaran</h2>
+                <button class="btnClosePengeluaran text-gray-400 hover:bg-gray-100 rounded-lg p-1.5 transition-colors">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <form method="POST" action="{{ route('admin.pengeluaran.store') }}" enctype="multipart/form-data" class="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+                @csrf
+
+                <!-- Tanggal -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal</label>
+                    <input type="date" name="tanggal" value="{{ old('tanggal', now()->format('Y-m-d')) }}" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent" required>
+                    @error('tanggal')
+                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
-                <!-- Content -->
-                <form method="POST" action="{{ route('admin.pengeluaran.store') }}" enctype="multipart/form-data" x-data="formData()" class="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
-                    @csrf
-
-                    <!-- Tanggal -->
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal</label>
-                        <input type="date" name="tanggal" value="{{ old('tanggal', now()->format('Y-m-d')) }}" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent" required>
-                        @error('tanggal')
-                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                        @enderror
+                <!-- Jumlah -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-sm text-gray-500">Rp</span>
+                        <input type="text" id="inputRupiahPengeluaran" placeholder="0" class="w-full text-sm border border-gray-200 rounded-lg pl-8 pr-3 py-2.5 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent">
+                        <input type="hidden" name="jumlah" id="inputRupiahRawPengeluaran">
                     </div>
+                    @error('jumlah')
+                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
 
-                    <!-- Jumlah -->
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah</label>
-                        <div class="flex gap-2">
-                            <div class="flex-1 relative">
-                                <span class="absolute left-3 top-2.5 text-sm text-gray-500">Rp</span>
-                                <input type="text" x-model="rupiah.display" @input="rupiah.format()" placeholder="0" class="w-full text-sm border border-gray-200 rounded-lg pl-8 pr-3 py-2.5 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent">
-                                <input type="hidden" name="jumlah" x-model="rupiah.raw">
+                <!-- Keterangan -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Keterangan <span class="text-xs text-gray-400">(<span id="charCountPengeluaran">0</span>/500)</span></label>
+                    <textarea name="keterangan" id="inputKeteranganPengeluaran" maxlength="500" rows="3" placeholder="Deskripsi pengeluaran..." class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent resize-none">{{ old('keterangan') }}</textarea>
+                    @error('keterangan')
+                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Siswa -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Siswa <span class="text-xs text-gray-400">(Opsional)</span></label>
+                    <select name="id_siswa" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent">
+                        <option value="">-- Pilih Siswa --</option>
+                        @foreach($siswas as $siswa)
+                            <option value="{{ $siswa->id }}" {{ old('id_siswa') == $siswa->id ? 'selected' : '' }}>{{ $siswa->nama }} ({{ $siswa->kelas }})</option>
+                        @endforeach
+                    </select>
+                    @error('id_siswa')
+                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Upload Bukti -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Upload Bukti <span class="text-xs text-gray-400">(Opsional)</span></label>
+                    <div class="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:border-[#1D9E75] transition-colors" id="dropZonePengeluaran">
+                        <input type="file" id="inputFilePengeluaran" class="hidden" accept="image/*,.pdf" name="bukti_transaksi">
+                        
+                        <div id="emptyStatePengeluaran">
+                            <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            <p class="text-sm text-gray-600">Drag atau klik untuk upload file</p>
+                            <p class="text-xs text-gray-400 mt-1">Gambar atau PDF</p>
+                        </div>
+
+                        <div id="previewStatePengeluaran" style="display: none;">
+                            <img id="imgPreviewPengeluaran" style="display: none;" class="h-20 mx-auto mb-2 rounded">
+                            <div id="pdfPreviewPengeluaran" style="display: none;" class="w-10 h-10 bg-red-50 rounded mx-auto mb-2 flex items-center justify-center">
+                                <span class="text-xs text-red-600 font-medium">PDF</span>
                             </div>
+                            <p class="text-sm font-medium text-gray-800" id="fileNamePengeluaran"></p>
+                            <button type="button" class="text-xs text-red-500 hover:text-red-700 mt-2" id="btnClearFilePengeluaran">Hapus File</button>
                         </div>
-                        @if($errors->has('jumlah'))
-                            <p class="text-xs text-red-500 mt-1">{{ $errors->first('jumlah') }}</p>
-                        @endif
                     </div>
+                    @error('bukti_transaksi')
+                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
 
-                    <!-- Keterangan -->
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Keterangan <span class="text-xs text-gray-400">(<span x-text="keterangan.length"></span>/500)</span></label>
-                        <textarea name="keterangan" x-model="keterangan" maxlength="500" rows="3" placeholder="Deskripsi pengeluaran..." class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent resize-none"></textarea>
-                        @error('keterangan')
-                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+                <!-- Hidden Inputs -->
+                <input type="hidden" name="status" value="pending">
+                <input type="hidden" name="jenis" value="pengeluaran">
 
-                    <!-- Siswa -->
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Siswa <span class="text-xs text-gray-400">(Opsional)</span></label>
-                        <select name="id_siswa" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent">
-                            <option value="">-- Pilih Siswa --</option>
-                            @foreach($siswas as $siswa)
-                                <option value="{{ $siswa->id }}" {{ old('id_siswa') == $siswa->id ? 'selected' : '' }}>{{ $siswa->nama }} ({{ $siswa->kelas }})</option>
-                            @endforeach
-                        </select>
-                        @error('id_siswa')
-                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Upload Bukti -->
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Upload Bukti <span class="text-xs text-gray-400">(Opsional)</span></label>
-                        <div x-data="fileUpload()" class="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:border-[#1D9E75] transition-colors"
-                             @dragover.prevent="$el.classList.add('border-[#1D9E75]', 'bg-emerald-50')"
-                             @dragleave.prevent="$el.classList.remove('border-[#1D9E75]', 'bg-emerald-50')"
-                             @drop.prevent="handleDrop($event); $el.classList.remove('border-[#1D9E75]', 'bg-emerald-50')">
-                            
-                            <input type="file" @change="handleFile($event)" x-ref="fileInput" class="hidden" accept="image/*,.pdf" name="bukti_transaksi">
-
-                            <template x-if="!preview">
-                                <div @click="$refs.fileInput.click()" class="py-3">
-                                    <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                    </svg>
-                                    <p class="text-sm text-gray-600">Drag atau klik untuk upload file</p>
-                                    <p class="text-xs text-gray-400 mt-1">Gambar atau PDF</p>
-                                </div>
-                            </template>
-
-                            <template x-if="preview">
-                                <div class="py-3">
-                                    <template x-if="isImage">
-                                        <img :src="preview" class="h-20 mx-auto mb-2 rounded">
-                                    </template>
-                                    <template x-if="!isImage">
-                                        <div class="w-10 h-10 bg-red-50 rounded mx-auto mb-2 flex items-center justify-center">
-                                            <span class="text-xs text-red-600 font-medium">PDF</span>
-                                        </div>
-                                    </template>
-                                    <p class="text-sm font-medium text-gray-800" x-text="fileName"></p>
-                                    <button type="button" @click="clearFile()" class="text-xs text-red-500 hover:text-red-700 mt-2">Hapus File</button>
-                                </div>
-                            </template>
-                        </div>
-                        @error('bukti_transaksi')
-                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Hidden Inputs -->
-                    <input type="hidden" name="status" value="pending">
-                    <input type="hidden" name="jenis" value="pengeluaran">
-
-                    <!-- Footer -->
-                    <div class="flex gap-2 pt-6 border-t border-gray-100">
-                        <button type="button" @click="modalOpen = false" class="flex-1 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg px-4 py-2 hover:bg-gray-50 transition-colors">Batal</button>
-                        <button type="submit" class="flex-1 text-sm font-medium text-white bg-[#1D9E75] rounded-lg px-4 py-2 hover:bg-[#0F6E56] transition-colors">Simpan</button>
-                    </div>
-                </form>
-            </div>
+                <!-- Footer -->
+                <div class="flex gap-2 pt-6 border-t border-gray-100">
+                    <button type="button" class="btnClosePengeluaran flex-1 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg px-4 py-2 hover:bg-gray-50 transition-colors">Batal</button>
+                    <button type="submit" class="flex-1 text-sm font-medium text-white bg-[#1D9E75] rounded-lg px-4 py-2 hover:bg-[#0F6E56] transition-colors">Simpan</button>
+                </div>
+            </form>
         </div>
     </div>
 
+    {{-- Auto open modal jika ada error validasi --}}
+    @if($errors->any())
     <script>
-        function formData() {
-            return {
-                rupiah: {
-                    display: '{{ old('jumlah') ? number_format(old('jumlah')) : '' }}',
-                    raw: '{{ old('jumlah') ?? '' }}',
-                    format() {
-                        let angka = this.display.replace(/\D/g, '');
-                        this.raw = angka;
-                        this.display = angka ? parseInt(angka).toLocaleString('id-ID') : '';
-                    }
-                },
-                keterangan: '{{ old('keterangan') ?? '' }}'
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('modalTambahPengeluaran').classList.remove('hidden');
+        });
+    </script>
+    @endif
+
+    @push('scripts')
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Modal control
+        const modal = document.getElementById('modalTambahPengeluaran');
+        const btnOpen = document.getElementById('btnTambahPengeluaran');
+        const btnOpenEmpty = document.getElementById('btnTambahPengeluaranEmpty');
+        const btnClose = document.querySelectorAll('.btnClosePengeluaran');
+
+        function openModal() {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        btnOpen?.addEventListener('click', openModal);
+        btnOpenEmpty?.addEventListener('click', openModal);
+        btnClose.forEach(btn => btn.addEventListener('click', closeModal));
+        
+        // Close on backdrop click
+        modal?.addEventListener('click', function(e) {
+            if (e.target === modal) closeModal();
+        });
+
+        // Close on ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                closeModal();
+            }
+        });
+
+        // Rupiah formatting
+        const inputRupiah = document.getElementById('inputRupiahPengeluaran');
+        const inputRupiahRaw = document.getElementById('inputRupiahRawPengeluaran');
+        inputRupiah?.addEventListener('input', function() {
+            let value = this.value.replace(/\D/g, '');
+            inputRupiahRaw.value = value;
+            this.value = value ? parseInt(value).toLocaleString('id-ID') : '';
+        });
+
+        // Character counter
+        const inputKeterangan = document.getElementById('inputKeteranganPengeluaran');
+        const charCount = document.getElementById('charCountPengeluaran');
+        inputKeterangan?.addEventListener('input', function() {
+            charCount.textContent = this.value.length;
+        });
+        charCount.textContent = inputKeterangan?.value.length || 0;
+
+        // File upload
+        const dropZone = document.getElementById('dropZonePengeluaran');
+        const inputFile = document.getElementById('inputFilePengeluaran');
+        const emptyState = document.getElementById('emptyStatePengeluaran');
+        const previewState = document.getElementById('previewStatePengeluaran');
+        const imgPreview = document.getElementById('imgPreviewPengeluaran');
+        const pdfPreview = document.getElementById('pdfPreviewPengeluaran');
+        const fileName = document.getElementById('fileNamePengeluaran');
+        const btnClearFile = document.getElementById('btnClearFilePengeluaran');
+
+        function handleFile(file) {
+            if (!file) return;
+            fileName.textContent = file.name;
+            emptyState.style.display = 'none';
+            previewState.style.display = 'block';
+
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imgPreview.src = e.target.result;
+                    imgPreview.style.display = 'block';
+                    pdfPreview.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                imgPreview.style.display = 'none';
+                pdfPreview.style.display = 'flex';
             }
         }
 
-        function fileUpload() {
-            return {
-                preview: null,
-                fileName: '',
-                isImage: false,
-                handleFile(event) {
-                    const file = event.target.files[0];
-                    if (!file) return;
-                    this.fileName = file.name;
-                    this.isImage = file.type.startsWith('image/');
-                    if (this.isImage) {
-                        const reader = new FileReader();
-                        reader.onload = e => this.preview = e.target.result;
-                        reader.readAsDataURL(file);
-                    } else {
-                        this.preview = 'pdf';
-                    }
-                },
-                handleDrop(event) {
-                    const file = event.dataTransfer.files[0];
-                    if (!file) return;
-                    this.$refs.fileInput.files = event.dataTransfer.files;
-                    this.handleFile({ target: { files: [file] } });
-                },
-                clearFile() {
-                    this.preview = null;
-                    this.fileName = '';
-                    this.isImage = false;
-                    this.$refs.fileInput.value = '';
-                }
+        dropZone?.addEventListener('click', () => inputFile.click());
+        inputFile?.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) handleFile(file);
+        });
+
+        dropZone?.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-[#1D9E75]', 'bg-emerald-50');
+        });
+
+        dropZone?.addEventListener('dragleave', () => {
+            dropZone.classList.remove('border-[#1D9E75]', 'bg-emerald-50');
+        });
+
+        dropZone?.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-[#1D9E75]', 'bg-emerald-50');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                inputFile.files = e.dataTransfer.files;
+                handleFile(file);
             }
-        }
+        });
+
+        btnClearFile?.addEventListener('click', (e) => {
+            e.preventDefault();
+            inputFile.value = '';
+            emptyState.style.display = 'block';
+            previewState.style.display = 'none';
+            imgPreview.src = '';
+            pdfPreview.style.display = 'none';
+        });
+    });
     </script>
+    @endpush
 @endsection
