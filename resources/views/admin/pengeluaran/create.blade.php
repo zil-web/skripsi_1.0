@@ -68,21 +68,22 @@
                     @enderror
                 </div>
 
-                <!-- Siswa (Optional) -->
+                <!-- Jenis Pengeluaran -->
                 <div class="mb-6">
-                    <label for="id_siswa" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Siswa <span class="text-gray-500 text-xs">(Opsional)</span>
+                    <label for="jenis_pengeluaran" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Jenis Pengeluaran <span class="text-red-500">*</span>
                     </label>
-                    <select id="id_siswa" name="id_siswa"
+                    <select id="jenis_pengeluaran" name="jenis_pengeluaran" required
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
-                        <option value="">-- Tidak ada --</option>
-                        @foreach ($siswas as $siswa)
-                            <option value="{{ $siswa->id }}" {{ old('id_siswa') == $siswa->id ? 'selected' : '' }}>
-                                {{ $siswa->nama }} ({{ $siswa->kelas }})
-                            </option>
-                        @endforeach
+                        <option value="">-- Pilih Jenis Pengeluaran --</option>
+                        <option value="ATK" {{ old('jenis_pengeluaran') === 'ATK' ? 'selected' : '' }}>ATK (Alat Tulis Kantor)</option>
+                        <option value="Konsumsi Harian" {{ old('jenis_pengeluaran') === 'Konsumsi Harian' ? 'selected' : '' }}>Konsumsi Harian</option>
+                        <option value="Pembelian Aset" {{ old('jenis_pengeluaran') === 'Pembelian Aset' ? 'selected' : '' }}>Pembelian Aset</option>
+                        <option value="Renovasi" {{ old('jenis_pengeluaran') === 'Renovasi' ? 'selected' : '' }}>Renovasi</option>
+                        <option value="Kegiatan Besar" {{ old('jenis_pengeluaran') === 'Kegiatan Besar' ? 'selected' : '' }}>Kegiatan Besar</option>
+                        <option value="Lain-lain" {{ old('jenis_pengeluaran') === 'Lain-lain' ? 'selected' : '' }}>Lain-lain</option>
                     </select>
-                    @error('id_siswa')
+                    @error('jenis_pengeluaran')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>

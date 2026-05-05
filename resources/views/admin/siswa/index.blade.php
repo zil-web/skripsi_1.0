@@ -85,7 +85,7 @@
 </div>
 
 {{-- FILTER BAR --}}
-<form method="GET" action="{{ route('admin.siswa.index') }}">
+<form method="GET" action="{{ route('admin.admin.siswa.index') }}">
 <div style="background:white; border:1px solid #f3f4f6;
             border-radius:12px; padding:14px 16px;
             margin-bottom:16px; display:flex;
@@ -133,7 +133,7 @@
     Filter
   </button>
 
-  <a href="{{ route('admin.siswa.index') }}"
+  <a href="{{ route('admin.admin.siswa.index') }}"
     style="background:white; color:#6b7280;
            border:1px solid #e5e7eb; border-radius:8px;
            padding:0 16px; height:36px; font-size:13px;
@@ -300,7 +300,7 @@
             {{-- Form hapus tersembunyi --}}
             <form id="formHapus{{ $siswa->id }}"
               method="POST"
-              action="{{ route('admin.siswa.destroy', $siswa) }}"
+              action="{{ route('admin.admin.siswa.destroy', $siswa) }}"
               style="display:none;">
               @csrf
               @method('DELETE')
@@ -401,7 +401,7 @@
 
     {{-- Form --}}
     <form method="POST"
-      action="{{ route('admin.siswa.store') }}"
+      action="{{ route('admin.admin.siswa.store') }}"
       style="padding:20px 24px;">
       @csrf
 
@@ -920,8 +920,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Auto buka tambah jika ada error validasi
-  @if($errors->any())
+  // Auto buka tambah jika ada error validasi atau dari menu
+  @if($errors->any() || request('open') === 'tambah')
     buka(mTambah);
   @endif
 

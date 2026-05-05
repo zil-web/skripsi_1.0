@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Siswa extends Model
@@ -32,6 +33,11 @@ class Siswa extends Model
     public function transaksis()
     {
         return $this->hasMany(Transaksi::class, 'id_siswa');
+    }
+
+    public function pemasukans(): HasMany
+    {
+        return $this->hasMany(Pemasukan::class, 'siswa_id');
     }
 
     // ── Accessor ─────────────────────────

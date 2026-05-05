@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StorePengeluaranRequest;
 use App\Models\AuditLog;
-use App\Models\Siswa;
-use App\Models\Transaksi;
+use App\Models\KepalaSekolah;
+use App\Models\Pengeluaran;
+use App\Notifications\PengeluaranPendingNotification;
+use App\Services\ApprovalService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,8 +31,7 @@ class PengeluaranController extends Controller
         $userId = Auth::id();
 
         // Base query: pengeluaran milik admin yang sedang login
-        $query = Transaksi::query()
-            ->where('jenis', 'pengeluaran')
+        $query = Pengeluaran::query()
             ->where('id_admin', $userId);
 
         // Filter by tanggal range (tanggal_dari, tanggal_sampai)
@@ -62,15 +62,11 @@ class PengeluaranController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        // Ambil daftar siswa untuk dropdown di modal form
-        $siswas = Siswa::select('id', 'nama', 'kelas')->get();
-
         return view('admin.pengeluaran.index', [
             'pengeluarans' => $pengeluarans,
             'totalPengeluaran' => $totalPengeluaran,
             'totalPending' => $totalPending,
             'totalApproved' => $totalApproved,
-            'siswas' => $siswas,
         ]);
     }
 
@@ -81,11 +77,7 @@ class PengeluaranController extends Controller
      */
     public function create()
     {
-        $siswas = Siswa::select('id', 'nama', 'kelas')->get();
-
-        return view('admin.pengeluaran.create', [
-            'siswas' => $siswas,
-        ]);
+        return view('admin.pengeluaran.create');
     }
 
     /**
@@ -98,15 +90,23 @@ class PengeluaranController extends Controller
      * 4. Simpan audit log dengan format: "Admin [nama] menambahkan pengeluaran..."
      * 5. Redirect dengan flash success message
      */
-    public function store(StorePengeluaranRequest $request)
+    public function store(Request $request)
     {
-        $validated = $request->validated();
+        $validated = $request->validate([
+            'tanggal' => ['required', 'date'],
+            'jumlah' => ['required', 'integer', 'min:1'],
+            'keterangan' => ['nullable', 'string', 'max:500'],
+            'jenis_pengeluaran' => ['required', 'in:ATK,Konsumsi Harian,Pembelian Aset,Renovasi,Kegiatan Besar,Lain-lain'],
+            'bukti_transaksi' => ['nullable', 'file', 'mimes:jpg,png,pdf', 'max:2048'],
+        ]);
+
         $userId = Auth::id();
         $admin = Auth::user();
+        $status = (new ApprovalService())->determineStatus($request->all(), $userId);
 
         try {
             // Gunakan database transaction untuk memastikan konsistensi data
-            DB::transaction(function () use ($validated, $userId, $admin) {
+            DB::transaction(function () use ($validated, $userId, $admin, $status) {
                 // 1. Upload bukti transaksi
                 $buktiPath = null;
                 if ($validated['bukti_transaksi'] ?? false) {
@@ -116,21 +116,21 @@ class PengeluaranController extends Controller
                 }
 
                 // 2. Simpan data transaksi
-                $transaksi = Transaksi::create([
+                $transaksi = Pengeluaran::create([
                     'tanggal' => $validated['tanggal'],
-                    'jenis' => 'pengeluaran',
+                    'jenis_transaksi' => $validated['jenis_pengeluaran'],
                     'jumlah' => $validated['jumlah'],
-                    'keterangan' => $validated['keterangan'],
+                    'keterangan' => $validated['keterangan'] ?? null,
                     'bukti_transaksi' => $buktiPath,
-                    'status' => 'pending',
+                    'status' => $status,
                     'id_admin' => $userId,
-                    'id_siswa' => $validated['id_siswa'] ?? null,
                 ]);
 
                 // 3. Simpan audit log
                 $aktivitas = sprintf(
-                    'Admin %s menambahkan pengeluaran sebesar %s untuk %s',
+                    'Admin %s menambahkan pengeluaran %s sebesar %s untuk %s',
                     $admin->name,
+                    $validated['jenis_pengeluaran'],
                     rupiah((int) $validated['jumlah']),
                     $validated['keterangan']
                 );
@@ -141,12 +141,28 @@ class PengeluaranController extends Controller
                     'id_admin' => $userId,
                     'id_transaksi' => $transaksi->id,
                 ]);
+
+                if ($status === 'pending') {
+                    $kepalaSekolahs = KepalaSekolah::query()
+                        ->where('is_active', true)
+                        ->get();
+
+                    if ($kepalaSekolahs->isEmpty()) {
+                        $kepalaSekolahs = KepalaSekolah::query()->get();
+                    }
+
+                    foreach ($kepalaSekolahs as $kepalaSekolah) {
+                        $kepalaSekolah->notify(new PengeluaranPendingNotification($transaksi));
+                    }
+                }
             });
 
             // 4. Flash success message
             return redirect()
                 ->route('admin.pengeluaran.index')
-                ->with('success', 'Pengeluaran berhasil disimpan dan menunggu persetujuan');
+                ->with('success', $status === 'pending'
+                    ? 'Pengeluaran berhasil disimpan dan menunggu persetujuan'
+                    : 'Pengeluaran berhasil disimpan');
         } catch (\Exception $e) {
             // Rollback dan tampilkan error
             return redirect()

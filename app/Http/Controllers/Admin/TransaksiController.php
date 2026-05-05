@@ -18,7 +18,7 @@ class TransaksiController extends Controller
     /**
      * Display a listing of all transactions (pemasukan + pengeluaran) for monitoring.
      *
-     * Supports filters: tanggal_dari, tanggal_sampai, jenis, status, search on keterangan.
+        * Supports filters: tanggal_dari, tanggal_sampai, jenis, status, nominal, nominal_min, nominal_max.
      * All transactions viewable (read-only).
      */
     public function index(Request $request)
@@ -46,10 +46,28 @@ class TransaksiController extends Controller
             $query->whereBetween('tanggal', [$from, $to]);
         }
 
-        // Search keterangan
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where('keterangan', 'like', "%{$search}%");
+        // Search nominal exact
+        if ($request->filled('nominal')) {
+            $nominal = (int) str_replace(['.', ','], '', (string) $request->input('nominal'));
+            $query->where('jumlah', $nominal);
+        }
+
+        // Search nominal range
+        if ($request->filled('nominal_min') || $request->filled('nominal_max')) {
+            $nominalMin = $request->filled('nominal_min')
+                ? (int) str_replace(['.', ','], '', (string) $request->input('nominal_min'))
+                : null;
+            $nominalMax = $request->filled('nominal_max')
+                ? (int) str_replace(['.', ','], '', (string) $request->input('nominal_max'))
+                : null;
+
+            if ($nominalMin !== null && $nominalMax !== null) {
+                $query->whereBetween('jumlah', [$nominalMin, $nominalMax]);
+            } elseif ($nominalMin !== null) {
+                $query->where('jumlah', '>=', $nominalMin);
+            } elseif ($nominalMax !== null) {
+                $query->where('jumlah', '<=', $nominalMax);
+            }
         }
 
         // Clone query for statistics

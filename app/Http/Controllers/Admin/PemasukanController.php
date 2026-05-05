@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Requests\StoreTransaksiRequest;
 use App\Models\AuditLog;
+use App\Models\Pemasukan;
 use App\Models\Siswa;
-use App\Models\Transaksi;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -23,7 +22,7 @@ class PemasukanController extends Controller
     public function index(Request $request)
     {
         $userId = Auth::id();
-        $query = Transaksi::where('jenis', 'pemasukan')
+        $query = Pemasukan::query()
             ->where('id_admin', $userId)
             ->with('siswa')
             ->orderByDesc('tanggal');
@@ -37,11 +36,6 @@ class PemasukanController extends Controller
             $query->whereDate('tanggal', '<=', $request->tanggal_sampai);
         }
 
-        // Filter by status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
         // Search by keterangan
         if ($request->filled('search')) {
             $query->where('keterangan', 'like', '%' . $request->search . '%');
@@ -50,26 +44,29 @@ class PemasukanController extends Controller
         // Paginate results
         $pemasukkans = $query->paginate(10)->withQueryString();
 
-        // Calculate total pemasukan (all, regardless of status)
+        // Calculate total pemasukan (all, no status filtering needed)
         $totalPemasukan = $query->clone()->sum('jumlah');
-
-        // Calculate pending amount
-        $totalPending = $query->clone()->where('status', 'pending')->sum('jumlah');
-
-        // Calculate approved amount
-        $totalApproved = $query->clone()->where('status', 'approved')->sum('jumlah');
 
         // Get siswas for modal form
         $siswas = Siswa::select('id', 'nama', 'kelas')->get();
 
-        return view('admin.pemasukan.index', compact('pemasukkans', 'totalPemasukan', 'totalPending', 'totalApproved', 'siswas'));
+        return view('admin.pemasukan.index', compact('pemasukkans', 'totalPemasukan', 'siswas'));
     }
 
     /**
      * Store a newly created pemasukan transaction in storage (via modal).
      */
-    public function store(StoreTransaksiRequest $request)
+    public function store(Request $request)
     {
+        $validated = $request->validate([
+            'tanggal' => ['required', 'date'],
+            'jumlah' => ['required', 'integer', 'min:1'],
+            'keterangan' => ['nullable', 'string', 'max:500'],
+            'jenis_pemasukan' => ['required', 'in:SPP,Donasi,Dana BOS,Lain-lain'],
+            'siswa_id' => ['required_if:jenis_pemasukan,SPP', 'nullable', 'exists:siswas,id'],
+            'bukti_transaksi' => ['nullable', 'file', 'mimes:jpg,png,pdf', 'max:2048'],
+        ]);
+
         $user = Auth::user();
 
         // Handle file upload if provided
@@ -81,15 +78,14 @@ class PemasukanController extends Controller
         // Wrap in DB transaction to ensure atomicity
         DB::beginTransaction();
         try {
-            $transaksi = Transaksi::create([
-                'tanggal' => $request->input('tanggal'),
-                'jenis' => 'pemasukan',
-                'jumlah' => $request->input('jumlah'),
-                'keterangan' => $request->input('keterangan'),
+            $transaksi = Pemasukan::create([
+                'tanggal' => $validated['tanggal'],
+                'jumlah' => $validated['jumlah'],
+                'keterangan' => $validated['keterangan'] ?? '',
+                'jenis_transaksi' => $validated['jenis_pemasukan'],
+                'siswa_id' => $validated['jenis_pemasukan'] === 'SPP' ? ($validated['siswa_id'] ?? null) : null,
                 'bukti_transaksi' => $buktiPath,
-                'status' => 'pending',
                 'id_admin' => $user->id,
-                'id_siswa' => $request->input('id_siswa'),
             ]);
 
             // Create audit log
@@ -107,9 +103,10 @@ class PemasukanController extends Controller
 
             // Flash success message
             return redirect()->route('admin.pemasukan.index')
-                ->with('success', 'Pemasukan berhasil ditambahkan dan menunggu persetujuan.');
+                ->with('success', 'Pemasukan berhasil ditambahkan.');
         } catch (\Throwable $e) {
             DB::rollBack();
+            report($e);
             // Optionally delete uploaded file on failure
             if ($buktiPath) {
                 Storage::disk('public')->delete($buktiPath);

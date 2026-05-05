@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('page-title', 'Riwayat Transaksi')
-@section('page-subtitle', 'Cari dan filter semua transaksi pemasukan & pengeluaran')
+@section('page-subtitle', 'Cari dan filter semua transaksi pemasukan & pengeluaran berdasarkan nominal')
 
 @section('sidebar-menu')
     <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded mb-1 text-gray-700 hover:bg-gray-100">Dashboard</a>
@@ -129,8 +129,16 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm text-gray-600 mb-1">Cari Keterangan</label>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari keterangan..." class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-[#1D9E75] h-9">
+                    <label class="block text-sm text-gray-600 mb-1">Nominal</label>
+                    <input type="text" name="nominal" value="{{ request('nominal') }}" placeholder="Contoh: 1000000" class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-[#1D9E75] h-9">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Nominal Minimum</label>
+                    <input type="text" name="nominal_min" value="{{ request('nominal_min') }}" placeholder="Min" class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-[#1D9E75] h-9">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Nominal Maksimum</label>
+                    <input type="text" name="nominal_max" value="{{ request('nominal_max') }}" placeholder="Max" class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-[#1D9E75] h-9">
                 </div>
                 <button type="submit" class="bg-[#1D9E75] text-white text-xs rounded-lg px-4 h-9">Filter</button>
                 <a href="{{ route('admin.transaksi.index') }}" class="bg-white border border-gray-200 text-xs rounded-lg px-4 h-9 inline-flex items-center">Reset</a>

@@ -64,6 +64,20 @@ class SiswaController extends Controller
         ));
     }
 
+    public function search(Request $request)
+    {
+        $q = $request->q;
+
+        $results = Siswa::where('nik', 'like', "%{$q}%")
+            ->orWhere('nama', 'like', "%{$q}%")
+            ->orWhere('kelas', 'like', "%{$q}%")
+            ->select('id', 'nik', 'nama', 'kelas', 'jenis_kelamin')
+            ->limit(20)
+            ->get();
+
+        return response()->json($results);
+    }
+
     // ── STORE ─────────────────────────────
     public function store(StoreSiswaRequest $request)
     {

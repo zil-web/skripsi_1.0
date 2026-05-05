@@ -43,6 +43,10 @@ Route::middleware('guest')->group(function () {
 // Shared logout
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
+Route::get('/siswa/search', [SiswaController::class, 'search'])
+    ->name('siswa.search')
+    ->middleware(['auth']);
+
 // Admin routes (protected by auth.admin middleware)
 Route::middleware(['auth.admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');

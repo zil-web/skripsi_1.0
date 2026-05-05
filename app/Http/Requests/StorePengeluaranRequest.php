@@ -25,6 +25,7 @@ class StorePengeluaranRequest extends FormRequest
             'tanggal' => 'required|date',
             'jumlah' => 'required|numeric|min:1',
             'keterangan' => 'required|string|max:500',
+            'jenis_pengeluaran' => 'required|in:ATK,Konsumsi Harian,Pembelian Aset,Renovasi,Kegiatan Besar,Lain-lain',
             'bukti_transaksi' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'id_siswa' => 'nullable|exists:siswas,id',
         ];
@@ -42,6 +43,7 @@ class StorePengeluaranRequest extends FormRequest
             'jumlah.required' => 'Jumlah wajib diisi',
             'jumlah.min' => 'Jumlah minimal 1',
             'keterangan.required' => 'Keterangan wajib diisi',
+            'jenis_pengeluaran.required' => 'Jenis pengeluaran wajib dipilih',
             'bukti_transaksi.required' => 'Bukti transaksi wajib diupload',
         ];
     }

@@ -85,7 +85,7 @@
                     <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">Tanggal</th>
                     <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">Keterangan</th>
                     <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">Jumlah</th>
-                    <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">Siswa</th>
+                    <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">Jenis Pengeluaran</th>
                     <th style="text-align:center; padding:12px 16px; font-weight:500; color:#6b7280;">Status</th>
                 </tr>
             </thead>
@@ -105,7 +105,21 @@
                             - {{ $formatRupiah($transaksi->jumlah) }}
                         </td>
                         <td style="text-align:left; padding:12px 16px; color:#6b7280;">
-                            {{ $transaksi->siswa?->nama ?? '—' }}
+                            @php
+                                $jenisPengeluaran = $transaksi->jenis_transaksi ?? 'Lain-lain';
+                                $jenisPengeluaranColor = match($jenisPengeluaran) {
+                                    'ATK' => 'background:#e0f2fe; color:#075985;',
+                                    'Konsumsi Harian' => 'background:#fef3c7; color:#92400e;',
+                                    'Pembelian Aset' => 'background:#fee2e2; color:#991b1b;',
+                                    'Renovasi' => 'background:#ffedd5; color:#9a3412;',
+                                    'Kegiatan Besar' => 'background:#ede9fe; color:#5b21b6;',
+                                    'Lain-lain' => 'background:#f3f4f6; color:#4b5563;',
+                                    default => 'background:#e5e7eb; color:#374151;',
+                                };
+                            @endphp
+                            <span style="display:inline-block; padding:4px 8px; border-radius:999px; font-size:11px; font-weight:600; {{ $jenisPengeluaranColor }}">
+                                {{ $jenisPengeluaran }}
+                            </span>
                         </td>
                         <td style="text-align:center; padding:12px 16px;">
                             <span style="display:inline-block; padding:4px 8px; border-radius:4px; font-size:11px; font-weight:500; {{ match($transaksi->status) {
@@ -215,6 +229,31 @@
             <input type="hidden" name="jenis" value="pengeluaran">
             <input type="hidden" name="status" value="pending">
 
+            <!-- Jenis Pengeluaran -->
+            <div style="margin-bottom:16px;">
+                <label style="display:block; font-size:11px; 
+                              font-weight:500; color:#6b7280;
+                              text-transform:uppercase; 
+                              letter-spacing:0.05em; 
+                              margin-bottom:4px;">
+                    Jenis Pengeluaran <span style="color:#ef4444;">*</span>
+                </label>
+                <select name="jenis_pengeluaran" required
+                    style="width:100%; font-size:13px; 
+                           border:1px solid #e5e7eb; 
+                           border-radius:8px; padding:0 12px;
+                           height:36px; box-sizing:border-box;
+                           outline:none; background:white;">
+                    <option value="">-- Pilih Jenis Pengeluaran --</option>
+                    <option value="ATK" {{ old('jenis_pengeluaran') === 'ATK' ? 'selected' : '' }}>ATK (Alat Tulis Kantor)</option>
+                    <option value="Konsumsi Harian" {{ old('jenis_pengeluaran') === 'Konsumsi Harian' ? 'selected' : '' }}>Konsumsi Harian</option>
+                    <option value="Pembelian Aset" {{ old('jenis_pengeluaran') === 'Pembelian Aset' ? 'selected' : '' }}>Pembelian Aset</option>
+                    <option value="Renovasi" {{ old('jenis_pengeluaran') === 'Renovasi' ? 'selected' : '' }}>Renovasi</option>
+                    <option value="Kegiatan Besar" {{ old('jenis_pengeluaran') === 'Kegiatan Besar' ? 'selected' : '' }}>Kegiatan Besar</option>
+                    <option value="Lain-lain" {{ old('jenis_pengeluaran') === 'Lain-lain' ? 'selected' : '' }}>Lain-lain</option>
+                </select>
+            </div>
+
             <!-- Tanggal -->
             <div style="margin-bottom:16px;">
                 <label style="display:block; font-size:11px; 
@@ -299,36 +338,6 @@
                         {{ $message }}
                     </p>
                 @enderror
-            </div>
-
-            <!-- Siswa -->
-            <div style="margin-bottom:16px;">
-                <label style="display:block; font-size:11px; 
-                              font-weight:500; color:#6b7280;
-                              text-transform:uppercase; 
-                              letter-spacing:0.05em; 
-                              margin-bottom:4px;">
-                    Siswa 
-                    <span style="color:#d1d5db;
-                                 text-transform:none;">
-                        (opsional)
-                    </span>
-                </label>
-                <select name="id_siswa"
-                    style="width:100%; font-size:13px; 
-                           border:1px solid #e5e7eb; 
-                           border-radius:8px; padding:0 12px;
-                           height:36px; box-sizing:border-box;
-                           outline:none; background:white;">
-                    <option value="">-- Tidak ada --</option>
-                    @foreach($siswas as $siswa)
-                        <option value="{{ $siswa->id }}"
-                            {{ old('id_siswa') == $siswa->id 
-                               ? 'selected' : '' }}>
-                            {{ $siswa->nama }} - Kelas {{ $siswa->kelas }}
-                        </option>
-                    @endforeach
-                </select>
             </div>
 
             <!-- Upload Bukti -->

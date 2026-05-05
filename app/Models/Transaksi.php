@@ -17,12 +17,16 @@ class Transaksi extends Model
     protected $fillable = [
         'tanggal',
         'jenis',
+        'tipe',
+        'jenis_pengeluaran',
+        'jenis_transaksi',
         'jumlah',
         'keterangan',
         'bukti_transaksi',
         'status',
         'id_admin',
         'id_siswa',
+        'siswa_id',
     ];
 
     protected $casts = [
