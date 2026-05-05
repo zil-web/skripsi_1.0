@@ -56,6 +56,16 @@ class Transaksi extends Model
         return $this->hasMany(Approval::class, 'id_transaksi');
     }
 
+    public function editRequests(): HasMany
+    {
+        return $this->hasMany(EditRequest::class);
+    }
+
+    public function pendingEditRequest()
+    {
+        return $this->hasOne(EditRequest::class)->where('status', 'pending')->latestOfMany();
+    }
+
     /**
      * Get jumlah formatted in Rupiah currency
      */
