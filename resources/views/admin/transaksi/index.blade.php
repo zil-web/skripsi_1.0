@@ -357,7 +357,17 @@
                     el('#td-tanggal').textContent = data.tanggal ?? '-';
                     el('#td-keterangan').textContent = data.keterangan ?? '-';
                     el('#td-jenis').textContent = data.jenis_transaksi ?? data.jenis ?? '-';
-                    el('#td-siswa').textContent = data.siswa ? data.siswa.nama : '-';
+                    
+                    // Display siswa with nama and NIK
+                    if (data.siswa) {
+                        const siswaNama = data.siswa.nama ? data.siswa.nama : 'N/A';
+                        const siswaNik = data.siswa.nik ? data.siswa.nik : 'N/A';
+                        const siswaKelas = data.siswa.kelas ? data.siswa.kelas : '';
+                        el('#td-siswa').innerHTML = `<div><strong>${siswaNama}</strong></div><div class="text-xs text-gray-600">NIK: ${siswaNik}</div><div class="text-xs text-gray-600">Kelas: ${siswaKelas}</div>`;
+                    } else {
+                        el('#td-siswa').textContent = '-';
+                    }
+                    
                     el('#td-jumlah').textContent = formatRupiah(data.jumlah);
                     el('#td-status').textContent = (data.status ?? '-').toString();
 

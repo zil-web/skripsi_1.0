@@ -190,7 +190,12 @@ class TransaksiController extends Controller
             'jenis_transaksi' => $transaksi->jenis_transaksi ?? null,
             'jumlah' => $transaksi->jumlah,
             'status' => $transaksi->status,
-            'siswa' => $transaksi->siswa ? ['id' => $transaksi->siswa->id, 'nama' => $transaksi->siswa->nama] : null,
+            'siswa' => $transaksi->siswa ? [
+                'id' => $transaksi->siswa->id,
+                'nik' => $transaksi->siswa->nik,
+                'nama' => $transaksi->siswa->nama,
+                'kelas' => $transaksi->siswa->kelas
+            ] : null,
             'bukti_raw' => $raw,
             'bukti_url' => $buktiUrl,
             'bukti_exists_raw' => $existsRaw,
