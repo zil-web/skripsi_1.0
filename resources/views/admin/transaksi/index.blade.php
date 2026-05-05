@@ -247,11 +247,16 @@
             
             <!-- Content Area -->
             <div class="flex-1 overflow-auto flex flex-col items-center justify-center bg-white p-6">
+                <!-- Loading indicator -->
+                <div id="bukti-loading" class="hidden text-gray-500">
+                    <span>Memuat...</span>
+                </div>
+                
                 <!-- Image Display -->
-                <img id="bukti-image" class="hidden max-w-full max-h-[75vh] object-contain rounded" alt="Bukti Transaksi" />
+                <img id="bukti-image" class="hidden max-w-full max-h-[75vh] object-contain rounded" alt="Bukti Transaksi" loading="lazy" decoding="async" />
                 
                 <!-- PDF Display -->
-                <iframe id="bukti-pdf" class="hidden w-full h-full rounded" frameborder="0"></iframe>
+                <iframe id="bukti-pdf" class="hidden w-full h-full rounded" frameborder="0" sandbox="allow-same-origin"></iframe>
             </div>
             
             <!-- Footer with download button -->
@@ -280,6 +285,7 @@
         const buktiCloseBtn2 = el('#bukti-viewer-close-btn');
         const buktiImage = el('#bukti-image');
         const buktiPdf = el('#bukti-pdf');
+        const buktiLoading = el('#bukti-loading');
         const buktiDownloadBtn = el('#bukti-download');
 
         let currentBuktiUrl = null;
@@ -292,28 +298,49 @@
 
         function formatRupiah(v){ return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits:0 }).format(Number(v||0)); }
 
-        function isImageFile(url) {
-            const ext = url.split('.').pop().toLowerCase();
-            return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
-        }
-
-        function isPdfFile(url) {
-            return url.toLowerCase().endsWith('.pdf');
-        }
-
-        function displayBukti(buktiUrl) {
+        function displayBukti(buktiUrl, buktiRaw) {
+            // buktiUrl = route URL (e.g., /admin/transaksi/1/bukti)
+            // buktiRaw = database path with extension (e.g., bukti/filename.jpg)
             currentBuktiUrl = buktiUrl;
             
-            // Reset both displays
+            // Show loading, hide all content
+            buktiLoading.classList.remove('hidden');
             buktiImage.classList.add('hidden');
             buktiPdf.classList.add('hidden');
             
-            if (isImageFile(buktiUrl)) {
+            // Use buktiRaw for file type detection since it has the extension
+            const ext = buktiRaw ? buktiRaw.split('.').pop().toLowerCase() : '';
+            console.log('Bukti display:', { buktiUrl, buktiRaw, ext });
+            
+            if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+                console.log('Displaying as image:', buktiUrl);
                 buktiImage.src = buktiUrl;
-                buktiImage.classList.remove('hidden');
-            } else if (isPdfFile(buktiUrl)) {
+                buktiImage.onload = () => {
+                    console.log('Image loaded successfully');
+                    buktiLoading.classList.add('hidden');
+                    buktiImage.classList.remove('hidden');
+                };
+                buktiImage.onerror = () => {
+                    console.error('Failed to load image:', buktiUrl);
+                    buktiLoading.classList.add('hidden');
+                    buktiImage.classList.add('hidden');
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'text-center text-red-600 font-medium';
+                    errorDiv.textContent = 'Gagal memuat gambar. Status: ' + buktiImage.status;
+                    buktiImage.parentElement.appendChild(errorDiv);
+                };
+            } else if (ext === 'pdf') {
+                console.log('Displaying as PDF:', buktiUrl);
+                buktiLoading.classList.add('hidden');
                 buktiPdf.src = buktiUrl;
                 buktiPdf.classList.remove('hidden');
+            } else {
+                console.warn('Unknown file type:', ext, 'URL:', buktiUrl);
+                buktiLoading.classList.add('hidden');
+                const unknownDiv = document.createElement('div');
+                unknownDiv.className = 'text-center text-yellow-600 font-medium';
+                unknownDiv.textContent = 'Tipe file tidak dikenali (' + ext + '). Silakan coba unduh.';
+                buktiImage.parentElement.appendChild(unknownDiv);
             }
             
             openBuktiModal();
@@ -341,7 +368,7 @@
                         btn.type = 'button';
                         btn.className = 'bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-medium transition';
                         btn.textContent = 'Lihat Bukti Transaksi';
-                        btn.addEventListener('click', () => displayBukti(data.bukti_url));
+                        btn.addEventListener('click', () => displayBukti(data.bukti_url, data.bukti_raw));
                         buktiWrap.appendChild(btn);
                     } else {
                         buktiWrap.textContent = '—';
