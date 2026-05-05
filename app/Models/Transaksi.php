@@ -43,7 +43,7 @@ class Transaksi extends Model
 
     public function siswa(): BelongsTo
     {
-        return $this->belongsTo(Siswa::class, 'id_siswa');
+        return $this->belongsTo(Siswa::class, 'siswa_id');
     }
 
     public function auditLogs(): HasMany
