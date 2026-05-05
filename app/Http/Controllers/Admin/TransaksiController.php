@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TransaksiController extends Controller
 {
@@ -160,5 +161,66 @@ class TransaksiController extends Controller
 
             return back()->withInput()->withErrors(['error' => 'Terjadi kesalahan saat menyimpan transaksi.']);
         }
+    }
+
+    /**
+     * Return JSON details for a single transaksi (used by AJAX in index view).
+     */
+    public function detail($id)
+    {
+        $transaksi = Transaksi::with('siswa')->findOrFail($id);
+
+        $raw = $transaksi->bukti_transaksi;
+        // Use proxy endpoint instead of direct public URL to avoid symlink issues
+        $buktiUrl = $raw ? route('admin.transaksi.bukti', $id) : null;
+
+        // Check existence on disk for common variants to help debugging
+        $existsRaw = $raw ? Storage::disk('public')->exists($raw) : false;
+        $existsStripStorage = false;
+        if ($raw && str_starts_with($raw, 'storage/')) {
+            $strip = preg_replace('#^storage/#', '', $raw);
+            $existsStripStorage = Storage::disk('public')->exists($strip);
+        }
+
+        return response()->json([
+            'id' => $transaksi->id,
+            'tanggal' => optional($transaksi->tanggal)->format('d/m/Y'),
+            'keterangan' => $transaksi->keterangan,
+            'jenis' => $transaksi->jenis,
+            'jenis_transaksi' => $transaksi->jenis_transaksi ?? null,
+            'jumlah' => $transaksi->jumlah,
+            'status' => $transaksi->status,
+            'siswa' => $transaksi->siswa ? ['id' => $transaksi->siswa->id, 'nama' => $transaksi->siswa->nama] : null,
+            'bukti_raw' => $raw,
+            'bukti_url' => $buktiUrl,
+            'bukti_exists_raw' => $existsRaw,
+            'bukti_exists_strip_storage' => $existsStripStorage,
+        ]);
+    }
+
+    /**
+     * Stream bukti file directly from storage (bypasses symlink issues).
+     */
+    public function bukti($id)
+    {
+        $transaksi = Transaksi::findOrFail($id);
+        
+        if (!$transaksi->bukti_transaksi) {
+            abort(404, 'Bukti tidak tersedia');
+        }
+
+        $path = $transaksi->bukti_transaksi;
+        
+        if (!Storage::disk('public')->exists($path)) {
+            abort(404, 'File bukti tidak ditemukan');
+        }
+
+        $file = Storage::disk('public')->get($path);
+        $mimeType = Storage::disk('public')->mimeType($path);
+
+        return response($file, 200, [
+            'Content-Type' => $mimeType ?? 'application/octet-stream',
+            'Content-Disposition' => 'inline; filename="' . basename($path) . '"',
+        ]);
     }
 }

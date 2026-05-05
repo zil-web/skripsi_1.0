@@ -51,6 +51,8 @@ Route::get('/siswa/search', [SiswaController::class, 'search'])
 Route::middleware(['auth.admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('transaksi', TransaksiController::class)->only(['index', 'create', 'store']);
+    Route::get('transaksi/{id}/detail', [TransaksiController::class, 'detail'])->name('transaksi.detail');
+    Route::get('transaksi/{id}/bukti', [TransaksiController::class, 'bukti'])->name('transaksi.bukti');
     Route::resource('pemasukan', PemasukanController::class)->only(['index', 'create', 'store']);
     Route::resource('pengeluaran', PengeluaranController::class)->only(['index', 'create', 'store']);
     Route::resource('siswa', SiswaController::class)

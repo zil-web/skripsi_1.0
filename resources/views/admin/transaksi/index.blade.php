@@ -178,11 +178,7 @@
                                         <span class="text-[10px] font-medium px-2 py-0.5 rounded-full {{ $statusClass($t->status) }}">{{ $statusLabel($t->status) }}</span>
                                     </td>
                                     <td class="text-sm px-4 py-2.5">
-                                        @if($t->bukti_transaksi)
-                                            <a href="{{ Storage::url($t->bukti_transaksi) }}" target="_blank" class="text-[11px] px-3 py-1 rounded-lg border font-medium border-gray-200 text-gray-600 hover:bg-gray-50">Lihat</a>
-                                        @else
-                                            <span class="text-gray-400">—</span>
-                                        @endif
+                                        <button data-id="{{ $t->id }}" class="open-transaksi-detail text-[11px] px-3 py-1 rounded-lg border font-medium border-gray-200 text-gray-600 hover:bg-gray-50">Detail</button>
                                     </td>
                                 </tr>
                             @endforeach
@@ -202,4 +198,96 @@
             </div>
         @endif
     </div>
+
+    <!-- Transaksi Detail Modal -->
+    <div id="transaksi-detail-modal" class="fixed inset-0 hidden items-center justify-center z-50">
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div class="relative bg-white rounded-lg shadow-xl w-[760px] max-w-full mx-4 overflow-hidden">
+            <div class="px-6 py-4 border-b flex items-center justify-between">
+                <h3 class="font-semibold">Detail Transaksi</h3>
+                <button id="transaksi-detail-close" class="text-gray-600">✕</button>
+            </div>
+            <div class="p-6 grid grid-cols-2 gap-4">
+                <div>
+                    <div class="text-xs text-gray-500">Tanggal</div>
+                    <div id="td-tanggal" class="font-medium mt-1"></div>
+
+                    <div class="text-xs text-gray-500 mt-3">Keterangan</div>
+                    <div id="td-keterangan" class="mt-1"></div>
+
+                    <div class="text-xs text-gray-500 mt-3">Jenis</div>
+                    <div id="td-jenis" class="mt-1"></div>
+
+                    <div class="text-xs text-gray-500 mt-3">Siswa</div>
+                    <div id="td-siswa" class="mt-1"></div>
+                </div>
+                <div>
+                    <div class="text-xs text-gray-500">Jumlah</div>
+                    <div id="td-jumlah" class="font-medium mt-1"></div>
+
+                    <div class="text-xs text-gray-500 mt-3">Status</div>
+                    <div id="td-status" class="mt-1"></div>
+
+                    <div class="text-xs text-gray-500 mt-3">Bukti</div>
+                    <div id="td-bukti" class="mt-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
+
+@push('scripts')
+<script>
+    (function(){
+        function el(q){return document.querySelector(q)}
+        function els(q){return Array.from(document.querySelectorAll(q))}
+
+        const modal = el('#transaksi-detail-modal');
+        const closeBtn = el('#transaksi-detail-close');
+
+        function openModal(){ if(!modal) return; modal.classList.remove('hidden'); modal.classList.add('flex'); }
+        function closeModal(){ if(!modal) return; modal.classList.add('hidden'); modal.classList.remove('flex'); }
+
+        function formatRupiah(v){ return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits:0 }).format(Number(v||0)); }
+
+        els('.open-transaksi-detail').forEach(btn => {
+            btn.addEventListener('click', async function(e){
+                const id = this.dataset.id;
+                try{
+                    const res = await fetch(`{{ url('/admin/transaksi') }}/${id}/detail`, { headers:{ 'X-Requested-With':'XMLHttpRequest' } });
+                    if(!res.ok) throw new Error('Gagal mengambil data');
+                    const data = await res.json();
+
+                    el('#td-tanggal').textContent = data.tanggal ?? '-';
+                    el('#td-keterangan').textContent = data.keterangan ?? '-';
+                    el('#td-jenis').textContent = data.jenis_transaksi ?? data.jenis ?? '-';
+                    el('#td-siswa').textContent = data.siswa ? data.siswa.nama : '-';
+                    el('#td-jumlah').textContent = formatRupiah(data.jumlah);
+                    el('#td-status').textContent = (data.status ?? '-').toString();
+
+                    const buktiWrap = el('#td-bukti'); buktiWrap.innerHTML = '';
+                    if(data.bukti_url){
+                        const a = document.createElement('a');
+                        a.href = data.bukti_url; a.target = '_blank'; a.className = 'inline-block rounded border px-3 py-1 text-sm text-gray-700';
+                        a.textContent = 'Buka Bukti';
+                        buktiWrap.appendChild(a);
+
+                        const img = document.createElement('img');
+                        img.src = data.bukti_url; img.className = 'mt-2 max-h-48 rounded'; img.alt = 'Bukti Transaksi';
+                        buktiWrap.appendChild(img);
+                    } else {
+                        buktiWrap.textContent = '—';
+                    }
+
+                    openModal();
+                }catch(err){
+                    alert('Gagal memuat detail: ' + err.message);
+                }
+            });
+        });
+
+        if(closeBtn) closeBtn.addEventListener('click', closeModal);
+        if(modal) modal.addEventListener('click', function(e){ if(e.target === modal) closeModal(); });
+    })();
+</script>
+@endpush

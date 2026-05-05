@@ -107,12 +107,10 @@ class PengeluaranController extends Controller
         try {
             // Gunakan database transaction untuk memastikan konsistensi data
             DB::transaction(function () use ($validated, $userId, $admin, $status) {
-                // 1. Upload bukti transaksi
+                // 1. Upload bukti transaksi (store in 'bukti' dir for consistency with Pemasukan)
                 $buktiPath = null;
                 if ($validated['bukti_transaksi'] ?? false) {
-                    $file = $validated['bukti_transaksi'];
-                    $fileName = time() . '_' . $file->getClientOriginalName();
-                    $buktiPath = $file->storeAs('bukti_transaksi', $fileName, 'public');
+                    $buktiPath = $validated['bukti_transaksi']->store('bukti', 'public');
                 }
 
                 // 2. Simpan data transaksi
