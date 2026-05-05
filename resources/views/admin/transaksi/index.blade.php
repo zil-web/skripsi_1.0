@@ -340,7 +340,7 @@
                         const btn = document.createElement('button');
                         btn.type = 'button';
                         btn.className = 'bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-medium transition';
-                        btn.textContent = '👁 Lihat Bukti Transaksi';
+                        btn.textContent = 'Lihat Bukti Transaksi';
                         btn.addEventListener('click', () => displayBukti(data.bukti_url));
                         buktiWrap.appendChild(btn);
                     } else {
