@@ -234,6 +234,37 @@
             </div>
         </div>
     </div>
+
+    <!-- Bukti Viewer Modal (nested inside detail modal) -->
+    <div id="bukti-viewer-modal" class="fixed inset-0 hidden items-center justify-center z-[60]">
+        <div class="absolute inset-0 bg-black/60"></div>
+        <div class="relative bg-white rounded-lg shadow-2xl w-[90vw] h-[90vh] max-w-6xl overflow-hidden flex flex-col">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b flex items-center justify-between bg-gray-50">
+                <h3 class="font-semibold">Bukti Transaksi</h3>
+                <button id="bukti-viewer-close" class="text-gray-600 hover:text-gray-900">✕</button>
+            </div>
+            
+            <!-- Content Area -->
+            <div class="flex-1 overflow-auto flex flex-col items-center justify-center bg-white p-6">
+                <!-- Image Display -->
+                <img id="bukti-image" class="hidden max-w-full max-h-[75vh] object-contain rounded" alt="Bukti Transaksi" />
+                
+                <!-- PDF Display -->
+                <iframe id="bukti-pdf" class="hidden w-full h-full rounded" frameborder="0"></iframe>
+            </div>
+            
+            <!-- Footer with download button -->
+            <div class="px-6 py-4 border-t bg-gray-50 flex justify-end gap-2">
+                <button id="bukti-download" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium">
+                    ⬇ Download
+                </button>
+                <button id="bukti-viewer-close-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded text-sm font-medium">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -242,13 +273,51 @@
         function el(q){return document.querySelector(q)}
         function els(q){return Array.from(document.querySelectorAll(q))}
 
-        const modal = el('#transaksi-detail-modal');
-        const closeBtn = el('#transaksi-detail-close');
+        const detailModal = el('#transaksi-detail-modal');
+        const buktiModal = el('#bukti-viewer-modal');
+        const detailCloseBtn = el('#transaksi-detail-close');
+        const buktiCloseBtn = el('#bukti-viewer-close');
+        const buktiCloseBtn2 = el('#bukti-viewer-close-btn');
+        const buktiImage = el('#bukti-image');
+        const buktiPdf = el('#bukti-pdf');
+        const buktiDownloadBtn = el('#bukti-download');
 
-        function openModal(){ if(!modal) return; modal.classList.remove('hidden'); modal.classList.add('flex'); }
-        function closeModal(){ if(!modal) return; modal.classList.add('hidden'); modal.classList.remove('flex'); }
+        let currentBuktiUrl = null;
+
+        function openDetailModal(){ detailModal.classList.remove('hidden'); detailModal.classList.add('flex'); }
+        function closeDetailModal(){ detailModal.classList.add('hidden'); detailModal.classList.remove('flex'); }
+        
+        function openBuktiModal(){ buktiModal.classList.remove('hidden'); buktiModal.classList.add('flex'); }
+        function closeBuktiModal(){ buktiModal.classList.add('hidden'); buktiModal.classList.remove('flex'); }
 
         function formatRupiah(v){ return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits:0 }).format(Number(v||0)); }
+
+        function isImageFile(url) {
+            const ext = url.split('.').pop().toLowerCase();
+            return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+        }
+
+        function isPdfFile(url) {
+            return url.toLowerCase().endsWith('.pdf');
+        }
+
+        function displayBukti(buktiUrl) {
+            currentBuktiUrl = buktiUrl;
+            
+            // Reset both displays
+            buktiImage.classList.add('hidden');
+            buktiPdf.classList.add('hidden');
+            
+            if (isImageFile(buktiUrl)) {
+                buktiImage.src = buktiUrl;
+                buktiImage.classList.remove('hidden');
+            } else if (isPdfFile(buktiUrl)) {
+                buktiPdf.src = buktiUrl;
+                buktiPdf.classList.remove('hidden');
+            }
+            
+            openBuktiModal();
+        }
 
         els('.open-transaksi-detail').forEach(btn => {
             btn.addEventListener('click', async function(e){
@@ -265,29 +334,45 @@
                     el('#td-jumlah').textContent = formatRupiah(data.jumlah);
                     el('#td-status').textContent = (data.status ?? '-').toString();
 
-                    const buktiWrap = el('#td-bukti'); buktiWrap.innerHTML = '';
+                    const buktiWrap = el('#td-bukti'); 
+                    buktiWrap.innerHTML = '';
                     if(data.bukti_url){
-                        const a = document.createElement('a');
-                        a.href = data.bukti_url; a.target = '_blank'; a.className = 'inline-block rounded border px-3 py-1 text-sm text-gray-700';
-                        a.textContent = 'Buka Bukti';
-                        buktiWrap.appendChild(a);
-
-                        const img = document.createElement('img');
-                        img.src = data.bukti_url; img.className = 'mt-2 max-h-48 rounded'; img.alt = 'Bukti Transaksi';
-                        buktiWrap.appendChild(img);
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-medium transition';
+                        btn.textContent = '👁 Lihat Bukti Transaksi';
+                        btn.addEventListener('click', () => displayBukti(data.bukti_url));
+                        buktiWrap.appendChild(btn);
                     } else {
                         buktiWrap.textContent = '—';
                     }
 
-                    openModal();
+                    openDetailModal();
                 }catch(err){
                     alert('Gagal memuat detail: ' + err.message);
                 }
             });
         });
 
-        if(closeBtn) closeBtn.addEventListener('click', closeModal);
-        if(modal) modal.addEventListener('click', function(e){ if(e.target === modal) closeModal(); });
+        // Detail modal close handlers
+        detailCloseBtn.addEventListener('click', closeDetailModal);
+        detailModal.addEventListener('click', function(e){ if(e.target === detailModal) closeDetailModal(); });
+
+        // Bukti modal close handlers
+        buktiCloseBtn.addEventListener('click', closeBuktiModal);
+        buktiCloseBtn2.addEventListener('click', closeBuktiModal);
+        buktiModal.addEventListener('click', function(e){ if(e.target === buktiModal) closeBuktiModal(); });
+
+        // Download handler
+        buktiDownloadBtn.addEventListener('click', function(){
+            if(!currentBuktiUrl) return;
+            const a = document.createElement('a');
+            a.href = currentBuktiUrl;
+            a.download = currentBuktiUrl.split('/').pop() || 'bukti';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
     })();
 </script>
 @endpush
