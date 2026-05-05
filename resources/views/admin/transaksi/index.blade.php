@@ -218,7 +218,7 @@
                     <div class="text-xs text-gray-500 mt-3">Jenis</div>
                     <div id="td-jenis" class="mt-1"></div>
 
-                    <div class="text-xs text-gray-500 mt-3">Siswa</div>
+                    <div class="text-xs text-gray-500 mt-3" id="td-siswa-label">Siswa</div>
                     <div id="td-siswa" class="mt-1"></div>
                 </div>
                 <div>
@@ -358,14 +358,24 @@
                     el('#td-keterangan').textContent = data.keterangan ?? '-';
                     el('#td-jenis').textContent = data.jenis_transaksi ?? data.jenis ?? '-';
                     
-                    // Display siswa with nama and NIK
-                    if (data.siswa) {
-                        const siswaNama = data.siswa.nama ? data.siswa.nama : 'N/A';
-                        const siswaNik = data.siswa.nik ? data.siswa.nik : 'N/A';
-                        const siswaKelas = data.siswa.kelas ? data.siswa.kelas : '';
-                        el('#td-siswa').innerHTML = `<div><strong>${siswaNama}</strong></div><div class="text-xs text-gray-600">NIK: ${siswaNik}</div><div class="text-xs text-gray-600">Kelas: ${siswaKelas}</div>`;
+                    // Display siswa only for pemasukan (not for pengeluaran)
+                    const siswaSectionLabel = el('#td-siswa-label');
+                    const siswaSection = el('#td-siswa');
+                    if (data.jenis === 'pemasukan') {
+                        siswaSectionLabel.classList.remove('hidden');
+                        if (data.siswa) {
+                            const siswaNama = data.siswa.nama ? data.siswa.nama : 'N/A';
+                            const siswaNik = data.siswa.nik ? data.siswa.nik : 'N/A';
+                            const siswaKelas = data.siswa.kelas ? data.siswa.kelas : '';
+                            siswaSection.innerHTML = `<div><strong>${siswaNama}</strong></div><div class="text-xs text-gray-600">NIK: ${siswaNik}</div><div class="text-xs text-gray-600">Kelas: ${siswaKelas}</div>`;
+                        } else {
+                            siswaSection.textContent = '-';
+                        }
+                        siswaSection.classList.remove('hidden');
                     } else {
-                        el('#td-siswa').textContent = '-';
+                        // Hide siswa section for pengeluaran
+                        siswaSectionLabel.classList.add('hidden');
+                        siswaSection.classList.add('hidden');
                     }
                     
                     el('#td-jumlah').textContent = formatRupiah(data.jumlah);
