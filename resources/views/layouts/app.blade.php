@@ -29,7 +29,6 @@
             <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm font-semibold text-gray-700">{{ strtoupper(substr($user->name ?? 'A', 0, 1)) }}</div>
             <div class="min-w-0 flex-1">
                 <div class="text-sm font-semibold text-gray-900 truncate">{{ $user->name ?? 'Admin' }}</div>
-                <div class="mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-green-50 text-green-700">Bendahara</div>
             </div>
         </div>
 
@@ -72,10 +71,6 @@
 
             <div class="flex items-center gap-3 text-sm text-gray-600">
                 <div class="rounded-full bg-gray-100 px-3 py-1.5">{{ now()->format('d M Y') }}</div>
-                <div class="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5">
-                    <div class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-xs font-semibold text-gray-700">{{ strtoupper(substr($user->name ?? 'A', 0, 1)) }}</div>
-                    <span class="hidden sm:block font-medium text-gray-700">{{ $user->name ?? 'Admin' }}</span>
-                </div>
             </div>
         </header>
 

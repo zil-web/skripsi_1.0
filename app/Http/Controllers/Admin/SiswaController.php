@@ -83,7 +83,7 @@ class SiswaController extends Controller
     {
         $siswa = Siswa::create($request->validated());
 
-        // Catat audit log
+        // Catat audit log (tidak terkait transaksi)
         AuditLog::create([
             'aktivitas'    => 'Admin ' 
                 . auth()->user()->name 
@@ -93,7 +93,6 @@ class SiswaController extends Controller
                 . ' Kelas ' . $siswa->kelas,
             'tanggal'      => now(),
             'id_admin'     => auth()->id(),
-            'id_transaksi' => null,
         ]);
 
         return redirect()
@@ -110,7 +109,7 @@ class SiswaController extends Controller
     ) {
         $siswa->update($request->validated());
 
-        // Catat audit log
+        // Catat audit log (tidak terkait transaksi)
         AuditLog::create([
             'aktivitas'    => 'Admin ' 
                 . auth()->user()->name 
@@ -119,7 +118,6 @@ class SiswaController extends Controller
                 . ' (NIK: ' . $siswa->nik . ')',
             'tanggal'      => now(),
             'id_admin'     => auth()->id(),
-            'id_transaksi' => null,
         ]);
 
         return redirect()
@@ -137,7 +135,7 @@ class SiswaController extends Controller
 
         $siswa->delete(); // soft delete
 
-        // Catat audit log
+        // Catat audit log (tidak terkait transaksi)
         AuditLog::create([
             'aktivitas'    => 'Admin ' 
                 . auth()->user()->name 
@@ -146,7 +144,6 @@ class SiswaController extends Controller
                 . ' (NIK: ' . $nik . ')',
             'tanggal'      => now(),
             'id_admin'     => auth()->id(),
-            'id_transaksi' => null,
         ]);
 
         return redirect()

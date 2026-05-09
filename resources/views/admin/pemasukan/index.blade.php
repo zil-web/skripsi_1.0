@@ -3,15 +3,6 @@
 
 @php
     $formatRupiah = fn ($value) => rupiah((int) $value);
-    $selectedSiswa = $siswas->firstWhere('id', (int) old('siswa_id'));
-    $initialPemasukanSiswa = $selectedSiswa
-        ? [
-            'id' => $selectedSiswa->id,
-            'nik' => $selectedSiswa->nik,
-            'nama' => $selectedSiswa->nama,
-            'kelas' => $selectedSiswa->kelas,
-        ]
-        : null;
 @endphp
 
 <!-- PAGE HEADER -->
@@ -313,38 +304,42 @@
                 @enderror
             </div>
 
-            <!-- Siswa (SPP only) -->
-            <div id="siswa-section" style="display:none; margin-bottom:16px;">
+            <!-- Siswa list for bulk SPP -->
+            <div id="siswa-list-section" style="display:none; margin-bottom:16px;">
                 <label style="display:block; font-size:11px; 
                               font-weight:500; color:#6b7280;
                               text-transform:uppercase; 
                               letter-spacing:0.05em; 
-                              margin-bottom:4px;">
-                    Siswa <span style="color:#ef4444;">*</span>
+                              margin-bottom:8px;">
+                    Daftar Siswa (SPP - bulk)
                 </label>
-                <div style="display:flex; gap:8px; align-items:center;">
-                    <input type="text" id="siswa_display"
-                        value="{{ $selectedSiswa ? $selectedSiswa->nama_nik : '' }}"
-                        readonly placeholder="Pilih siswa"
-                        style="flex:1; width:100%; font-size:13px; 
-                               border:1px solid #e5e7eb; 
-                               border-radius:8px; padding:0 12px;
-                               height:36px; box-sizing:border-box;
-                               outline:none; background:#f9fafb; color:#374151;">
-                    <button type="button" id="btnPilihSiswa"
-                        style="flex-shrink:0; background:#1D9E75; color:white; 
-                               font-size:13px; font-weight:500;
-                               border:none; padding:0 14px; 
-                               border-radius:8px; cursor:pointer; height:36px;">
-                        Pilih Siswa
-                    </button>
+                <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+                    <button type="button" id="btnTambahSiswa" style="background:#10B981; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:600;">+ Cari & Tambah Siswa</button>
+                    <span id="totalSelectedBadge" style="margin-left:auto; font-size:13px; color:#6b7280;">Total: 0 siswa dipilih</span>
                 </div>
-                <input type="hidden" name="siswa_id" id="siswa_id" value="{{ old('siswa_id') }}">
-                @error('siswa_id')
-                    <p style="font-size:11px;color:#ef4444;margin:4px 0 0;">
-                        {{ $message }}
-                    </p>
-                @enderror
+
+                <div style="border:1px solid #f3f4f6; border-radius:12px; overflow:hidden;">
+                    <table style="width:100%; font-size:13px;" id="siswa-table">
+                        <thead>
+                            <tr style="background:#f9fafb; border-bottom:1px solid #f3f4f6;">
+                                <th style="padding:10px 12px; text-align:center; width:48px;">No</th>
+                                <th style="padding:10px 12px; text-align:left;">Nama</th>
+                                <th style="padding:10px 12px; text-align:left;">NIK</th>
+                                <th style="padding:10px 12px; text-align:left;">Kelas</th>
+                                <th style="padding:10px 12px; text-align:right; width:160px;">Jumlah (Rp)</th>
+                                <th style="padding:10px 12px; text-align:center; width:96px;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="siswa-table-body">
+                            <tr><td colspan="6" style="padding:16px; text-align:center; color:#9ca3af;">Belum ada siswa ditambahkan.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="display:flex; gap:8px; margin-top:12px;">
+                    <button type="button" id="btnPreviewSimpan" disabled style="background:#10B981; color:white; border:none; padding:10px 12px; border-radius:8px; cursor:pointer; font-weight:600;">Preview & Simpan</button>
+                    <button type="button" id="btnKosongkanSiswa" style="background:#ef4444; color:white; border:none; padding:10px 12px; border-radius:8px; cursor:pointer; font-weight:600;">Kosongkan</button>
+                </div>
             </div>
 
             <!-- Upload Bukti -->
@@ -452,6 +447,9 @@
                     </tbody>
                 </table>
             </div>
+        <div style="padding:12px 24px; border-top:1px solid #f3f4f6; text-align:right;">
+            <button type="button" onclick="tutupModalSiswa()" style="background:#6b7280; color:white; border:none; padding:8px 12px; border-radius:8px;">Tutup</button>
+        </div>
         </div>
     </div>
 </div>
@@ -460,7 +458,7 @@
 
 @push('scripts')
 <script>
-    const initialPemasukanSiswa = @json($initialPemasukanSiswa);
+    const initialPemasukanSiswa = null;
 
     function bukaModal() {
         var modal = document.getElementById('modalTambah');
@@ -498,28 +496,33 @@
 
     function toggleSiswaSection() {
         var jenisSelect = document.getElementById('jenisPemasukan');
-        var siswaSection = document.getElementById('siswa-section');
-        var siswaDisplay = document.getElementById('siswa_display');
-        var siswaId = document.getElementById('siswa_id');
+        var siswaListSection = document.getElementById('siswa-list-section');
+        var inputJumlah = document.getElementById('inputJumlah');
 
-        if (!jenisSelect || !siswaSection) {
+        if (!jenisSelect) {
             return;
         }
 
         if (jenisSelect.value === 'SPP') {
-            siswaSection.style.display = 'block';
-            if (siswaDisplay) {
-                siswaDisplay.required = true;
+            // show bulk SPP list only
+            if (siswaListSection) siswaListSection.style.display = 'block';
+            // disable global jumlah for SPP
+            if (inputJumlah) {
+                inputJumlah.disabled = true;
+                inputJumlah.style.background = '#f3f4f6';
+                inputJumlah.placeholder = 'Diisi per siswa';
             }
         } else {
-            siswaSection.style.display = 'none';
-            if (siswaDisplay) {
-                siswaDisplay.required = false;
-                siswaDisplay.value = '';
+            if (siswaListSection) siswaListSection.style.display = 'none';
+            // reset and re-enable global jumlah
+            if (inputJumlah) {
+                inputJumlah.disabled = false;
+                inputJumlah.style.background = '';
+                inputJumlah.placeholder = '0';
             }
-            if (siswaId) {
-                siswaId.value = '';
-            }
+            // clear selectedStudents
+            selectedStudents = [];
+            renderSiswaTable();
         }
     }
 
@@ -561,18 +564,172 @@
             tbody.innerHTML = '<tr><td colspan="5" style="padding:20px 16px; text-align:center; color:#9ca3af;">Tidak ada data siswa ditemukan.</td></tr>';
             return;
         }
-
+        // When rendering search results, mark already selected students
         tbody.innerHTML = data.map(function (siswa) {
+            var already = selectedStudents.find(function (s) { return String(s.id) === String(siswa.id); });
+            var btnHtml = already ? '<button type="button" disabled style="background:#9ca3af; color:white; border:none; border-radius:8px; padding:7px 12px; font-size:12px;">Sudah Dipilih</button>' : '<button type="button" class="btn-pilih-siswa" data-id="' + escapeHtml(siswa.id) + '" data-nik="' + escapeHtml(siswa.nik || '') + '" data-nama="' + escapeHtml(siswa.nama || '') + '" data-kelas="' + escapeHtml(siswa.kelas || '') + '" style="background:#1D9E75; color:white; border:none; border-radius:8px; padding:7px 12px; font-size:12px; cursor:pointer;">Pilih</button>';
             return '<tr style="border-bottom:1px solid #f3f4f6;">' +
                 '<td style="padding:12px 16px; color:#1f2937;">' + escapeHtml(siswa.nik || '-') + '</td>' +
                 '<td style="padding:12px 16px; color:#1f2937;">' + escapeHtml(siswa.nama || '-') + '</td>' +
                 '<td style="padding:12px 16px; color:#1f2937;">' + escapeHtml(siswa.kelas || '-') + '</td>' +
                 '<td style="padding:12px 16px; color:#1f2937;">' + escapeHtml(siswa.jenis_kelamin || '-') + '</td>' +
-                '<td style="padding:12px 16px; text-align:center;">' +
-                    '<button type="button" class="btn-pilih-siswa" data-id="' + escapeHtml(siswa.id) + '" data-nik="' + escapeHtml(siswa.nik || '') + '" data-nama="' + escapeHtml(siswa.nama || '') + '" data-kelas="' + escapeHtml(siswa.kelas || '') + '" style="background:#1D9E75; color:white; border:none; border-radius:8px; padding:7px 12px; font-size:12px; cursor:pointer;">Pilih</button>' +
-                '</td>' +
+                '<td style="padding:12px 16px; text-align:center;">' + btnHtml + '</td>' +
             '</tr>';
         }).join('');
+    }
+
+    // -- Bulk SPP client state and helpers --
+    let selectedStudents = [];
+
+    function renderSiswaTable() {
+        var tbody = document.getElementById('siswa-table-body');
+        var badge = document.getElementById('totalSelectedBadge');
+        var previewBtn = document.getElementById('btnPreviewSimpan');
+        if (!tbody) return;
+
+        if (selectedStudents.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="padding:16px; text-align:center; color:#9ca3af;">Belum ada siswa ditambahkan.</td></tr>';
+            badge.textContent = 'Total: 0 siswa dipilih';
+            previewBtn.disabled = true;
+            return;
+        }
+
+        badge.textContent = 'Total: ' + selectedStudents.length + ' siswa dipilih';
+        previewBtn.disabled = false;
+
+        tbody.innerHTML = selectedStudents.map(function (s, idx) {
+            return '<tr style="border-bottom:1px solid #f3f4f6;">' +
+                '<td style="padding:12px 16px; text-align:center;">' + (idx+1) + '</td>' +
+                '<td style="padding:12px 16px;">' + escapeHtml(s.nama) + '</td>' +
+                '<td style="padding:12px 16px;">' + escapeHtml(s.nik || '-') + '</td>' +
+                '<td style="padding:12px 16px;">' + escapeHtml(s.kelas || '-') + '</td>' +
+                '<td style="padding:12px 16px; text-align:right;"><input type="number" min="1" value="' + (s.jumlah || '') + '" data-idx="' + idx + '" class="siswa-jumlah-input" style="width:120px; padding:6px 8px; border:1px solid #e5e7eb; border-radius:8px; text-align:right;" /></td>' +
+                '<td style="padding:12px 16px; text-align:center;"><button type="button" class="btn-hapus-siswa" data-idx="' + idx + '" style="background:#ef4444; color:white; border:none; padding:6px 10px; border-radius:8px;">Hapus</button></td>' +
+            '</tr>';
+        }).join('');
+    }
+
+    function addSelectedStudent(siswa) {
+        if (selectedStudents.find(s => String(s.id) === String(siswa.id))) return;
+        selectedStudents.push({ id: siswa.id, nama: siswa.nama, nik: siswa.nik, kelas: siswa.kelas, jumlah: 0 });
+        renderSiswaTable();
+        // re-render search results to update buttons
+        var searchInput = document.getElementById('searchSiswa');
+        if (searchInput && searchInput.value.trim().length > 0) {
+            cariSiswa();
+        }
+    }
+
+    function removeSelectedStudent(index) {
+        selectedStudents.splice(index, 1);
+        renderSiswaTable();
+        var searchInput = document.getElementById('searchSiswa');
+        if (searchInput && searchInput.value.trim().length > 0) {
+            cariSiswa();
+        }
+    }
+
+    // Preview modal
+    function bukaPreviewModal() {
+        // validate
+        if (selectedStudents.length === 0) {
+            alert('Pilih minimal 1 siswa.');
+            return;
+        }
+        var invalid = selectedStudents.find(s => !s.jumlah || Number(s.jumlah) <= 0);
+        if (invalid) {
+            alert('Pastikan semua siswa memiliki jumlah > 0.');
+            return;
+        }
+
+        // build preview HTML
+        var modalId = 'modalPreviewSPP';
+        var existing = document.getElementById(modalId);
+        if (existing) existing.remove();
+
+        var tanggal = document.querySelector('input[name="tanggal"]').value;
+        var jenis = document.getElementById('jenisPemasukan').value;
+        var keterangan = document.getElementById('inputKeterangan').value;
+
+        var rows = selectedStudents.map(function(s, idx){
+            return '<tr style="border-bottom:1px solid #f3f4f6;">' +
+                '<td style="padding:8px 12px;">'+(idx+1)+'</td>' +
+                '<td style="padding:8px 12px;">'+escapeHtml(s.nama)+'</td>' +
+                '<td style="padding:8px 12px;">'+escapeHtml(s.nik || '-')+'</td>' +
+                '<td style="padding:8px 12px;">'+escapeHtml(s.kelas || '-')+'</td>' +
+                '<td style="padding:8px 12px; text-align:right;">'+formatRupiah(s.jumlah || 0)+'</td>' +
+            '</tr>';
+        }).join('');
+
+        var total = selectedStudents.reduce(function(acc, s){ return acc + Number(s.jumlah || 0); }, 0);
+
+        var modalHtml = '\n<div id="'+modalId+'" style="display:flex; position:fixed; inset:0; z-index:11000; align-items:center; justify-content:center;">\n' +
+            '<div onclick="document.getElementById(\''+modalId+'\').remove(); document.body.style.overflow = \''+'\';" style="position:absolute; inset:0; background:rgba(0,0,0,0.45);"></div>\n' +
+            '<div style="position:relative; background:white; border-radius:12px; width:100%; max-width:720px; margin:0 16px; max-height:90vh; overflow:auto; z-index:11010;">\n' +
+            '<div style="padding:16px 20px; border-bottom:1px solid #f3f4f6; display:flex; justify-content:space-between; align-items:center;">\n' +
+            '<div><strong>Konfirmasi Pemasukan SPP</strong><div style="font-size:12px;color:#6b7280;margin-top:6px;">Tanggal: '+escapeHtml(tanggal)+' &nbsp; • &nbsp; Jenis: '+escapeHtml(jenis)+'</div></div>' +
+            '<button onclick="document.getElementById(\''+modalId+'\').remove(); document.body.style.overflow = \''+'\';" style="background:#f3f4f6;border:none;padding:6px 10px;border-radius:8px;">&times;</button></div>' +
+            '<div style="padding:16px 20px;">' +
+            '<div style="margin-bottom:12px; color:#374151;">Keterangan: '+escapeHtml(keterangan || '-')+'</div>' +
+            '<div style="border:1px solid #f3f4f6; border-radius:8px; overflow:hidden;"><table style="width:100%;">' +
+            '<thead><tr style="background:#f9fafb;"><th style="padding:8px 12px;">No</th><th style="padding:8px 12px;">Nama</th><th style="padding:8px 12px;">NIK</th><th style="padding:8px 12px;">Kelas</th><th style="padding:8px 12px; text-align:right;">Jumlah</th></tr></thead>' +
+            '<tbody>'+rows+'</tbody>' +
+            '<tfoot><tr><td colspan="4" style="padding:8px 12px; text-align:right;"><strong>Total Keseluruhan:</strong></td><td style="padding:8px 12px; text-align:right;"><strong>'+formatRupiah(total)+'</strong></td></tr></tfoot>' +
+            '</table></div>' +
+            '<div style="display:flex; gap:8px; margin-top:16px;"><button onclick="document.getElementById(\''+modalId+'\').remove(); document.body.style.overflow = \''+'\';" style="flex:1; border:1px solid #e5e7eb; background:white; padding:10px; border-radius:8px;">Kembali Edit</button>' +
+            '<button onclick="submitBulkSPP()" style="flex:1; background:#10B981; color:white; border:none; padding:10px; border-radius:8px;">Simpan Semua Transaksi</button></div>' +
+            '</div></div></div>\n';
+
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Helper to format to Rupiah (simple)
+    function formatRupiah(num) {
+        return (Number(num) || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
+    }
+
+    async function submitBulkSPP() {
+        var url = '{{ route("admin.pemasukan.store") }}';
+        var token = document.querySelector('input[name="_token"]').value;
+        var tanggal = document.querySelector('input[name="tanggal"]').value;
+        var jenis = document.getElementById('jenisPemasukan').value;
+        var keterangan = document.getElementById('inputKeterangan').value;
+        var fileInput = document.querySelector('input[name="bukti_transaksi"]');
+
+        // prepare siswa_list
+        var siswa_list = selectedStudents.map(s => ({ siswa_id: s.id, jumlah: Number(s.jumlah) }));
+
+        // if there's a file, use FormData
+        var hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
+        try {
+            var resp;
+            if (hasFile) {
+                var fd = new FormData();
+                fd.append('_token', token);
+                fd.append('tanggal', tanggal);
+                fd.append('jenis_pemasukan', jenis);
+                fd.append('keterangan', keterangan);
+                fd.append('siswa_list', JSON.stringify(siswa_list));
+                fd.append('bukti_transaksi', fileInput.files[0]);
+
+                resp = await fetch(url, { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } });
+            } else {
+                var payload = { _token: token, tanggal: tanggal, jenis_pemasukan: jenis, keterangan: keterangan, siswa_list: siswa_list };
+                resp = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': token }, body: JSON.stringify(payload) });
+            }
+
+            var data = await resp.json();
+            if (data.success) {
+                alert('Berhasil menyimpan ' + data.count + ' transaksi SPP.');
+                window.location.reload();
+            } else {
+                alert(data.message || 'Terjadi kesalahan.');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Terjadi kesalahan saat menyimpan.');
+        }
     }
 
     function pilihSiswa(siswa) {
@@ -626,17 +783,58 @@
     });
 
     document.addEventListener('click', function (event) {
+        // Open student popup (single-select shortcut)
         if (event.target && event.target.id === 'btnPilihSiswa') {
             bukaModalSiswa();
+            return;
         }
 
-        if (event.target && event.target.classList.contains('btn-pilih-siswa')) {
-            pilihSiswa({
+        // Open student popup for bulk add
+        if (event.target && event.target.id === 'btnTambahSiswa') {
+            bukaModalSiswa();
+            return;
+        }
+
+        // Single-select 'Pilih' from search results (keeps old behavior)
+        if (event.target && event.target.classList.contains('btn-pilih-siswa') && event.target.closest('#modalSiswa')) {
+            // If siswa-list-section is visible (bulk mode), add to selectedStudents
+            var siswaObj = {
                 id: event.target.dataset.id,
                 nik: event.target.dataset.nik,
                 nama: event.target.dataset.nama,
-                kelas: event.target.dataset.kelas,
-            });
+                kelas: event.target.dataset.kelas
+            };
+
+            var siswaListSection = document.getElementById('siswa-list-section');
+            if (siswaListSection && siswaListSection.style.display === 'block') {
+                addSelectedStudent(siswaObj);
+            } else {
+                // fallback: single-select behavior
+                pilihSiswa(siswaObj);
+            }
+            return;
+        }
+
+        // Handle remove from selected list
+        if (event.target && event.target.classList.contains('btn-hapus-siswa')) {
+            var idx = event.target.dataset.idx;
+            if (typeof idx !== 'undefined') {
+                removeSelectedStudent(Number(idx));
+            }
+            return;
+        }
+
+        // Clear selected students
+        if (event.target && event.target.id === 'btnKosongkanSiswa') {
+            selectedStudents = [];
+            renderSiswaTable();
+            return;
+        }
+
+        // Preview & Simpan
+        if (event.target && event.target.id === 'btnPreviewSimpan') {
+            bukaPreviewModal();
+            return;
         }
     });
 
@@ -644,6 +842,14 @@
         if (event.target && event.target.id === 'searchSiswa') {
             clearTimeout(debounceSiswaSearch);
             debounceSiswaSearch = setTimeout(cariSiswa, 250);
+        }
+
+        // update jumlah per siswa in selectedStudents
+        if (event.target && event.target.classList && event.target.classList.contains('siswa-jumlah-input')) {
+            var idx = event.target.dataset.idx;
+            if (typeof idx !== 'undefined' && selectedStudents[Number(idx)]) {
+                selectedStudents[Number(idx)].jumlah = event.target.value ? Number(event.target.value) : 0;
+            }
         }
     });
 
@@ -671,10 +877,11 @@
         toggleSiswaSection();
 
         if (initialPemasukanSiswa && document.getElementById('jenisPemasukan') && document.getElementById('jenisPemasukan').value === 'SPP') {
-            pilihSiswa(initialPemasukanSiswa);
-            var siswaSection = document.getElementById('siswa-section');
-            if (siswaSection) {
-                siswaSection.style.display = 'block';
+            // add initial siswa into bulk list if present
+            addSelectedStudent(initialPemasukanSiswa);
+            var siswaListSection = document.getElementById('siswa-list-section');
+            if (siswaListSection) {
+                siswaListSection.style.display = 'block';
             }
         }
     });

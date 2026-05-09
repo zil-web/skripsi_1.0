@@ -59,7 +59,7 @@
             <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm font-semibold text-gray-700">{{ strtoupper(substr($user->name ?? 'A', 0, 1)) }}</div>
             <div class="min-w-0 flex-1">
                 <div class="font-semibold text-sm text-gray-900 truncate">{{ $user->name ?? 'Admin' }}</div>
-                <div class="mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium" style="background:rgba(29,158,117,0.12); color:var(--accent);">Bendahara</div>
+
             </div>
         </div>
 
@@ -72,10 +72,6 @@
                 <span class="nav-icon" aria-hidden="true"></span>
                 <span class="nav-text">Pemasukan</span>
             </a>
-            <a href="{{ route('admin.admin.siswa.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors {{ request()->routeIs('admin.admin.siswa.*') ? 'bg-green-50 text-green-700 font-semibold' : 'text-gray-700 hover:bg-gray-100' }}">
-                <span class="nav-icon" aria-hidden="true"></span>
-                <span class="nav-text">Data Siswa</span>
-            </a>
             <a href="{{ route('admin.pengeluaran.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors {{ request()->routeIs('admin.pengeluaran.*') ? 'bg-green-50 text-green-700 font-semibold' : 'text-gray-700 hover:bg-gray-100' }}">
                 <span class="nav-icon" aria-hidden="true"></span>
                 <span class="nav-text">Pengeluaran</span>
@@ -84,16 +80,10 @@
                 <span class="nav-icon" aria-hidden="true"></span>
                 <span class="nav-text">Transaksi</span>
             </a>
-            @if(Route::has('admin.siswa.index'))
-                <a href="{{ route('admin.siswa.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors {{ request()->routeIs('admin.siswa.*') ? 'bg-green-50 text-green-700 font-semibold' : 'text-gray-700 hover:bg-gray-100' }}">
-                    <span class="nav-icon" aria-hidden="true"></span>
-                    <span class="nav-text">Data Siswa</span>
-                </a>
-                <a href="{{ route('admin.siswa.index', ['open' => 'tambah']) }}" class="ml-3 flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors {{ request()->routeIs('admin.siswa.*') && request('open') === 'tambah' ? 'bg-green-50 text-green-700 font-semibold' : 'text-gray-500 hover:bg-gray-100' }}">
-                    <span class="nav-icon" aria-hidden="true"></span>
-                    <span class="nav-subtext">Tambah Data Siswa</span>
-                </a>
-            @endif
+            <a href="{{ route('admin.siswa.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors {{ request()->routeIs('admin.siswa.*') ? 'bg-green-50 text-green-700 font-semibold' : 'text-gray-700 hover:bg-gray-100' }}">
+                <span class="nav-icon" aria-hidden="true"></span>
+                <span class="nav-text">Data Siswa</span>
+            </a>
         </nav>
 
         <div class="p-4 border-t border-gray-100">
@@ -114,10 +104,6 @@
             </div>
             <div class="flex items-center gap-3 text-sm text-gray-600">
                 <div class="rounded-full bg-gray-100 px-3 py-1.5">{{ now()->format('d M Y') }}</div>
-                <div class="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5">
-                    <div class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-xs font-semibold text-gray-700">{{ strtoupper(substr($user->name ?? 'A', 0, 1)) }}</div>
-                    <span class="hidden sm:block font-medium text-gray-700">{{ $user->name ?? 'Admin' }}</span>
-                </div>
             </div>
         </header>
 

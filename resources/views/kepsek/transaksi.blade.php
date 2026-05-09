@@ -1,14 +1,7 @@
-@extends('layouts.admin')
+@extends('layouts.kepsek')
 
 @section('page-title', 'Riwayat Transaksi')
-@section('page-subtitle', 'Cari dan filter semua transaksi pemasukan & pengeluaran berdasarkan nominal')
-
-@section('sidebar-menu')
-    <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded mb-1 text-gray-700 hover:bg-gray-100">Dashboard</a>
-    <a href="{{ route('admin.pemasukan.index') }}" class="block px-3 py-2 rounded mb-1 text-gray-700 hover:bg-gray-100">Pemasukan</a>
-    <a href="{{ route('admin.pengeluaran.index') }}" class="block px-3 py-2 rounded mb-1 text-gray-700 hover:bg-gray-100">Pengeluaran</a>
-    <a href="{{ route('admin.transaksi.index') }}" class="block px-3 py-2 rounded mb-1 bg-[var(--accent)] text-white">Transaksi</a>
-@endsection
+@section('page-subtitle', 'Cari dan filter semua transaksi pemasukan & pengeluaran')
 
 @section('content')
     @php
@@ -52,7 +45,7 @@
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <div class="text-xs text-gray-400">Total Pemasukan</div>
-                        <div class="mt-1 text-xl font-medium text-gray-800">{{ $formatRupiah($total_pemasukan) }}</div>
+                        <div class="mt-1 text-xl font-medium text-gray-800">{{ $formatRupiah($total_pemasukan ?? 0) }}</div>
                         <div class="text-xs text-gray-400 mt-1">Transaksi approved</div>
                     </div>
                     <div class="rounded-lg p-2 w-8 h-8 bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -65,7 +58,7 @@
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <div class="text-xs text-gray-400">Total Pengeluaran</div>
-                        <div class="mt-1 text-xl font-medium text-gray-800">{{ $formatRupiah($total_pengeluaran) }}</div>
+                        <div class="mt-1 text-xl font-medium text-gray-800">{{ $formatRupiah($total_pengeluaran ?? 0) }}</div>
                         <div class="text-xs text-gray-400 mt-1">Transaksi approved</div>
                     </div>
                     <div class="rounded-lg p-2 w-8 h-8 bg-red-50 text-red-600 flex items-center justify-center">
@@ -78,10 +71,10 @@
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <div class="text-xs text-gray-400">Saldo Bersih</div>
-                        <div class="mt-1 text-xl font-medium {{ $saldo_bersih >= 0 ? 'text-blue-800' : 'text-red-600' }}">{{ $formatRupiah($saldo_bersih) }}</div>
+                        <div class="mt-1 text-xl font-medium {{ ($saldo_bersih ?? 0) >= 0 ? 'text-blue-800' : 'text-red-600' }}">{{ $formatRupiah($saldo_bersih ?? 0) }}</div>
                         <div class="text-xs text-gray-400 mt-1">Pemasukan - pengeluaran</div>
                     </div>
-                    <div class="rounded-lg p-2 w-8 h-8 {{ $saldo_bersih >= 0 ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-600' }} flex items-center justify-center">
+                    <div class="rounded-lg p-2 w-8 h-8 {{ ($saldo_bersih ?? 0) >= 0 ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-600' }} flex items-center justify-center">
                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4" /></svg>
                     </div>
                 </div>
@@ -91,7 +84,7 @@
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <div class="text-xs text-gray-400">Total Transaksi</div>
-                        <div class="mt-1 text-xl font-medium text-gray-800">{{ $total_count }}</div>
+                        <div class="mt-1 text-xl font-medium text-gray-800">{{ $total_count ?? ($transaksis->total() ?? 0) }}</div>
                         <div class="text-xs text-gray-400 mt-1">Jumlah data</div>
                     </div>
                     <div class="rounded-lg p-2 w-8 h-8 bg-gray-100 text-gray-600 flex items-center justify-center">
@@ -141,8 +134,8 @@
                     <input type="text" name="nominal_max" value="{{ request('nominal_max') }}" placeholder="Max" class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-[#1D9E75] h-9">
                 </div>
                 <button type="submit" class="bg-[#1D9E75] text-white text-xs rounded-lg px-4 h-9">Filter</button>
-                <a href="{{ route('admin.transaksi.index') }}" class="bg-white border border-gray-200 text-xs rounded-lg px-4 h-9 inline-flex items-center">Reset</a>
-                <a href="{{ route('admin.transaksi.export-csv', request()->query()) }}" class="bg-emerald-600 text-white text-xs rounded-lg px-4 h-9 inline-flex items-center hover:bg-emerald-700">Ekspor</a>
+                <a href="{{ route('kepsek.transaksi') }}" class="bg-white border border-gray-200 text-xs rounded-lg px-4 h-9 inline-flex items-center">Reset</a>
+                <a href="{{ route('kepsek.transaksi.export-csv', request()->query()) }}" class="bg-emerald-600 text-white text-xs rounded-lg px-4 h-9 inline-flex items-center hover:bg-emerald-700">Ekspor</a>
             </form>
         </div>
 
@@ -161,7 +154,6 @@
                                 <th class="text-[10px] uppercase tracking-wide text-gray-400 font-medium px-4 py-3 border-b border-gray-50 text-left">Status</th>
                                 <th class="text-[10px] uppercase tracking-wide text-gray-400 font-medium px-4 py-3 border-b border-gray-50 text-left">Bukti</th>
                                 <th class="text-[10px] uppercase tracking-wide text-gray-400 font-medium px-4 py-3 border-b border-gray-50 text-left">Detail</th>
-                                <th class="text-[10px] uppercase tracking-wide text-gray-400 font-medium px-4 py-3 border-b border-gray-50 text-left">Edit</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -190,22 +182,6 @@
                                     <td class="text-sm px-4 py-2.5">
                                         <button data-id="{{ $t->id }}" class="open-transaksi-detail text-[11px] px-3 py-1 rounded-lg border font-medium border-gray-200 text-gray-600 hover:bg-gray-50">Detail</button>
                                     </td>
-                                    <td class="text-sm px-4 py-2.5">
-                                        @if($t->pendingEditRequest)
-                                            <span class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">Menunggu Approval</span>
-                                        @else
-                                            <button
-                                                type="button"
-                                                class="open-edit-request inline-flex items-center text-[11px] px-3 py-1 rounded-lg border font-medium border-[#1D9E75] text-[#1D9E75] hover:bg-emerald-50"
-                                                data-id="{{ $t->id }}"
-                                                data-old-jumlah="{{ (int) $t->jumlah }}"
-                                                data-old-jenis="{{ $statusValue($t->jenis) }}"
-                                                data-old-keterangan="{{ $t->keterangan }}"
-                                            >
-                                                Edit
-                                            </button>
-                                        @endif
-                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -225,7 +201,7 @@
         @endif
     </div>
 
-    <!-- Transaksi Detail Modal -->
+    <!-- Transaksi Detail Modal (reuse same modal behavior) -->
     <div id="transaksi-detail-modal" class="fixed inset-0 hidden items-center justify-center z-50">
         <div class="absolute inset-0 bg-black/40"></div>
         <div class="relative bg-white rounded-lg shadow-xl w-[760px] max-w-full mx-4 overflow-hidden">
@@ -296,58 +272,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Edit Request Modal -->
-    <div id="edit-request-modal" class="fixed inset-0 hidden items-center justify-center z-[70]">
-        <div class="absolute inset-0 bg-black/40"></div>
-        <div class="relative bg-white rounded-[12px] shadow-xl w-[640px] max-w-full mx-4 overflow-hidden">
-            <div class="px-6 py-4 border-b flex items-center justify-between bg-[#1D9E75]">
-                <h3 class="font-semibold text-white">Ajukan Perubahan Transaksi</h3>
-                <button id="edit-request-close" class="text-white">✕</button>
-            </div>
-            <form id="edit-request-form" method="POST" class="p-6 space-y-5">
-                @csrf
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 border border-gray-100 rounded-lg p-4">
-                    <div>
-                        <label class="block text-xs text-gray-500 mb-1">Jumlah Saat Ini</label>
-                        <input id="er-old-jumlah" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-100" readonly>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-500 mb-1">Jenis Saat Ini</label>
-                        <input id="er-old-jenis" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-100" readonly>
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-xs text-gray-500 mb-1">Keterangan Saat Ini</label>
-                        <textarea id="er-old-keterangan" rows="3" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-100" readonly></textarea>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label for="er-new-jumlah" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Baru <span class="text-red-500">*</span></label>
-                        <input id="er-new-jumlah" type="number" name="new_jumlah" min="1" required class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[#1D9E75]">
-                    </div>
-                    <div>
-                        <label for="er-new-jenis" class="block text-sm font-medium text-gray-700 mb-1">Jenis Baru <span class="text-red-500">*</span></label>
-                        <select id="er-new-jenis" name="new_jenis" required class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[#1D9E75]">
-                            <option value="pemasukan">Pemasukan</option>
-                            <option value="pengeluaran">Pengeluaran</option>
-                        </select>
-                    </div>
-                    <div class="md:col-span-2">
-                        <label for="er-new-keterangan" class="block text-sm font-medium text-gray-700 mb-1">Keterangan Baru</label>
-                        <textarea id="er-new-keterangan" name="new_keterangan" rows="4" maxlength="500" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[#1D9E75]"></textarea>
-                    </div>
-                </div>
-
-                <div class="flex justify-end gap-2">
-                    <button type="button" id="edit-request-cancel" class="px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50">Batal</button>
-                    <button type="submit" class="px-4 py-2 text-sm rounded-lg bg-[#1D9E75] text-white hover:bg-[#188864]">Kirim Permintaan Edit</button>
-                </div>
-            </form>
-        </div>
-    </div>
 @endsection
 
 @push('scripts')
@@ -365,11 +289,6 @@
         const buktiPdf = el('#bukti-pdf');
         const buktiLoading = el('#bukti-loading');
         const buktiDownloadBtn = el('#bukti-download');
-        const editRequestModal = el('#edit-request-modal');
-        const editRequestForm = el('#edit-request-form');
-        const editRequestClose = el('#edit-request-close');
-        const editRequestCancel = el('#edit-request-cancel');
-        const editRequestActionTemplate = `{{ url('/transaksi/__ID__/edit-request') }}`;
 
         let currentBuktiUrl = null;
 
@@ -378,56 +297,28 @@
         
         function openBuktiModal(){ buktiModal.classList.remove('hidden'); buktiModal.classList.add('flex'); }
         function closeBuktiModal(){ buktiModal.classList.add('hidden'); buktiModal.classList.remove('flex'); }
-        function openEditRequestModal(){ editRequestModal.classList.remove('hidden'); editRequestModal.classList.add('flex'); }
-        function closeEditRequestModal(){ editRequestModal.classList.add('hidden'); editRequestModal.classList.remove('flex'); }
 
         function formatRupiah(v){ return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits:0 }).format(Number(v||0)); }
 
         function displayBukti(buktiUrl, buktiRaw) {
-            // buktiUrl = route URL (e.g., /admin/transaksi/1/bukti)
-            // buktiRaw = database path with extension (e.g., bukti/filename.jpg)
             currentBuktiUrl = buktiUrl;
-            
-            // Show loading, hide all content
             buktiLoading.classList.remove('hidden');
             buktiImage.classList.add('hidden');
             buktiPdf.classList.add('hidden');
-            
-            // Use buktiRaw for file type detection since it has the extension
             const ext = buktiRaw ? buktiRaw.split('.').pop().toLowerCase() : '';
-            console.log('Bukti display:', { buktiUrl, buktiRaw, ext });
-            
             if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
-                console.log('Displaying as image:', buktiUrl);
                 buktiImage.src = buktiUrl;
-                buktiImage.onload = () => {
-                    console.log('Image loaded successfully');
-                    buktiLoading.classList.add('hidden');
-                    buktiImage.classList.remove('hidden');
-                };
-                buktiImage.onerror = () => {
-                    console.error('Failed to load image:', buktiUrl);
-                    buktiLoading.classList.add('hidden');
-                    buktiImage.classList.add('hidden');
-                    const errorDiv = document.createElement('div');
-                    errorDiv.className = 'text-center text-red-600 font-medium';
-                    errorDiv.textContent = 'Gagal memuat gambar. Status: ' + buktiImage.status;
-                    buktiImage.parentElement.appendChild(errorDiv);
-                };
+                buktiImage.onload = function(){ buktiLoading.classList.add('hidden'); buktiImage.classList.remove('hidden'); };
             } else if (ext === 'pdf') {
-                console.log('Displaying as PDF:', buktiUrl);
-                buktiLoading.classList.add('hidden');
                 buktiPdf.src = buktiUrl;
-                buktiPdf.classList.remove('hidden');
+                buktiPdf.onload = function(){ buktiLoading.classList.add('hidden'); buktiPdf.classList.remove('hidden'); };
             } else {
-                console.warn('Unknown file type:', ext, 'URL:', buktiUrl);
                 buktiLoading.classList.add('hidden');
                 const unknownDiv = document.createElement('div');
                 unknownDiv.className = 'text-center text-yellow-600 font-medium';
                 unknownDiv.textContent = 'Tipe file tidak dikenali (' + ext + '). Silakan coba unduh.';
                 buktiImage.parentElement.appendChild(unknownDiv);
             }
-            
             openBuktiModal();
         }
 
@@ -435,7 +326,7 @@
             btn.addEventListener('click', async function(e){
                 const id = this.dataset.id;
                 try{
-                    const res = await fetch(`{{ url('/admin/transaksi') }}/${id}/detail`, { headers:{ 'X-Requested-With':'XMLHttpRequest' } });
+                    const res = await fetch(`{{ url('/kepsek/transaksi') }}/${id}`, { headers:{ 'X-Requested-With':'XMLHttpRequest' } });
                     if(!res.ok) throw new Error('Gagal mengambil data');
                     const data = await res.json();
 
@@ -443,7 +334,6 @@
                     el('#td-keterangan').textContent = data.keterangan ?? '-';
                     el('#td-jenis').textContent = data.jenis_transaksi ?? data.jenis ?? '-';
                     
-                    // Display siswa only for pemasukan (not for pengeluaran)
                     const siswaSectionLabel = el('#td-siswa-label');
                     const siswaSection = el('#td-siswa');
                     if (data.jenis === 'pemasukan') {
@@ -458,7 +348,6 @@
                         }
                         siswaSection.classList.remove('hidden');
                     } else {
-                        // Hide siswa section for pengeluaran
                         siswaSectionLabel.classList.add('hidden');
                         siswaSection.classList.add('hidden');
                     }
@@ -486,26 +375,6 @@
             });
         });
 
-        els('.open-edit-request').forEach(btn => {
-            btn.addEventListener('click', function(){
-                const id = this.dataset.id;
-                const oldJumlah = this.dataset.oldJumlah ?? '0';
-                const oldJenis = this.dataset.oldJenis ?? '-';
-                const oldKeterangan = this.dataset.oldKeterangan ?? '';
-
-                editRequestForm.action = editRequestActionTemplate.replace('__ID__', id);
-                el('#er-old-jumlah').value = formatRupiah(oldJumlah);
-                el('#er-old-jenis').value = oldJenis;
-                el('#er-old-keterangan').value = oldKeterangan;
-
-                el('#er-new-jumlah').value = Number(oldJumlah || 0);
-                el('#er-new-jenis').value = oldJenis;
-                el('#er-new-keterangan').value = oldKeterangan;
-
-                openEditRequestModal();
-            });
-        });
-
         // Detail modal close handlers
         detailCloseBtn.addEventListener('click', closeDetailModal);
         detailModal.addEventListener('click', function(e){ if(e.target === detailModal) closeDetailModal(); });
@@ -514,11 +383,6 @@
         buktiCloseBtn.addEventListener('click', closeBuktiModal);
         buktiCloseBtn2.addEventListener('click', closeBuktiModal);
         buktiModal.addEventListener('click', function(e){ if(e.target === buktiModal) closeBuktiModal(); });
-
-        // Edit request modal close handlers
-        editRequestClose.addEventListener('click', closeEditRequestModal);
-        editRequestCancel.addEventListener('click', closeEditRequestModal);
-        editRequestModal.addEventListener('click', function(e){ if(e.target === editRequestModal) closeEditRequestModal(); });
 
         // Download handler
         buktiDownloadBtn.addEventListener('click', function(){

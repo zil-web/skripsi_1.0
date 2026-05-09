@@ -24,7 +24,10 @@ class Transaksi extends Model
         'keterangan',
         'bukti_transaksi',
         'status',
+        'catatan_kepsek',
         'id_admin',
+        'reviewed_by',
+        'reviewed_at',
         'id_siswa',
         'siswa_id',
     ];
@@ -34,11 +37,22 @@ class Transaksi extends Model
         'jenis' => TransaksiJenis::class,
         'status' => TransaksiStatus::class,
         'jumlah' => 'decimal:2',
+        'reviewed_at' => 'datetime',
     ];
 
     public function admin(): BelongsTo
     {
         return $this->belongsTo(User::class, 'id_admin');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'id_admin');
+    }
+
+    public function reviewedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 
     public function siswa(): BelongsTo

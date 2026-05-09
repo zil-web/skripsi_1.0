@@ -10,6 +10,8 @@ use App\Http\Controllers\Admin\PengeluaranController;
 use App\Http\Controllers\Admin\PemasukanController;
 use App\Http\Controllers\Admin\ApprovalController;
 use App\Http\Controllers\Admin\SiswaController;
+use App\Http\Controllers\EditRequestController;
+use App\Http\Controllers\KepsekController;
 use App\Http\Controllers\Kepsek\DashboardKepsekController;
 
 // Home route: redirect based on guard
@@ -34,6 +36,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::post('/transaksi/{id}/edit-request', [EditRequestController::class, 'store'])->name('edit-request.store');
+});
+
 // Unified auth routes (shared login page)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
@@ -51,6 +57,7 @@ Route::get('/siswa/search', [SiswaController::class, 'search'])
 Route::middleware(['auth.admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('transaksi', TransaksiController::class)->only(['index', 'create', 'store']);
+    Route::get('transaksi/export-csv', [TransaksiController::class, 'exportCsv'])->name('transaksi.export-csv');
     Route::get('transaksi/{id}/detail', [TransaksiController::class, 'detail'])->name('transaksi.detail');
     Route::get('transaksi/{id}/bukti', [TransaksiController::class, 'bukti'])->name('transaksi.bukti');
     Route::resource('pemasukan', PemasukanController::class)->only(['index', 'create', 'store']);
@@ -58,17 +65,25 @@ Route::middleware(['auth.admin'])->prefix('admin')->name('admin.')->group(functi
     Route::resource('siswa', SiswaController::class)
         ->only(['index', 'store', 'update', 'destroy'])
         ->names([
-            'index'   => 'admin.siswa.index',
-            'store'   => 'admin.siswa.store',
-            'update'  => 'admin.siswa.update',
-            'destroy' => 'admin.siswa.destroy',
+            'index'   => 'siswa.index',
+            'store'   => 'siswa.store',
+            'update'  => 'siswa.update',
+            'destroy' => 'siswa.destroy',
         ]);
 });
 
 // Kepsek routes (protected by auth.kepsek middleware)
 Route::middleware(['auth.kepsek'])->prefix('kepsek')->name('kepsek.')->group(function () {
     Route::get('dashboard', [DashboardKepsekController::class, 'index'])->name('dashboard');
-    // other kepsek routes can go here
+    Route::get('/approvals', [KepsekController::class, 'index'])->name('approvals');
+    Route::get('/transaksi', [KepsekController::class, 'transaksi'])->name('transaksi');
+    Route::get('/transaksi/export-csv', [KepsekController::class, 'exportCsv'])->name('transaksi.export-csv');
+    Route::get('/transaksi/{id}', [KepsekController::class, 'transaksiDetail'])->name('transaksi.detail');
+    Route::get('/transaksi/{id}/bukti', [KepsekController::class, 'bukti'])->name('transaksi.bukti');
+    Route::post('/edit-request/{id}/approve', [KepsekController::class, 'approveEdit'])->name('edit-request.approve');
+    Route::post('/edit-request/{id}/reject', [KepsekController::class, 'rejectEdit'])->name('edit-request.reject');
+    Route::post('/pengeluaran/{id}/approve', [KepsekController::class, 'approvePengeluaran'])->name('pengeluaran.approve');
+    Route::post('/pengeluaran/{id}/reject', [KepsekController::class, 'rejectPengeluaran'])->name('pengeluaran.reject');
 });
 
 // Approval routes (allow admin web guard or kepsek guard)

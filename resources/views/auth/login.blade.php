@@ -1,48 +1,335 @@
-<x-guest-layout>
-<div class="min-h-screen grid grid-cols-1 md:grid-cols-5">
-    <div class="hidden md:block md:col-span-2 bg-[#085041] text-white p-10">
-        <div class="h-full flex flex-col justify-between">
-            <div>
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="w-12 h-12 rounded-lg bg-white flex items-center justify-center">
-                        <svg class="w-7 h-7 text-[#085041]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7l3-7z" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h2 class="text-2xl font-bold">SIKEU MTs</h2>
-                        <p class="text-sm text-green-200">Sistem Informasi Keuangan Madrasah</p>
-                    </div>
-                </div>
+@guest
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login - SIKEU MTs</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-                <div class="mt-8">
-                    <svg class="w-full h-64 opacity-80" viewBox="0 0 600 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="0" y="0" width="600" height="400" rx="12" fill="#0A5A44" />
-                        <circle cx="120" cy="120" r="50" fill="#0F7A63" />
-                        <rect x="220" y="80" width="240" height="140" rx="12" fill="#0B6F55" />
-                        <path d="M50 320 L150 220 L250 320" stroke="#0F7A63" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a0d2e 0%, #16213e 25%, #0f3460 50%, #2d5016 75%, #1a0d2e 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(147, 51, 234, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .glass-card {
+            background: rgba(20, 20, 30, 0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(147, 51, 234, 0.2);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 32px;
+            justify-content: center;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 16px rgba(147, 51, 234, 0.4);
+        }
+
+        .logo-icon svg {
+            width: 28px;
+            height: 28px;
+            color: white;
+        }
+
+        .logo-text h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+
+        .logo-text p {
+            font-size: 12px;
+            color: #b8a0f0;
+            margin-top: 4px;
+        }
+
+        .header-text {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .header-text h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .header-text p {
+            font-size: 14px;
+            color: #b8a0f0;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border: 1px solid;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: rgba(34, 197, 94, 0.3);
+            color: #86efac;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .alert ul {
+            list-style: none;
+            margin-top: 8px;
+        }
+
+        .alert li {
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .alert strong {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #e0d7f9;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-group-wrapper {
+            position: relative;
+        }
+
+        .form-group-wrapper .icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            color: #9333ea;
+            opacity: 0.7;
+        }
+
+        .form-group-wrapper input {
+            width: 100%;
+            padding: 12px 16px 12px 44px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            border-radius: 10px;
+            font-size: 14px;
+            color: #ffffff;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .form-group-wrapper input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .form-group-wrapper input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(147, 51, 234, 0.6);
+            box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #9333ea;
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .password-toggle:hover {
+            opacity: 1;
+        }
+
+        .password-toggle svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .error-text {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #fca5a5;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px 16px;
+            margin-top: 28px;
+            background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+            color: white;
+            border: 1px solid rgba(147, 51, 234, 0.5);
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            box-shadow: 0 8px 16px rgba(147, 51, 234, 0.3);
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(135deg, #a855f7 0%, #8b5cf6 100%);
+            box-shadow: 0 12px 24px rgba(147, 51, 234, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .footer-text {
+            margin-top: 24px;
+            text-align: center;
+            font-size: 12px;
+            color: #b8a0f0;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 480px) {
+            .glass-card {
+                padding: 32px 20px;
+            }
+
+            .header-text h1 {
+                font-size: 24px;
+            }
+
+            .form-group label {
+                font-size: 12px;
+            }
+
+            .submit-btn {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="glass-card">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7l3-7z"></path>
                     </svg>
                 </div>
+                <div class="logo-text">
+                    <h2>SIKEU MTs</h2>
+                    <p>Sistem Keuangan Sekolah</p>
+                </div>
             </div>
 
-            <div class="text-sm text-green-200">
-                <p>Keamanan data terjaga. Jika bermasalah hubungi admin.</p>
+            <div class="header-text">
+                <h1>Selamat Datang</h1>
+                <p>Masuk ke sistem keuangan sekolah</p>
             </div>
-        </div>
-    </div>
 
-    <div class="col-span-1 md:col-span-3 flex items-center justify-center p-8 bg-white">
-        <div class="w-full max-w-md">
             @if(session('status'))
-                <div class="mb-4 p-3 rounded bg-green-50 border border-green-200 text-green-800">
+                <div class="alert alert-success">
                     {{ session('status') }}
                 </div>
             @endif
 
             @if($errors->any())
-                <div class="mb-4 p-3 rounded bg-red-50 border border-red-200 text-red-800">
-                    <strong class="block">Login gagal</strong>
-                    <ul class="mt-1 text-sm">
+                <div class="alert alert-error">
+                    <strong>Login gagal</strong>
+                    <ul>
                         @foreach($errors->all() as $err)
                             <li>{{ $err }}</li>
                         @endforeach
@@ -50,47 +337,48 @@
                 </div>
             @endif
 
-            <h1 class="text-2xl font-bold text-gray-900 mb-1">Selamat Datang</h1>
-            <p class="text-sm text-gray-500 mb-6">Masuk ke sistem keuangan sekolah</p>
-
             <form method="POST" action="{{ route('login') }}" novalidate>
                 @csrf
 
-                <div class="mb-4">
-                    <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM4 20v-1a4 4 0 014-4h8a4 4 0 014 4v1"/></svg>
-                        </span>
-                        <input id="username" name="username" type="text" value="{{ old('username') }}" required autofocus
-                               class="block w-full pl-10 pr-3 py-2 border rounded shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1D9E75] focus:border-[#1D9E75]" />
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <div class="form-group-wrapper">
+                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM4 20v-1a4 4 0 014-4h8a4 4 0 014 4v1"/>
+                        </svg>
+                        <input id="username" name="username" type="text" value="{{ old('username') }}" required autofocus placeholder="Username">
                     </div>
-                    @error('username')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                    @error('username')<p class="error-text">{{ $message }}</p>@enderror
                 </div>
 
-                <div class="mb-4">
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                    <div class="relative" x-data="{ show: false }">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5 9 6.343 9 8s1.343 3 3 3zM5 20v-2a7 7 0 017-7h0a7 7 0 017 7v2"/></svg>
-                        </span>
-                        <input :type="show ? 'text' : 'password'" id="password" name="password" required
-                               class="block w-full pl-10 pr-10 py-2 border rounded shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1D9E75] focus:border-[#1D9E75]" />
-                        <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
-                            <svg x-show="!show" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                            <svg x-show="show" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="form-group-wrapper" x-data="{ show: false }">
+                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                        <input :type="show ? 'text' : 'password'" id="password" name="password" required placeholder="Password">
+                        <button type="button" class="password-toggle" @click="show = !show">
+                            <svg x-show="!show" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                            <svg x-show="show" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m2.676-2.422A10.08 10.08 0 0112 5c4.478 0 8.268 2.943 9.543 7a9.988 9.988 0 01-1.563 4.803m-2.676 2.422m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"></path>
+                            </svg>
                         </button>
                     </div>
-                    @error('password')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                    @error('password')<p class="error-text">{{ $message }}</p>@enderror
                 </div>
 
-                <div class="mb-6">
-                    <button type="submit" class="w-full py-2 px-4 bg-[#1D9E75] text-white rounded font-semibold hover:opacity-95">Masuk</button>
-                </div>
+                <button type="submit" class="submit-btn">Masuk</button>
 
-                <p class="text-xs text-gray-500 text-center">Lupa password? Hubungi administrator</p>
+                <div class="footer-text">
+                    Lupa password? Hubungi administrator sistem
+                </div>
             </form>
         </div>
     </div>
-</div>
-</x-guest-layout>
+</body>
+</html>
+@endguest

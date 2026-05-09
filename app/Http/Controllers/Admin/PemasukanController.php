@@ -58,6 +58,83 @@ class PemasukanController extends Controller
      */
     public function store(Request $request)
     {
+        $user = Auth::user();
+
+        // Determine if this is a bulk SPP submission
+        $isBulkSPP = $request->input('jenis_pemasukan') === 'SPP' && $request->has('siswa_list');
+
+        // Handle file upload if provided (for bulk we store once)
+        $buktiPath = null;
+        if ($request->hasFile('bukti_transaksi')) {
+            $buktiPath = $request->file('bukti_transaksi')->store('bukti', 'public');
+        }
+
+        if ($isBulkSPP) {
+            // siswa_list may be JSON string if sent via FormData
+            $raw = $request->input('siswa_list');
+            $siswaList = [];
+            if (is_string($raw)) {
+                $siswaList = json_decode($raw, true) ?: [];
+            } elseif (is_array($raw)) {
+                $siswaList = $raw;
+            }
+
+            if (!is_array($siswaList) || count($siswaList) === 0) {
+                if ($buktiPath) Storage::disk('public')->delete($buktiPath);
+                return response()->json(['success' => false, 'message' => 'Tidak ada siswa yang dipilih.'], 422);
+            }
+
+            // Validate each item
+            foreach ($siswaList as $item) {
+                if (!isset($item['siswa_id']) || !isset($item['jumlah'])) {
+                    if ($buktiPath) Storage::disk('public')->delete($buktiPath);
+                    return response()->json(['success' => false, 'message' => 'Format data siswa tidak valid.'], 422);
+                }
+                if (!is_numeric($item['jumlah']) || intval($item['jumlah']) <= 0) {
+                    if ($buktiPath) Storage::disk('public')->delete($buktiPath);
+                    return response()->json(['success' => false, 'message' => 'Jumlah harus berupa angka > 0.'], 422);
+                }
+                if (!Siswa::where('id', $item['siswa_id'])->exists()) {
+                    if ($buktiPath) Storage::disk('public')->delete($buktiPath);
+                    return response()->json(['success' => false, 'message' => 'Siswa tidak ditemukan: ' . $item['siswa_id']], 422);
+                }
+            }
+
+            DB::beginTransaction();
+            try {
+                $count = 0;
+                foreach ($siswaList as $item) {
+                    $transaksi = Pemasukan::create([
+                        'tanggal' => $request->input('tanggal'),
+                        'jumlah' => intval($item['jumlah']),
+                        'keterangan' => $request->input('keterangan') ?? '',
+                        'jenis_transaksi' => 'SPP',
+                        'siswa_id' => $item['siswa_id'],
+                        'bukti_transaksi' => $buktiPath,
+                        'id_admin' => $user->id,
+                    ]);
+
+                    AuditLog::create([
+                        'aktivitas' => "Admin {$user->name} menambahkan transaksi SPP untuk siswa ID {$item['siswa_id']} sebesar " . rupiah($transaksi->jumlah),
+                        'tanggal' => now(),
+                        'id_admin' => $user->id,
+                        'id_transaksi' => $transaksi->id,
+                    ]);
+
+                    $count++;
+                }
+
+                DB::commit();
+                return response()->json(['success' => true, 'count' => $count]);
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                report($e);
+                if ($buktiPath) Storage::disk('public')->delete($buktiPath);
+                return response()->json(['success' => false, 'message' => 'Terjadi kesalahan saat menyimpan pemasukan.'], 500);
+            }
+        }
+
+        // Fallback: original single-entry handling
         $validated = $request->validate([
             'tanggal' => ['required', 'date'],
             'jumlah' => ['required', 'integer', 'min:1'],
@@ -66,14 +143,6 @@ class PemasukanController extends Controller
             'siswa_id' => ['required_if:jenis_pemasukan,SPP', 'nullable', 'exists:siswas,id'],
             'bukti_transaksi' => ['nullable', 'file', 'mimes:jpg,png,pdf', 'max:2048'],
         ]);
-
-        $user = Auth::user();
-
-        // Handle file upload if provided
-        $buktiPath = null;
-        if ($request->hasFile('bukti_transaksi')) {
-            $buktiPath = $request->file('bukti_transaksi')->store('bukti', 'public');
-        }
 
         // Wrap in DB transaction to ensure atomicity
         DB::beginTransaction();

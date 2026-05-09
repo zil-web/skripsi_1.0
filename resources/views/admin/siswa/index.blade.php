@@ -85,7 +85,7 @@
 </div>
 
 {{-- FILTER BAR --}}
-<form method="GET" action="{{ route('admin.admin.siswa.index') }}">
+<form method="GET" action="{{ route('admin.siswa.index') }}">
 <div style="background:white; border:1px solid #f3f4f6;
             border-radius:12px; padding:14px 16px;
             margin-bottom:16px; display:flex;
@@ -133,7 +133,7 @@
     Filter
   </button>
 
-  <a href="{{ route('admin.admin.siswa.index') }}"
+  <a href="{{ route('admin.siswa.index') }}"
     style="background:white; color:#6b7280;
            border:1px solid #e5e7eb; border-radius:8px;
            padding:0 16px; height:36px; font-size:13px;
@@ -300,7 +300,7 @@
             {{-- Form hapus tersembunyi --}}
             <form id="formHapus{{ $siswa->id }}"
               method="POST"
-              action="{{ route('admin.admin.siswa.destroy', $siswa) }}"
+              action="{{ route('admin.siswa.destroy', $siswa) }}"
               style="display:none;">
               @csrf
               @method('DELETE')
@@ -400,8 +400,8 @@
     </div>
 
     {{-- Form --}}
-    <form method="POST"
-      action="{{ route('admin.admin.siswa.store') }}"
+    <form id="formTambahSiswa" method="POST"
+      action="{{ route('admin.siswa.store') }}"
       style="padding:20px 24px;">
       @csrf
 
@@ -933,6 +933,52 @@ document.addEventListener('DOMContentLoaded', function() {
       alert.style.opacity = '0';
       setTimeout(function() { alert.remove(); }, 500);
     }, 4000);
+  }
+
+  // Client-side validation for tambah siswa form
+  var formTambah = document.getElementById('formTambahSiswa');
+  if (formTambah) {
+    formTambah.addEventListener('submit', function(e) {
+      var nik = formTambah.querySelector('input[name="nik"]').value.trim();
+      var kelas = formTambah.querySelector('select[name="kelas"]').value.trim();
+      var nama = formTambah.querySelector('input[name="nama"]').value.trim();
+      var namaOrtu = formTambah.querySelector('input[name="nama_orangtua"]').value.trim();
+      var messages = [];
+
+      if (nik.length !== 16) messages.push('NIK harus 16 digit.');
+      if (!kelas) messages.push('Kelas harus dipilih.');
+      if (!nama) messages.push('Nama siswa wajib diisi.');
+      if (!namaOrtu) messages.push('Nama orang tua wajib diisi.');
+
+      if (messages.length > 0) {
+        e.preventDefault();
+        alert(messages.join('\n'));
+        return false;
+      }
+    });
+  }
+
+  // Client-side validation for edit siswa form
+  var formEdit = document.getElementById('formEditSiswa');
+  if (formEdit) {
+    formEdit.addEventListener('submit', function(e) {
+      var nik = formEdit.querySelector('input[name="nik"]').value.trim();
+      var kelas = formEdit.querySelector('select[name="kelas"]').value.trim();
+      var nama = formEdit.querySelector('input[name="nama"]').value.trim();
+      var namaOrtu = formEdit.querySelector('input[name="nama_orangtua"]').value.trim();
+      var messages = [];
+
+      if (nik.length !== 16) messages.push('NIK harus 16 digit.');
+      if (!kelas) messages.push('Kelas harus dipilih.');
+      if (!nama) messages.push('Nama siswa wajib diisi.');
+      if (!namaOrtu) messages.push('Nama orang tua wajib diisi.');
+
+      if (messages.length > 0) {
+        e.preventDefault();
+        alert(messages.join('\n'));
+        return false;
+      }
+    });
   }
 
   // ─── Click row untuk edit modal ──────────────
