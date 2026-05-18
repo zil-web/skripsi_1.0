@@ -6,105 +6,106 @@
 @endphp
 
 <!-- PAGE HEADER -->
-<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
-    <div>
-        <h1 style="font-size:16px; font-weight:500; color:#1f2937; margin:0;">
-            Daftar Pengeluaran
-        </h1>
-        <p style="font-size:12px; color:#9ca3af; margin:4px 0 0;">
-            Kelola semua transaksi pengeluaran sekolah
-        </p>
+<div style="margin-bottom:24px; padding:22px 24px; border:1px solid #e5f3ef; border-radius:20px; background:linear-gradient(135deg, #f7fffd 0%, #eefbf7 52%, #ffffff 100%); box-shadow:0 18px 45px rgba(15, 23, 42, 0.06);">
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+        <div style="max-width:620px;">
+            <div style="display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; background:#dcfce7; color:#166534; font-size:11px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; margin-bottom:12px;">
+                Ringkasan Pengeluaran
+            </div>
+            <h1 style="font-size:24px; line-height:1.2; font-weight:700; color:#0f172a; margin:0;">
+                Daftar Pengeluaran
+            </h1>
+            <p style="font-size:13px; line-height:1.6; color:#64748b; margin:10px 0 0;">
+                Kelola semua transaksi pengeluaran sekolah, lihat status review, dan buka bukti transaksi langsung dari detail.
+            </p>
+        </div>
+        <button 
+            id="btnBukaModal"
+            onclick="bukaModal()"
+            style="display:inline-flex; align-items:center; gap:10px; background:linear-gradient(135deg, #1D9E75, #16765a); color:white; font-size:13px; font-weight:700; border:none; padding:11px 16px; border-radius:14px; cursor:pointer; box-shadow:0 12px 24px rgba(29, 158, 117, 0.24); transition:transform .2s ease, box-shadow .2s ease;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Tambah Pengeluaran</span>
+        </button>
     </div>
-    <!-- TOMBOL TRIGGER MODAL -->
-    <button 
-        id="btnBukaModal"
-        onclick="bukaModal()"
-        style="display:flex; align-items:center; gap:8px; 
-               background:#1D9E75; color:white; 
-               font-size:13px; font-weight:500;
-               border:none; padding:8px 16px; 
-               border-radius:8px; cursor:pointer;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        <span>Tambah Pengeluaran</span>
-    </button>
 </div>
 
 <!-- STAT CARDS -->
-<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:24px;">
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px; margin-bottom:24px;">
     <!-- Total Pengeluaran -->
-    <div style="background:white; border:1px solid #f3f4f6; border-radius:12px; padding:16px;">
-        <p style="font-size:11px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 8px;">
+    <div style="background:white; border:1px solid #eef2f7; border-radius:18px; padding:18px; box-shadow:0 12px 30px rgba(15, 23, 42, 0.05);">
+        <p style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; margin:0 0 10px; font-weight:700;">
             Total Pengeluaran
         </p>
-        <p style="font-size:18px; font-weight:600; color:#dc2626; margin:0;">
+        <p style="font-size:22px; font-weight:700; color:#dc2626; margin:0; line-height:1.2;">
             {{ $formatRupiah($totalPengeluaran) }}
         </p>
     </div>
 
     <!-- Total Pending -->
-    <div style="background:white; border:1px solid #f3f4f6; border-radius:12px; padding:16px;">
-        <p style="font-size:11px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 8px;">
+    <div style="background:white; border:1px solid #eef2f7; border-radius:18px; padding:18px; box-shadow:0 12px 30px rgba(15, 23, 42, 0.05);">
+        <p style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; margin:0 0 10px; font-weight:700;">
             Pending Review
         </p>
-        <p style="font-size:18px; font-weight:600; color:#d97706; margin:0;">
+        <p style="font-size:22px; font-weight:700; color:#d97706; margin:0; line-height:1.2;">
             {{ $formatRupiah($totalPending) }}
         </p>
     </div>
 
     <!-- Total Approved -->
-    <div style="background:white; border:1px solid #f3f4f6; border-radius:12px; padding:16px;">
-        <p style="font-size:11px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 8px;">
+    <div style="background:white; border:1px solid #eef2f7; border-radius:18px; padding:18px; box-shadow:0 12px 30px rgba(15, 23, 42, 0.05);">
+        <p style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; margin:0 0 10px; font-weight:700;">
             Sudah Disetujui
         </p>
-        <p style="font-size:18px; font-weight:600; color:#dc2626; margin:0;">
+        <p style="font-size:22px; font-weight:700; color:#10b981; margin:0; line-height:1.2;">
             {{ $formatRupiah($totalApproved) }}
         </p>
     </div>
 
     <!-- Total Rows -->
-    <div style="background:white; border:1px solid #f3f4f6; border-radius:12px; padding:16px;">
-        <p style="font-size:11px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 8px;">
+    <div style="background:white; border:1px solid #eef2f7; border-radius:18px; padding:18px; box-shadow:0 12px 30px rgba(15, 23, 42, 0.05);">
+        <p style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; margin:0 0 10px; font-weight:700;">
             Total Transaksi
         </p>
-        <p style="font-size:18px; font-weight:600; color:#4b5563; margin:0;">
+        <p style="font-size:22px; font-weight:700; color:#0f172a; margin:0; line-height:1.2;">
             {{ $pengeluarans->total() }}
         </p>
     </div>
 </div>
 
 <!-- TABEL PENGELUARAN -->
-<div style="background:white; border:1px solid #f3f4f6; border-radius:12px; overflow:hidden;">
+<div style="background:white; border:1px solid #eef2f7; border-radius:20px; overflow:hidden; box-shadow:0 16px 40px rgba(15, 23, 42, 0.06);">
     @if($pengeluarans->count() > 0)
         <table style="width:100%; font-size:13px;">
             <thead>
-                <tr style="background:#f9fafb; border-bottom:1px solid #f3f4f6;">
-                    <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">No</th>
-                    <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">Tanggal</th>
-                    <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">Keterangan</th>
-                    <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">Jumlah</th>
-                    <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">Jenis Pengeluaran</th>
-                    <th style="text-align:center; padding:12px 16px; font-weight:500; color:#6b7280;">Status</th>
+                <tr style="background:linear-gradient(180deg, #f8fafc 0%, #f3f7fb 100%); border-bottom:1px solid #e5edf5;">
+                    <th style="text-align:left; padding:14px 16px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; font-size:10px;">No</th>
+                    <th style="text-align:left; padding:14px 16px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; font-size:10px;">Tanggal</th>
+                    <th style="text-align:left; padding:14px 16px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; font-size:10px;">Keterangan</th>
+                    <th style="text-align:left; padding:14px 16px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; font-size:10px;">Jumlah</th>
+                    <th style="text-align:left; padding:14px 16px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; font-size:10px;">Jenis Pengeluaran</th>
+                    <th style="text-align:center; padding:14px 16px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; font-size:10px;">Status</th>
+                    <th style="text-align:center; padding:14px 16px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; font-size:10px;">Detail</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($pengeluarans as $idx => $transaksi)
-                    <tr style="border-bottom:1px solid #f3f4f6; {{ $loop->last ? 'border-bottom:none;' : '' }}">
-                        <td style="text-align:left; padding:12px 16px; color:#6b7280;">
+                    <tr style="border-bottom:1px solid #eef2f7; {{ $loop->last ? 'border-bottom:none;' : '' }}; transition:background-color .2s ease;">
+                        <td style="text-align:left; padding:14px 16px; color:#64748b; font-weight:600;">
                             {{ ($pengeluarans->currentPage() - 1) * $pengeluarans->perPage() + $loop->iteration }}
                         </td>
-                        <td style="text-align:left; padding:12px 16px; color:#1f2937;">
+                        <td style="text-align:left; padding:14px 16px; color:#0f172a; font-weight:600;">
                             {{ \Carbon\Carbon::parse($transaksi->tanggal)->format('d M Y') }}
                         </td>
-                        <td style="text-align:left; padding:12px 16px; color:#1f2937; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                        <td style="text-align:left; padding:14px 16px; color:#334155; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                             {{ $transaksi->keterangan }}
                         </td>
-                        <td style="text-align:left; padding:12px 16px; color:#dc2626; font-weight:500;">
+                        <td style="text-align:left; padding:14px 16px; color:#dc2626; font-weight:700;">
                             - {{ $formatRupiah($transaksi->jumlah) }}
                         </td>
-                        <td style="text-align:left; padding:12px 16px; color:#6b7280;">
+                        <td style="text-align:left; padding:14px 16px; color:#64748b;">
                             @php
                                 $jenisPengeluaran = $transaksi->jenis_transaksi ?? 'Lain-lain';
                                 $jenisPengeluaranColor = match($jenisPengeluaran) {
@@ -117,12 +118,12 @@
                                     default => 'background:#e5e7eb; color:#374151;',
                                 };
                             @endphp
-                            <span style="display:inline-block; padding:4px 8px; border-radius:999px; font-size:11px; font-weight:600; {{ $jenisPengeluaranColor }}">
+                            <span style="display:inline-block; padding:6px 10px; border-radius:999px; font-size:11px; font-weight:700; letter-spacing:0.02em; {{ $jenisPengeluaranColor }}">
                                 {{ $jenisPengeluaran }}
                             </span>
                         </td>
-                        <td style="text-align:center; padding:12px 16px;">
-                            <span style="display:inline-block; padding:4px 8px; border-radius:4px; font-size:11px; font-weight:500; {{ match($transaksi->status) {
+                        <td style="text-align:center; padding:14px 16px;">
+                            <span style="display:inline-block; padding:6px 10px; border-radius:999px; font-size:11px; font-weight:700; {{ match($transaksi->status) {
                                 'pending' => 'background:#fef3c7; color:#92400e;',
                                 'approved' => 'background:#d1fae5; color:#065f46;',
                                 'rejected' => 'background:#fee2e2; color:#991b1b;',
@@ -131,14 +132,21 @@
                                 {{ ucfirst($transaksi->status) }}
                             </span>
                         </td>
+                        <td style="text-align:center; padding:14px 16px;">
+                            <button 
+                                onclick="openDetailModal('{{ $transaksi->id }}', '{{ $transaksi->tanggal }}', '{{ $formatRupiah($transaksi->jumlah) }}', '{{ $transaksi->jenis_transaksi }}', '{{ addslashes($transaksi->keterangan) }}', '{{ $transaksi->bukti_transaksi }}', '{{ ucfirst($transaksi->status) }}')" 
+                                style="background:linear-gradient(135deg, #2563eb, #1d4ed8); color:white; border:none; padding:8px 14px; border-radius:10px; font-size:11px; font-weight:700; cursor:pointer; box-shadow:0 10px 20px rgba(37, 99, 235, 0.18);">
+                                Detail
+                            </button>
+                        </td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
 
         <!-- PAGINATION -->
-        <div style="padding:16px; border-top:1px solid #f3f4f6; display:flex; justify-content:space-between; align-items:center;">
-            <p style="font-size:12px; color:#9ca3af; margin:0;">
+        <div style="padding:16px 18px; border-top:1px solid #eef2f7; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; background:#fcfdff;">
+            <p style="font-size:12px; color:#64748b; margin:0; font-weight:600;">
                 Menampilkan {{ $pengeluarans->firstItem() }} - {{ $pengeluarans->lastItem() }} dari {{ $pengeluarans->total() }} data
             </p>
             <div style="display:flex; gap:4px;">
@@ -180,42 +188,43 @@
 <!-- ================================ -->
 <div id="modalTambah"
     style="display:none; position:fixed; inset:0; 
-           z-index:9999; align-items:center; 
-           justify-content:center;">
+           z-index:9999; align-items:flex-start; 
+           justify-content:center; overflow-y:auto; 
+           padding:24px 16px; background:rgba(0,0,0,0.5);">
     
     <!-- Backdrop -->
     <div 
         onclick="tutupModal()"
-        style="position:absolute; inset:0; 
-               background:rgba(0,0,0,0.45);">
+         style="position:absolute; inset:0; 
+             background:rgba(0,0,0,0.5);">
     </div>
 
     <!-- Box Modal -->
     <div style="position:relative; background:white; 
-                border-radius:16px; width:100%; 
-                max-width:520px; margin:0 16px; 
-                max-height:90vh; overflow-y:auto; 
-                z-index:10000;">
+                border-radius:12px; width:100%; 
+                max-width:520px; margin:auto; 
+                max-height:calc(100vh - 48px); overflow:hidden; 
+                display:flex; flex-direction:column; 
+                z-index:10000; box-shadow:0 20px 60px rgba(0,0,0,0.18);">
 
         <!-- Header Modal -->
         <div style="display:flex; align-items:center; 
-                    justify-content:space-between;
-                    padding:16px 24px; 
-                    border-bottom:1px solid #f3f4f6;">
+                justify-content:space-between;
+                padding:16px 20px; 
+                border-bottom:1px solid #f3f4f6; 
+                background:#10b981; color:#ffffff; flex-shrink:0;">
             <div>
                 <p style="font-size:14px; font-weight:500; 
-                          color:#1f2937; margin:0;">
+                          color:#ffffff; margin:0;">
                     Tambah Pengeluaran
                 </p>
-                <p style="font-size:11px; color:#9ca3af; margin:4px 0 0;">
+                <p style="font-size:11px; color:rgba(255,255,255,0.85); margin:4px 0 0;">
                     Isi data transaksi dengan lengkap
                 </p>
             </div>
             <button onclick="tutupModal()"
-                style="width:28px; height:28px; border:none;
-                       background:#f9fafb; border-radius:8px;
-                       cursor:pointer; font-size:16px; 
-                       color:#6b7280; line-height:1;">
+                style="background:none; border:none; color:#ffffff;
+                       cursor:pointer; font-size:20px; line-height:1;">
                 &times;
             </button>
         </div>
@@ -224,7 +233,7 @@
         <form method="POST" 
               action="{{ route('admin.pengeluaran.store') }}"
               enctype="multipart/form-data"
-              style="padding:20px 24px;">
+              style="padding:20px; overflow-y:auto; flex:1; -webkit-overflow-scrolling:touch;">
             @csrf
             <input type="hidden" name="jenis" value="pengeluaran">
             <input type="hidden" name="status" value="pending">
@@ -348,10 +357,7 @@
                               letter-spacing:0.05em; 
                               margin-bottom:4px;">
                     Bukti Transaksi
-                    <span style="color:#d1d5db;
-                                 text-transform:none;">
-                        (opsional)
-                    </span>
+                    <span style="color:#ef4444;">*</span>
                 </label>
                 <input type="file" name="bukti_transaksi"
                     accept=".jpg,.jpeg,.png,.pdf"
@@ -394,6 +400,22 @@
         </form>
     </div>
 </div>
+
+@include('admin.components.detail-transaksi-modal')
+
+<script>
+    function openDetailModal(id, tanggal, jumlah, jenis, keterangan, buktiPath, status) {
+        const fields = [
+            { label: 'ID Transaksi', value: id },
+            { label: 'Tanggal', value: tanggal },
+            { label: 'Jumlah', value: jumlah, isPeso: true },
+            { label: 'Jenis Pengeluaran', value: jenis },
+            { label: 'Keterangan', value: keterangan || '-' },
+            { label: 'Status', value: status }
+        ];
+        openDetailTransaksi(fields, buktiPath);
+    }
+</script>
 
 @endsection
 

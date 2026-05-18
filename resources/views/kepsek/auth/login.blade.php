@@ -3,7 +3,7 @@
 @section('content')
     <!-- Header -->
     <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4" style="background-color: #534AB7;">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4" style="background-color: #1D9E75;">
             <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
@@ -46,7 +46,7 @@
                 value="{{ old('username') }}"
                 placeholder="Masukkan username Anda"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 transition"
-                style="focus:ring-color: #534AB7;"
+                style="focus:ring-color: #1D9E75;"
                 required
             >
             @error('username')
@@ -66,7 +66,7 @@
                     name="password"
                     placeholder="Masukkan password Anda"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 transition"
-                    style="focus:ring-color: #534AB7;"
+                    style="focus:ring-color: #1D9E75;"
                     required
                 >
                 <button
@@ -104,7 +104,7 @@
         <button
             type="submit"
             class="w-full py-2 px-4 rounded-lg font-semibold text-white transition duration-200 hover:opacity-90"
-            style="background-color: #534AB7;"
+            style="background-color: #1D9E75;"
         >
             Masuk sebagai Kepala Sekolah
         </button>
@@ -114,7 +114,7 @@
     <div class="mt-8 pt-6 border-t border-gray-200">
         <p class="text-center text-sm text-gray-600">
             Bukan Kepala Sekolah?
-            <a href="{{ route('login') }}" class="font-semibold hover:underline" style="color: #534AB7;">
+            <a href="{{ route('login') }}" class="font-semibold hover:underline" style="color: #1D9E75;">
                 Login sebagai Admin
             </a>
         </p>

@@ -60,6 +60,23 @@ class PemasukanController extends Controller
     {
         $user = Auth::user();
 
+        $request->validate([
+            'tanggal' => ['required', 'date'],
+            'jenis_pemasukan' => ['required', 'in:SPP,Donasi,Dana BOS,Lain-lain'],
+            'keterangan' => ['nullable', 'string', 'max:500'],
+            'bukti_transaksi' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+        ], [
+            'tanggal.required' => 'Tanggal harus diisi.',
+            'tanggal.date' => 'Format tanggal tidak valid.',
+            'jenis_pemasukan.required' => 'Jenis pemasukan harus dipilih.',
+            'jenis_pemasukan.in' => 'Jenis pemasukan tidak valid.',
+            'keterangan.max' => 'Keterangan maksimal 500 karakter.',
+            'bukti_transaksi.required' => 'Bukti transaksi harus diisi.',
+            'bukti_transaksi.file' => 'Bukti transaksi harus berupa file.',
+            'bukti_transaksi.mimes' => 'Format bukti transaksi harus JPG, JPEG, PNG, atau PDF.',
+            'bukti_transaksi.max' => 'Ukuran bukti transaksi maksimal 2MB.',
+        ]);
+
         // Determine if this is a bulk SPP submission
         $isBulkSPP = $request->input('jenis_pemasukan') === 'SPP' && $request->has('siswa_list');
 
@@ -141,7 +158,6 @@ class PemasukanController extends Controller
             'keterangan' => ['nullable', 'string', 'max:500'],
             'jenis_pemasukan' => ['required', 'in:SPP,Donasi,Dana BOS,Lain-lain'],
             'siswa_id' => ['required_if:jenis_pemasukan,SPP', 'nullable', 'exists:siswas,id'],
-            'bukti_transaksi' => ['nullable', 'file', 'mimes:jpg,png,pdf', 'max:2048'],
         ]);
 
         // Wrap in DB transaction to ensure atomicity

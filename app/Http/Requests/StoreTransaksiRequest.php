@@ -24,7 +24,7 @@ class StoreTransaksiRequest extends FormRequest
         return [
             'tanggal' => ['required', 'date'],
             'jumlah' => ['required', 'numeric', 'min:1'],
-            'keterangan' => ['required', 'string', 'max:500'],
+            'keterangan' => ['nullable', 'string', 'max:500'],
             'bukti_transaksi' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
             'id_siswa' => ['nullable', 'exists:siswas,id'],
         ];
@@ -33,20 +33,20 @@ class StoreTransaksiRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'tanggal.required' => 'Tanggal transaksi wajib diisi.',
+            'tanggal.required' => 'Tanggal transaksi harus diisi.',
             'tanggal.date' => 'Format tanggal tidak valid.',
 
-            'jumlah.required' => 'Jumlah transaksi wajib diisi.',
+            'jumlah.required' => 'Jumlah transaksi harus diisi.',
             'jumlah.numeric' => 'Jumlah harus berupa angka.',
-            'jumlah.min' => 'Jumlah harus lebih besar atau sama dengan 1.',
+            'jumlah.min' => 'Jumlah minimal 1.',
 
-            'keterangan.required' => 'Keterangan wajib diisi.',
             'keterangan.string' => 'Keterangan harus berupa teks.',
             'keterangan.max' => 'Keterangan maksimal :max karakter.',
 
+            'bukti_transaksi.required' => 'Bukti transaksi harus diisi.',
             'bukti_transaksi.file' => 'Bukti transaksi harus berupa file.',
-            'bukti_transaksi.mimes' => 'Bukti transaksi harus berformat jpg, jpeg, png, atau pdf.',
-            'bukti_transaksi.max' => 'Ukuran file bukti transaksi maksimal :max kilobyte.',
+            'bukti_transaksi.mimes' => 'Bukti transaksi harus berformat JPG, JPEG, PNG, atau PDF.',
+            'bukti_transaksi.max' => 'Ukuran bukti transaksi maksimal :max kilobyte.',
 
             'id_siswa.exists' => 'Siswa yang dipilih tidak ditemukan.',
         ];

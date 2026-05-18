@@ -20,6 +20,15 @@ class AuthAdmin
             return redirect()->route('login')->withErrors(['message' => 'Silakan login sebagai Admin']);
         }
 
+        $user = Auth::guard('web')->user();
+        if (!$user || strtolower((string) ($user->role ?? '')) !== 'admin') {
+            Auth::guard('web')->logout();
+
+            return redirect()->route('login')->withErrors([
+                'message' => 'Akses ditolak. Akun ini bukan admin.',
+            ]);
+        }
+
         return $next($request);
     }
 }

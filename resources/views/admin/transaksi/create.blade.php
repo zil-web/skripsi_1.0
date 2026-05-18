@@ -15,43 +15,44 @@
                 {{-- Tanggal --}}
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700">Tanggal</label>
-                    <input type="date" name="tanggal" required value="{{ old('tanggal', date('Y-m-d')) }}" class="mt-1 block w-full border rounded px-3 py-2" />
-                    @error('tanggal') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
+                    @error('tanggal') <p class="text-sm text-red-600 mb-1">{{ $message }}</p> @enderror
+                    <input type="date" name="tanggal" required value="{{ old('tanggal', date('Y-m-d')) }}" class="mt-1 block w-full border rounded px-3 py-2 @error('tanggal') border-red-500 @else border-gray-300 @enderror" />
                 </div>
 
                 {{-- Jumlah (formatted + hidden numeric) --}}
                 <div class="mb-4" x-cloak>
                     <label class="block text-sm font-medium text-gray-700">Jumlah</label>
+                    @error('jumlah') <p class="text-sm text-red-600 mb-1">{{ $message }}</p> @enderror
                     <div class="mt-1 flex gap-2">
-                        <input x-model="displayJumlah" x-on:input="formatRupiah()" type="text" class="block w-full border rounded px-3 py-2" placeholder="Contoh: 1.500.000" autocomplete="off">
+                        <input x-model="displayJumlah" x-on:input="formatRupiah()" type="text" class="block w-full border rounded px-3 py-2 @error('jumlah') border-red-500 @else border-gray-300 @enderror" placeholder="Contoh: 1.500.000" autocomplete="off">
                         <input type="hidden" name="jumlah" x-model.number="rawJumlah">
                     </div>
-                    @error('jumlah') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 {{-- Keterangan --}}
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700">Keterangan</label>
-                    <textarea name="keterangan" x-on:input="charCount()" x-model="keterangan" maxlength="500" class="mt-1 block w-full border rounded px-3 py-2" rows="4">{{ old('keterangan') }}</textarea>
+                    @error('keterangan') <p class="text-sm text-red-600 mb-1">{{ $message }}</p> @enderror
+                    <textarea name="keterangan" x-on:input="charCount()" x-model="keterangan" maxlength="500" class="mt-1 block w-full border rounded px-3 py-2 @error('keterangan') border-red-500 @else border-gray-300 @enderror" rows="4">{{ old('keterangan') }}</textarea>
                     <div class="text-sm text-gray-500 mt-1">Sisa karakter: <span x-text="500 - keterangan.length"></span></div>
-                    @error('keterangan') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 {{-- Siswa select --}}
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700">Siswa (opsional)</label>
-                    <select name="id_siswa" class="mt-1 block w-full border rounded px-3 py-2">
+                    @error('id_siswa') <p class="text-sm text-red-600 mb-1">{{ $message }}</p> @enderror
+                    <select name="id_siswa" class="mt-1 block w-full border rounded px-3 py-2 @error('id_siswa') border-red-500 @else border-gray-300 @enderror">
                         <option value="">-- Tidak ada --</option>
                         @foreach($siswas as $siswa)
                             <option value="{{ $siswa->id }}" {{ old('id_siswa') == $siswa->id ? 'selected' : '' }}>{{ $siswa->nama }} - Kelas {{ $siswa->kelas }}</option>
                         @endforeach
                     </select>
-                    @error('id_siswa') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 {{-- Upload bukti (drag & drop) --}}
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700">Bukti Transaksi (jpg,jpeg,png,pdf) - max 2MB</label>
+                    @error('bukti_transaksi') <p class="text-sm text-red-600 mb-1">{{ $message }}</p> @enderror
                     <div class="mt-2">
                         <div class="border-dashed border-2 border-gray-300 rounded p-4 text-center" x-on:dragover.prevent x-on:drop.prevent="handleDrop($event)" x-on:click="$refs.fileInput.click()">
                             <input type="file" x-ref="fileInput" name="bukti_transaksi" class="hidden" x-on:change="previewFile($event)" accept="image/jpeg,image/png,application/pdf" />
@@ -70,7 +71,6 @@
                             </template>
                         </div>
                     </div>
-                    @error('bukti_transaksi') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 {{-- Buttons --}}

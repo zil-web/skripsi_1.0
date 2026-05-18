@@ -15,7 +15,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #1a0d2e 0%, #16213e 25%, #0f3460 50%, #2d5016 75%, #1a0d2e 100%);
+            background: linear-gradient(135deg, #0f172a 0%, #0f3d2e 28%, #115e59 52%, #1d9e75 78%, #0f172a 100%);
             background-attachment: fixed;
             min-height: 100vh;
             display: flex;
@@ -32,9 +32,9 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: 
-                radial-gradient(circle at 20% 50%, rgba(147, 51, 234, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 80% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%);
+                background-image: 
+                radial-gradient(circle at 20% 50%, rgba(29, 158, 117, 0.18) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(16, 185, 129, 0.16) 0%, transparent 50%);
             pointer-events: none;
             z-index: 1;
         }
@@ -51,7 +51,7 @@
             background: rgba(20, 20, 30, 0.75);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(147, 51, 234, 0.2);
+            border: 1px solid rgba(29, 158, 117, 0.22);
             border-radius: 24px;
             padding: 40px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
@@ -69,12 +69,12 @@
         .logo-icon {
             width: 48px;
             height: 48px;
-            background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+            background: linear-gradient(135deg, #1d9e75 0%, #15803d 100%);
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 16px rgba(147, 51, 234, 0.4);
+            box-shadow: 0 8px 16px rgba(29, 158, 117, 0.35);
         }
 
         .logo-icon svg {
@@ -92,7 +92,7 @@
 
         .logo-text p {
             font-size: 12px;
-            color: #b8a0f0;
+            color: #a7f3d0;
             margin-top: 4px;
         }
 
@@ -110,7 +110,7 @@
 
         .header-text p {
             font-size: 14px;
-            color: #b8a0f0;
+            color: #a7f3d0;
         }
 
         .alert {
@@ -169,7 +169,7 @@
             display: block;
             font-size: 13px;
             font-weight: 600;
-            color: #e0d7f9;
+            color: #d1fae5;
             margin-bottom: 10px;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -186,7 +186,7 @@
             transform: translateY(-50%);
             width: 20px;
             height: 20px;
-            color: #9333ea;
+            color: #1d9e75;
             opacity: 0.7;
         }
 
@@ -194,7 +194,7 @@
             width: 100%;
             padding: 12px 16px 12px 44px;
             background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(147, 51, 234, 0.3);
+            border: 1px solid rgba(29, 158, 117, 0.32);
             border-radius: 10px;
             font-size: 14px;
             color: #ffffff;
@@ -209,8 +209,8 @@
         .form-group-wrapper input:focus {
             outline: none;
             background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(147, 51, 234, 0.6);
-            box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+            border-color: rgba(29, 158, 117, 0.62);
+            box-shadow: 0 0 0 3px rgba(29, 158, 117, 0.12);
         }
 
         .password-toggle {
@@ -220,7 +220,7 @@
             transform: translateY(-50%);
             background: none;
             border: none;
-            color: #9333ea;
+            color: #1d9e75;
             cursor: pointer;
             width: 20px;
             height: 20px;
@@ -250,9 +250,9 @@
             width: 100%;
             padding: 12px 16px;
             margin-top: 28px;
-            background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+            background: linear-gradient(135deg, #1d9e75 0%, #15803d 100%);
             color: white;
-            border: 1px solid rgba(147, 51, 234, 0.5);
+            border: 1px solid rgba(29, 158, 117, 0.5);
             border-radius: 10px;
             font-size: 14px;
             font-weight: 600;
@@ -260,12 +260,12 @@
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            box-shadow: 0 8px 16px rgba(147, 51, 234, 0.3);
+            box-shadow: 0 8px 16px rgba(29, 158, 117, 0.3);
         }
 
         .submit-btn:hover {
-            background: linear-gradient(135deg, #a855f7 0%, #8b5cf6 100%);
-            box-shadow: 0 12px 24px rgba(147, 51, 234, 0.4);
+            background: linear-gradient(135deg, #22c55e 0%, #1d9e75 100%);
+            box-shadow: 0 12px 24px rgba(29, 158, 117, 0.36);
             transform: translateY(-2px);
         }
 
@@ -277,7 +277,7 @@
             margin-top: 24px;
             text-align: center;
             font-size: 12px;
-            color: #b8a0f0;
+            color: #a7f3d0;
             line-height: 1.6;
         }
 

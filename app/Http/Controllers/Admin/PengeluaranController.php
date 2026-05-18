@@ -97,7 +97,18 @@ class PengeluaranController extends Controller
             'jumlah' => ['required', 'integer', 'min:1'],
             'keterangan' => ['nullable', 'string', 'max:500'],
             'jenis_pengeluaran' => ['required', 'in:ATK,Konsumsi Harian,Pembelian Aset,Renovasi,Kegiatan Besar,Lain-lain'],
-            'bukti_transaksi' => ['nullable', 'file', 'mimes:jpg,png,pdf', 'max:2048'],
+            'bukti_transaksi' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+        ], [
+            'tanggal.required' => 'Tanggal harus diisi.',
+            'tanggal.date' => 'Format tanggal tidak valid.',
+            'jumlah.required' => 'Jumlah harus diisi.',
+            'jumlah.min' => 'Jumlah minimal 1.',
+            'keterangan.string' => 'Keterangan harus berupa teks.',
+            'jenis_pengeluaran.required' => 'Jenis pengeluaran harus dipilih.',
+            'bukti_transaksi.required' => 'Bukti transaksi harus diisi.',
+            'bukti_transaksi.file' => 'Bukti transaksi harus berupa file.',
+            'bukti_transaksi.mimes' => 'Format bukti transaksi harus JPG, JPEG, PNG, atau PDF.',
+            'bukti_transaksi.max' => 'Ukuran bukti transaksi maksimal 2MB.',
         ]);
 
         $userId = Auth::id();

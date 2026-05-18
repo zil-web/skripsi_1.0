@@ -225,87 +225,17 @@
         @endif
     </div>
 
-    <!-- Transaksi Detail Modal -->
-    <div id="transaksi-detail-modal" class="fixed inset-0 hidden items-center justify-center z-50">
-        <div class="absolute inset-0 bg-black/40"></div>
-        <div class="relative bg-white rounded-lg shadow-xl w-[760px] max-w-full mx-4 overflow-hidden">
-            <div class="px-6 py-4 border-b flex items-center justify-between">
-                <h3 class="font-semibold">Detail Transaksi</h3>
-                <button id="transaksi-detail-close" class="text-gray-600">✕</button>
-            </div>
-            <div class="p-6 grid grid-cols-2 gap-4">
-                <div>
-                    <div class="text-xs text-gray-500">Tanggal</div>
-                    <div id="td-tanggal" class="font-medium mt-1"></div>
-
-                    <div class="text-xs text-gray-500 mt-3">Keterangan</div>
-                    <div id="td-keterangan" class="mt-1"></div>
-
-                    <div class="text-xs text-gray-500 mt-3">Jenis</div>
-                    <div id="td-jenis" class="mt-1"></div>
-
-                    <div class="text-xs text-gray-500 mt-3" id="td-siswa-label">Siswa</div>
-                    <div id="td-siswa" class="mt-1"></div>
-                </div>
-                <div>
-                    <div class="text-xs text-gray-500">Jumlah</div>
-                    <div id="td-jumlah" class="font-medium mt-1"></div>
-
-                    <div class="text-xs text-gray-500 mt-3">Status</div>
-                    <div id="td-status" class="mt-1"></div>
-
-                    <div class="text-xs text-gray-500 mt-3">Bukti</div>
-                    <div id="td-bukti" class="mt-2"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bukti Viewer Modal (nested inside detail modal) -->
-    <div id="bukti-viewer-modal" class="fixed inset-0 hidden items-center justify-center z-[60]">
-        <div class="absolute inset-0 bg-black/60"></div>
-        <div class="relative bg-white rounded-lg shadow-2xl w-[90vw] h-[90vh] max-w-6xl overflow-hidden flex flex-col">
-            <!-- Header -->
-            <div class="px-6 py-4 border-b flex items-center justify-between bg-gray-50">
-                <h3 class="font-semibold">Bukti Transaksi</h3>
-                <button id="bukti-viewer-close" class="text-gray-600 hover:text-gray-900">✕</button>
-            </div>
-            
-            <!-- Content Area -->
-            <div class="flex-1 overflow-auto flex flex-col items-center justify-center bg-white p-6">
-                <!-- Loading indicator -->
-                <div id="bukti-loading" class="hidden text-gray-500">
-                    <span>Memuat...</span>
-                </div>
-                
-                <!-- Image Display -->
-                <img id="bukti-image" class="hidden max-w-full max-h-[75vh] object-contain rounded" alt="Bukti Transaksi" loading="lazy" decoding="async" />
-                
-                <!-- PDF Display -->
-                <iframe id="bukti-pdf" class="hidden w-full h-full rounded" frameborder="0" sandbox="allow-same-origin"></iframe>
-            </div>
-            
-            <!-- Footer with download button -->
-            <div class="px-6 py-4 border-t bg-gray-50 flex justify-end gap-2">
-                <button id="bukti-download" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium">
-                    ⬇ Download
-                </button>
-                <button id="bukti-viewer-close-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded text-sm font-medium">
-                    Tutup
-                </button>
-            </div>
-        </div>
-    </div>
+    @include('admin.components.detail-transaksi-modal')
 
     <!-- Edit Request Modal -->
-    <div id="edit-request-modal" class="fixed inset-0 hidden items-center justify-center z-[70]">
-        <div class="absolute inset-0 bg-black/40"></div>
-        <div class="relative bg-white rounded-[12px] shadow-xl w-[640px] max-w-full mx-4 overflow-hidden">
-            <div class="px-6 py-4 border-b flex items-center justify-between bg-[#1D9E75]">
+    <div id="edit-request-modal" class="fixed inset-0 hidden items-start justify-center z-[70] overflow-y-auto px-4 py-6 bg-black/50">
+        <div class="absolute inset-0 bg-black/50"></div>
+        <div class="relative bg-white rounded-[12px] shadow-xl w-full max-w-[460px] mx-auto overflow-hidden flex flex-col max-h-[calc(100vh-48px)]">
+            <div class="px-5 py-4 flex items-center justify-between bg-[#10b981] text-white flex-shrink-0">
                 <h3 class="font-semibold text-white">Ajukan Perubahan Transaksi</h3>
-                <button id="edit-request-close" class="text-white">✕</button>
+                <button id="edit-request-close" class="text-white bg-none border-none text-[20px] leading-none cursor-pointer">✕</button>
             </div>
-            <form id="edit-request-form" method="POST" class="p-6 space-y-5">
+            <form id="edit-request-form" method="POST" class="p-5 space-y-5 overflow-y-auto flex-1 -webkit-overflow-scrolling-touch">
                 @csrf
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 border border-gray-100 rounded-lg p-4">
@@ -343,7 +273,7 @@
 
                 <div class="flex justify-end gap-2">
                     <button type="button" id="edit-request-cancel" class="px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50">Batal</button>
-                    <button type="submit" class="px-4 py-2 text-sm rounded-lg bg-[#1D9E75] text-white hover:bg-[#188864]">Kirim Permintaan Edit</button>
+                    <button type="submit" class="px-4 py-2 text-sm rounded-lg bg-[#10b981] text-white hover:bg-[#0f9d6f]">Kirim Permintaan Edit</button>
                 </div>
             </form>
         </div>
@@ -356,132 +286,53 @@
         function el(q){return document.querySelector(q)}
         function els(q){return Array.from(document.querySelectorAll(q))}
 
-        const detailModal = el('#transaksi-detail-modal');
-        const buktiModal = el('#bukti-viewer-modal');
-        const detailCloseBtn = el('#transaksi-detail-close');
-        const buktiCloseBtn = el('#bukti-viewer-close');
-        const buktiCloseBtn2 = el('#bukti-viewer-close-btn');
-        const buktiImage = el('#bukti-image');
-        const buktiPdf = el('#bukti-pdf');
-        const buktiLoading = el('#bukti-loading');
-        const buktiDownloadBtn = el('#bukti-download');
         const editRequestModal = el('#edit-request-modal');
         const editRequestForm = el('#edit-request-form');
         const editRequestClose = el('#edit-request-close');
         const editRequestCancel = el('#edit-request-cancel');
         const editRequestActionTemplate = `{{ url('/transaksi/__ID__/edit-request') }}`;
 
-        let currentBuktiUrl = null;
-
-        function openDetailModal(){ detailModal.classList.remove('hidden'); detailModal.classList.add('flex'); }
-        function closeDetailModal(){ detailModal.classList.add('hidden'); detailModal.classList.remove('flex'); }
-        
-        function openBuktiModal(){ buktiModal.classList.remove('hidden'); buktiModal.classList.add('flex'); }
-        function closeBuktiModal(){ buktiModal.classList.add('hidden'); buktiModal.classList.remove('flex'); }
-        function openEditRequestModal(){ editRequestModal.classList.remove('hidden'); editRequestModal.classList.add('flex'); }
-        function closeEditRequestModal(){ editRequestModal.classList.add('hidden'); editRequestModal.classList.remove('flex'); }
-
         function formatRupiah(v){ return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits:0 }).format(Number(v||0)); }
 
-        function displayBukti(buktiUrl, buktiRaw) {
-            // buktiUrl = route URL (e.g., /admin/transaksi/1/bukti)
-            // buktiRaw = database path with extension (e.g., bukti/filename.jpg)
-            currentBuktiUrl = buktiUrl;
-            
-            // Show loading, hide all content
-            buktiLoading.classList.remove('hidden');
-            buktiImage.classList.add('hidden');
-            buktiPdf.classList.add('hidden');
-            
-            // Use buktiRaw for file type detection since it has the extension
-            const ext = buktiRaw ? buktiRaw.split('.').pop().toLowerCase() : '';
-            console.log('Bukti display:', { buktiUrl, buktiRaw, ext });
-            
-            if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
-                console.log('Displaying as image:', buktiUrl);
-                buktiImage.src = buktiUrl;
-                buktiImage.onload = () => {
-                    console.log('Image loaded successfully');
-                    buktiLoading.classList.add('hidden');
-                    buktiImage.classList.remove('hidden');
-                };
-                buktiImage.onerror = () => {
-                    console.error('Failed to load image:', buktiUrl);
-                    buktiLoading.classList.add('hidden');
-                    buktiImage.classList.add('hidden');
-                    const errorDiv = document.createElement('div');
-                    errorDiv.className = 'text-center text-red-600 font-medium';
-                    errorDiv.textContent = 'Gagal memuat gambar. Status: ' + buktiImage.status;
-                    buktiImage.parentElement.appendChild(errorDiv);
-                };
-            } else if (ext === 'pdf') {
-                console.log('Displaying as PDF:', buktiUrl);
-                buktiLoading.classList.add('hidden');
-                buktiPdf.src = buktiUrl;
-                buktiPdf.classList.remove('hidden');
-            } else {
-                console.warn('Unknown file type:', ext, 'URL:', buktiUrl);
-                buktiLoading.classList.add('hidden');
-                const unknownDiv = document.createElement('div');
-                unknownDiv.className = 'text-center text-yellow-600 font-medium';
-                unknownDiv.textContent = 'Tipe file tidak dikenali (' + ext + '). Silakan coba unduh.';
-                buktiImage.parentElement.appendChild(unknownDiv);
-            }
-            
-            openBuktiModal();
-        }
+        function openEditRequestModal(){ editRequestModal.classList.remove('hidden'); editRequestModal.classList.add('flex'); document.body.style.overflow = 'hidden'; }
+        function closeEditRequestModal(){ editRequestModal.classList.add('hidden'); editRequestModal.classList.remove('flex'); document.body.style.overflow = ''; }
 
         els('.open-transaksi-detail').forEach(btn => {
-            btn.addEventListener('click', async function(e){
+            btn.addEventListener('click', async function(){
                 const id = this.dataset.id;
-                try{
-                    const res = await fetch(`{{ url('/admin/transaksi') }}/${id}/detail`, { headers:{ 'X-Requested-With':'XMLHttpRequest' } });
-                    if(!res.ok) throw new Error('Gagal mengambil data');
+
+                try {
+                    const res = await fetch(`{{ url('/admin/transaksi') }}/${id}/detail`, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+
+                    if (!res.ok) {
+                        throw new Error('Gagal mengambil data');
+                    }
+
                     const data = await res.json();
+                    const fields = [
+                        { label: 'ID Transaksi', value: data.id ?? id },
+                        { label: 'Tanggal', value: data.tanggal ?? '-' },
+                        { label: 'Jumlah', value: formatRupiah(data.jumlah), isPeso: true },
+                        { label: 'Jenis', value: data.jenis_transaksi ?? data.jenis ?? '-' },
+                        { label: 'Keterangan', value: data.keterangan || '-' },
+                        { label: 'Status', value: data.status ?? '-' }
+                    ];
 
-                    el('#td-tanggal').textContent = data.tanggal ?? '-';
-                    el('#td-keterangan').textContent = data.keterangan ?? '-';
-                    el('#td-jenis').textContent = data.jenis_transaksi ?? data.jenis ?? '-';
-                    
-                    // Display siswa only for pemasukan (not for pengeluaran)
-                    const siswaSectionLabel = el('#td-siswa-label');
-                    const siswaSection = el('#td-siswa');
-                    if (data.jenis === 'pemasukan') {
-                        siswaSectionLabel.classList.remove('hidden');
-                        if (data.siswa) {
-                            const siswaNama = data.siswa.nama ? data.siswa.nama : 'N/A';
-                            const siswaNik = data.siswa.nik ? data.siswa.nik : 'N/A';
-                            const siswaKelas = data.siswa.kelas ? data.siswa.kelas : '';
-                            siswaSection.innerHTML = `<div><strong>${siswaNama}</strong></div><div class="text-xs text-gray-600">NIK: ${siswaNik}</div><div class="text-xs text-gray-600">Kelas: ${siswaKelas}</div>`;
-                        } else {
-                            siswaSection.textContent = '-';
-                        }
-                        siswaSection.classList.remove('hidden');
-                    } else {
-                        // Hide siswa section for pengeluaran
-                        siswaSectionLabel.classList.add('hidden');
-                        siswaSection.classList.add('hidden');
-                    }
-                    
-                    el('#td-jumlah').textContent = formatRupiah(data.jumlah);
-                    el('#td-status').textContent = (data.status ?? '-').toString();
-
-                    const buktiWrap = el('#td-bukti'); 
-                    buktiWrap.innerHTML = '';
-                    if(data.bukti_url){
-                        const btn = document.createElement('button');
-                        btn.type = 'button';
-                        btn.className = 'bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-medium transition';
-                        btn.textContent = 'Lihat Bukti Transaksi';
-                        btn.addEventListener('click', () => displayBukti(data.bukti_url, data.bukti_raw));
-                        buktiWrap.appendChild(btn);
-                    } else {
-                        buktiWrap.textContent = '—';
+                    if ((data.jenis_transaksi ?? data.jenis) === 'pemasukan' && data.siswa) {
+                        const siswaNama = data.siswa.nama ?? 'N/A';
+                        const siswaNik = data.siswa.nik ?? 'N/A';
+                        const siswaKelas = data.siswa.kelas ?? '';
+                        fields.push({
+                            label: 'Siswa',
+                            value: `${siswaNama} (NIK: ${siswaNik}${siswaKelas ? `, Kelas: ${siswaKelas}` : ''})`
+                        });
                     }
 
-                    openDetailModal();
-                }catch(err){
-                    alert('Gagal memuat detail: ' + err.message);
+                    openDetailTransaksi(fields, data.bukti_raw || data.bukti_url || data.bukti_transaksi || '');
+                } catch (error) {
+                    alert('Gagal memuat detail: ' + error.message);
                 }
             });
         });
@@ -506,29 +357,15 @@
             });
         });
 
-        // Detail modal close handlers
-        detailCloseBtn.addEventListener('click', closeDetailModal);
-        detailModal.addEventListener('click', function(e){ if(e.target === detailModal) closeDetailModal(); });
-
-        // Bukti modal close handlers
-        buktiCloseBtn.addEventListener('click', closeBuktiModal);
-        buktiCloseBtn2.addEventListener('click', closeBuktiModal);
-        buktiModal.addEventListener('click', function(e){ if(e.target === buktiModal) closeBuktiModal(); });
-
         // Edit request modal close handlers
         editRequestClose.addEventListener('click', closeEditRequestModal);
         editRequestCancel.addEventListener('click', closeEditRequestModal);
         editRequestModal.addEventListener('click', function(e){ if(e.target === editRequestModal) closeEditRequestModal(); });
 
-        // Download handler
-        buktiDownloadBtn.addEventListener('click', function(){
-            if(!currentBuktiUrl) return;
-            const a = document.createElement('a');
-            a.href = currentBuktiUrl;
-            a.download = currentBuktiUrl.split('/').pop() || 'bukti';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+        document.addEventListener('keydown', function(e){
+            if (e.key === 'Escape' && editRequestModal && !editRequestModal.classList.contains('hidden')) {
+                closeEditRequestModal();
+            }
         });
     })();
 </script>

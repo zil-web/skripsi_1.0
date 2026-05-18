@@ -3,13 +3,6 @@
 @section('page-title', 'Dashboard')
 @section('page-subtitle', 'Ringkasan keuangan bulan ini')
 
-@section('sidebar-menu')
-    <a href="{{ route('kepsek.dashboard') }}" class="block px-3 py-2 rounded mb-1 bg-[var(--accent)] text-white">Dashboard</a>
-    <a href="#menunggu-validasi" class="block px-3 py-2 rounded mb-1 text-gray-700 hover:bg-gray-100">Validasi Transaksi</a>
-    <a href="#riwayat-validasi" class="block px-3 py-2 rounded mb-1 text-gray-700 hover:bg-gray-100">Riwayat Validasi</a>
-    <a href="#" class="block px-3 py-2 rounded mb-1 text-gray-700 hover:bg-gray-100">Profil</a>
-@endsection
-
 @section('content')
     @php
         $toValue = fn ($value) => $value instanceof \BackedEnum ? $value->value : $value;
@@ -107,88 +100,10 @@
             </div>
         </div>
 
-        <div id="menunggu-validasi" class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <div class="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
-                <div class="p-5 border-b border-gray-100">
-                    <h2 class="text-lg font-semibold text-gray-900">Menunggu Validasi</h2>
-                    <p class="text-sm text-gray-500">5 transaksi terbaru yang menunggu keputusan Anda</p>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-100">
-                        <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                            <tr>
-                                <th class="px-5 py-3">Tanggal</th>
-                                <th class="px-5 py-3">Siswa</th>
-                                <th class="px-5 py-3">Keterangan</th>
-                                <th class="px-5 py-3">Jumlah</th>
-                                <th class="px-5 py-3 text-right">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100 text-sm">
-                            @forelse($menunggu_validasi as $transaksi)
-                                @php $jenis = $toValue($transaksi->jenis); @endphp
-                                <tr class="hover:bg-gray-50/70">
-                                    <td class="px-5 py-3 text-gray-600">{{ optional($transaksi->tanggal)->format('d/m/Y') }}</td>
-                                    <td class="px-5 py-3 text-gray-700">{{ $transaksi->siswa?->nama ?? '-' }}</td>
-                                    <td class="px-5 py-3 text-gray-700">
-                                        <div>{{ $transaksi->keterangan }}</div>
-                                        <span class="mt-1 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold {{ $jenis === 'pemasukan' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700' }}">
-                                            {{ ucfirst($jenis) }}
-                                        </span>
-                                    </td>
-                                    <td class="px-5 py-3 font-semibold text-gray-900">{{ $formatRupiah($transaksi->jumlah) }}</td>
-                                    <td class="px-5 py-3 text-right">
-                                        <div class="inline-flex gap-2">
-                                            <form action="{{ route('approval.approve', $transaksi->id) }}" method="POST">@csrf<button type="submit" class="inline-flex items-center rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700">Setuju</button></form>
-                                            <form action="{{ route('approval.reject', $transaksi->id) }}" method="POST">@csrf<button type="submit" class="inline-flex items-center rounded-xl bg-rose-600 px-3 py-2 text-xs font-semibold text-white hover:bg-rose-700">Tolak</button></form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr><td colspan="5" class="px-5 py-10 text-center text-gray-500">Tidak ada transaksi yang perlu divalidasi.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="riwayat-validasi" class="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
-                <div class="p-5 border-b border-gray-100">
-                    <h2 class="text-lg font-semibold text-gray-900">Riwayat Validasi Saya</h2>
-                    <p class="text-sm text-gray-500">5 validasi terakhir yang Anda lakukan</p>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-100">
-                        <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                            <tr>
-                                <th class="px-5 py-3">Tanggal</th>
-                                <th class="px-5 py-3">Transaksi</th>
-                                <th class="px-5 py-3">Status</th>
-                                <th class="px-5 py-3">Catatan</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100 text-sm">
-                            @forelse($riwayat_validasi as $validasi)
-                                @php $status = $toValue($validasi->status); @endphp
-                                <tr class="hover:bg-gray-50/70">
-                                    <td class="px-5 py-3 text-gray-600">{{ optional($validasi->created_at)->format('d/m/Y H:i') }}</td>
-                                    <td class="px-5 py-3 text-gray-700">
-                                        <div>{{ $validasi->transaksi?->keterangan ?? '-' }}</div>
-                                        <div class="text-xs text-gray-400 mt-1">{{ $formatRupiah($validasi->transaksi?->jumlah ?? 0) }}</div>
-                                    </td>
-                                    <td class="px-5 py-3">
-                                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold {{ $status === 'approved' ? 'bg-emerald-50 text-emerald-700' : ($status === 'pending' ? 'bg-amber-50 text-amber-700' : 'bg-rose-50 text-rose-700') }}">
-                                            {{ $status === 'approved' ? 'Disetujui' : ($status === 'pending' ? 'Pending' : 'Ditolak') }}
-                                        </span>
-                                    </td>
-                                    <td class="px-5 py-3 text-gray-700">{{ $validasi->catatan ?? '-' }}</td>
-                                </tr>
-                            @empty
-                                <tr><td colspan="4" class="px-5 py-10 text-center text-gray-500">Belum ada riwayat validasi.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+        <div class="grid grid-cols-1 gap-6">
+            <div class="rounded-2xl bg-white border border-gray-100 shadow-sm p-5">
+                <h2 class="text-lg font-semibold text-gray-900">Ringkasan Dashboard</h2>
+                <p class="text-sm text-gray-500 mt-1">Dashboard Kepala Sekolah tetap menampilkan ringkasan utama tanpa tabel validasi.</p>
             </div>
         </div>
     </div>

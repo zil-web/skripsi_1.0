@@ -200,199 +200,67 @@
             </div>
         @endif
     </div>
-
-    <!-- Transaksi Detail Modal (reuse same modal behavior) -->
-    <div id="transaksi-detail-modal" class="fixed inset-0 hidden items-center justify-center z-50">
-        <div class="absolute inset-0 bg-black/40"></div>
-        <div class="relative bg-white rounded-lg shadow-xl w-[760px] max-w-full mx-4 overflow-hidden">
-            <div class="px-6 py-4 border-b flex items-center justify-between">
-                <h3 class="font-semibold">Detail Transaksi</h3>
-                <button id="transaksi-detail-close" class="text-gray-600">✕</button>
-            </div>
-            <div class="p-6 grid grid-cols-2 gap-4">
-                <div>
-                    <div class="text-xs text-gray-500">Tanggal</div>
-                    <div id="td-tanggal" class="font-medium mt-1"></div>
-
-                    <div class="text-xs text-gray-500 mt-3">Keterangan</div>
-                    <div id="td-keterangan" class="mt-1"></div>
-
-                    <div class="text-xs text-gray-500 mt-3">Jenis</div>
-                    <div id="td-jenis" class="mt-1"></div>
-
-                    <div class="text-xs text-gray-500 mt-3" id="td-siswa-label">Siswa</div>
-                    <div id="td-siswa" class="mt-1"></div>
-                </div>
-                <div>
-                    <div class="text-xs text-gray-500">Jumlah</div>
-                    <div id="td-jumlah" class="font-medium mt-1"></div>
-
-                    <div class="text-xs text-gray-500 mt-3">Status</div>
-                    <div id="td-status" class="mt-1"></div>
-
-                    <div class="text-xs text-gray-500 mt-3">Bukti</div>
-                    <div id="td-bukti" class="mt-2"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bukti Viewer Modal (nested inside detail modal) -->
-    <div id="bukti-viewer-modal" class="fixed inset-0 hidden items-center justify-center z-[60]">
-        <div class="absolute inset-0 bg-black/60"></div>
-        <div class="relative bg-white rounded-lg shadow-2xl w-[90vw] h-[90vh] max-w-6xl overflow-hidden flex flex-col">
-            <!-- Header -->
-            <div class="px-6 py-4 border-b flex items-center justify-between bg-gray-50">
-                <h3 class="font-semibold">Bukti Transaksi</h3>
-                <button id="bukti-viewer-close" class="text-gray-600 hover:text-gray-900">✕</button>
-            </div>
-            
-            <!-- Content Area -->
-            <div class="flex-1 overflow-auto flex flex-col items-center justify-center bg-white p-6">
-                <!-- Loading indicator -->
-                <div id="bukti-loading" class="hidden text-gray-500">
-                    <span>Memuat...</span>
-                </div>
-                
-                <!-- Image Display -->
-                <img id="bukti-image" class="hidden max-w-full max-h-[75vh] object-contain rounded" alt="Bukti Transaksi" loading="lazy" decoding="async" />
-                
-                <!-- PDF Display -->
-                <iframe id="bukti-pdf" class="hidden w-full h-full rounded" frameborder="0" sandbox="allow-same-origin"></iframe>
-            </div>
-            
-            <!-- Footer with download button -->
-            <div class="px-6 py-4 border-t bg-gray-50 flex justify-end gap-2">
-                <button id="bukti-download" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium">
-                    ⬇ Download
-                </button>
-                <button id="bukti-viewer-close-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded text-sm font-medium">
-                    Tutup
-                </button>
-            </div>
-        </div>
-    </div>
+    {{-- include reusable detail transaksi modal (shared with admin) --}}
+    @include('admin.components.detail-transaksi-modal')
 @endsection
 
 @push('scripts')
 <script>
     (function(){
-        function el(q){return document.querySelector(q)}
-        function els(q){return Array.from(document.querySelectorAll(q))}
-
-        const detailModal = el('#transaksi-detail-modal');
-        const buktiModal = el('#bukti-viewer-modal');
-        const detailCloseBtn = el('#transaksi-detail-close');
-        const buktiCloseBtn = el('#bukti-viewer-close');
-        const buktiCloseBtn2 = el('#bukti-viewer-close-btn');
-        const buktiImage = el('#bukti-image');
-        const buktiPdf = el('#bukti-pdf');
-        const buktiLoading = el('#bukti-loading');
-        const buktiDownloadBtn = el('#bukti-download');
-
-        let currentBuktiUrl = null;
-
-        function openDetailModal(){ detailModal.classList.remove('hidden'); detailModal.classList.add('flex'); }
-        function closeDetailModal(){ detailModal.classList.add('hidden'); detailModal.classList.remove('flex'); }
-        
-        function openBuktiModal(){ buktiModal.classList.remove('hidden'); buktiModal.classList.add('flex'); }
-        function closeBuktiModal(){ buktiModal.classList.add('hidden'); buktiModal.classList.remove('flex'); }
-
-        function formatRupiah(v){ return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits:0 }).format(Number(v||0)); }
-
-        function displayBukti(buktiUrl, buktiRaw) {
-            currentBuktiUrl = buktiUrl;
-            buktiLoading.classList.remove('hidden');
-            buktiImage.classList.add('hidden');
-            buktiPdf.classList.add('hidden');
-            const ext = buktiRaw ? buktiRaw.split('.').pop().toLowerCase() : '';
-            if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
-                buktiImage.src = buktiUrl;
-                buktiImage.onload = function(){ buktiLoading.classList.add('hidden'); buktiImage.classList.remove('hidden'); };
-            } else if (ext === 'pdf') {
-                buktiPdf.src = buktiUrl;
-                buktiPdf.onload = function(){ buktiLoading.classList.add('hidden'); buktiPdf.classList.remove('hidden'); };
-            } else {
-                buktiLoading.classList.add('hidden');
-                const unknownDiv = document.createElement('div');
-                unknownDiv.className = 'text-center text-yellow-600 font-medium';
-                unknownDiv.textContent = 'Tipe file tidak dikenali (' + ext + '). Silakan coba unduh.';
-                buktiImage.parentElement.appendChild(unknownDiv);
-            }
-            openBuktiModal();
+        function formatRupiah(v){
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                maximumFractionDigits: 0
+            }).format(Number(v || 0));
         }
 
-        els('.open-transaksi-detail').forEach(btn => {
-            btn.addEventListener('click', async function(e){
-                const id = this.dataset.id;
-                try{
-                    const res = await fetch(`{{ url('/kepsek/transaksi') }}/${id}`, { headers:{ 'X-Requested-With':'XMLHttpRequest' } });
-                    if(!res.ok) throw new Error('Gagal mengambil data');
-                    const data = await res.json();
+        document.addEventListener('click', async function(e) {
+            const btn = e.target.closest('.open-transaksi-detail');
+            if (!btn) return;
 
-                    el('#td-tanggal').textContent = data.tanggal ?? '-';
-                    el('#td-keterangan').textContent = data.keterangan ?? '-';
-                    el('#td-jenis').textContent = data.jenis_transaksi ?? data.jenis ?? '-';
-                    
-                    const siswaSectionLabel = el('#td-siswa-label');
-                    const siswaSection = el('#td-siswa');
-                    if (data.jenis === 'pemasukan') {
-                        siswaSectionLabel.classList.remove('hidden');
-                        if (data.siswa) {
-                            const siswaNama = data.siswa.nama ? data.siswa.nama : 'N/A';
-                            const siswaNik = data.siswa.nik ? data.siswa.nik : 'N/A';
-                            const siswaKelas = data.siswa.kelas ? data.siswa.kelas : '';
-                            siswaSection.innerHTML = `<div><strong>${siswaNama}</strong></div><div class="text-xs text-gray-600">NIK: ${siswaNik}</div><div class="text-xs text-gray-600">Kelas: ${siswaKelas}</div>`;
-                        } else {
-                            siswaSection.textContent = '-';
-                        }
-                        siswaSection.classList.remove('hidden');
-                    } else {
-                        siswaSectionLabel.classList.add('hidden');
-                        siswaSection.classList.add('hidden');
-                    }
-                    
-                    el('#td-jumlah').textContent = formatRupiah(data.jumlah);
-                    el('#td-status').textContent = (data.status ?? '-').toString();
+            const id = btn.dataset.id;
 
-                    const buktiWrap = el('#td-bukti'); 
-                    buktiWrap.innerHTML = '';
-                    if(data.bukti_url){
-                        const btn = document.createElement('button');
-                        btn.type = 'button';
-                        btn.className = 'bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-medium transition';
-                        btn.textContent = 'Lihat Bukti Transaksi';
-                        btn.addEventListener('click', () => displayBukti(data.bukti_url, data.bukti_raw));
-                        buktiWrap.appendChild(btn);
-                    } else {
-                        buktiWrap.textContent = '—';
-                    }
+            try {
+                const res = await fetch(`{{ url('/kepsek/transaksi') }}/${id}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
 
-                    openDetailModal();
-                }catch(err){
-                    alert('Gagal memuat detail: ' + err.message);
+                if (!res.ok) throw new Error('Gagal mengambil data');
+
+                const data = await res.json();
+                const fields = [];
+
+                fields.push({ label: 'Tanggal', value: data.tanggal ?? '-' });
+                fields.push({ label: 'Keterangan', value: data.keterangan ?? '-' });
+                fields.push({ label: 'Jenis', value: data.jenis_transaksi ?? data.jenis ?? '-' });
+
+                if (data.jenis === 'pemasukan' && data.siswa) {
+                    const siswaText = (data.siswa.nama ?? '-')
+                        + '\nNIK: ' + (data.siswa.nik ?? '-')
+                        + (data.siswa.kelas ? '\nKelas: ' + data.siswa.kelas : '');
+                    fields.push({ label: 'Siswa', value: siswaText });
                 }
-            });
+
+                fields.push({ label: 'Jumlah', value: formatRupiah(data.jumlah), isPeso: true });
+                fields.push({ label: 'Status', value: (data.status ?? '-').toString() });
+
+                const buktiPath = data.bukti_url || data.bukti_raw || data.bukti_transaksi || '';
+
+                if (typeof openDetailTransaksi === 'function') {
+                    openDetailTransaksi(fields, buktiPath);
+                } else {
+                    alert('Fungsi detail belum tersedia.');
+                }
+            } catch (err) {
+                alert('Gagal memuat detail: ' + err.message);
+            }
         });
 
-        // Detail modal close handlers
-        detailCloseBtn.addEventListener('click', closeDetailModal);
-        detailModal.addEventListener('click', function(e){ if(e.target === detailModal) closeDetailModal(); });
-
-        // Bukti modal close handlers
-        buktiCloseBtn.addEventListener('click', closeBuktiModal);
-        buktiCloseBtn2.addEventListener('click', closeBuktiModal);
-        buktiModal.addEventListener('click', function(e){ if(e.target === buktiModal) closeBuktiModal(); });
-
-        // Download handler
-        buktiDownloadBtn.addEventListener('click', function(){
-            if(!currentBuktiUrl) return;
-            const a = document.createElement('a');
-            a.href = currentBuktiUrl;
-            a.download = currentBuktiUrl.split('/').pop() || 'bukti';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && typeof tutupDetailTransaksiModal === 'function') {
+                tutupDetailTransaksiModal();
+            }
         });
     })();
 </script>

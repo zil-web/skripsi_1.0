@@ -33,68 +33,182 @@ class KepsekController extends Controller
     {
         $editRequest = EditRequest::with('transaksi')->findOrFail($id);
 
-        $editRequest->transaksi->update([
-            'jumlah' => $editRequest->new_jumlah,
-            'jenis' => $editRequest->new_jenis,
-            'keterangan' => $editRequest->new_keterangan,
-        ]);
+        // Validasi: edit request harus dalam status pending
+        if ($editRequest->status !== 'pending') {
+            return back()->with('error', 
+                'Permintaan edit tidak dapat disetujui. Status saat ini: ' . $editRequest->status);
+        }
 
-        $editRequest->update([
-            'status' => 'approved',
-            'reviewed_by' => $this->currentReviewerId(),
-            'reviewed_at' => now(),
-        ]);
+        // Validasi: transaksi masih harus ada dan tidak dihapus
+        if (!$editRequest->transaksi) {
+            return back()->with('error', 'Transaksi tidak ditemukan atau telah dihapus.');
+        }
 
-        return back()->with('success', 'Perubahan transaksi telah disetujui.');
+        // Validasi: cek apakah nilai baru minimal berbeda dari nilai lama
+        $hasChanges = ($editRequest->old_jumlah != $editRequest->new_jumlah) ||
+                      ($editRequest->old_jenis != $editRequest->new_jenis) ||
+                      ($editRequest->old_keterangan != $editRequest->new_keterangan);
+        
+        if (!$hasChanges) {
+            return back()->with('warning', 
+                'Tidak ada perubahan data yang signifikan untuk disetujui.');
+        }
+
+        try {
+            $editRequest->transaksi->update([
+                'jumlah' => $editRequest->new_jumlah,
+                'jenis' => $editRequest->new_jenis,
+                'keterangan' => $editRequest->new_keterangan,
+            ]);
+
+            $editRequest->update([
+                'status' => 'approved',
+                'reviewed_by' => $this->currentReviewerId(),
+                'reviewed_at' => now(),
+            ]);
+
+            // Log audit
+            \App\Models\AuditLog::create([
+                'aktivitas' => 'Kepala Sekolah menyetujui edit transaksi ID ' . $editRequest->transaksi_id . 
+                              ' (dari ' . $editRequest->old_jumlah . ' menjadi ' . $editRequest->new_jumlah . ')',
+                'tanggal' => now(),
+                'id_admin' => $this->currentReviewerId(),
+                'id_transaksi' => $editRequest->transaksi_id,
+            ]);
+
+            return back()->with('success', 'Perubahan transaksi telah disetujui.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Terjadi kesalahan saat menyetujui: ' . $e->getMessage());
+        }
     }
 
     public function rejectEdit(Request $request, $id): RedirectResponse
     {
-        $request->validate([
-            'catatan_kepsek' => 'nullable|string|max:300',
+        $validated = $request->validate([
+            'catatan_kepsek' => 'required|string|min:10|max:300',
+        ], [
+            'catatan_kepsek.required' => 'Catatan penolakan wajib diisi',
+            'catatan_kepsek.min' => 'Catatan minimal 10 karakter',
+            'catatan_kepsek.max' => 'Catatan maksimal 300 karakter',
         ]);
 
         $editRequest = EditRequest::findOrFail($id);
 
-        $editRequest->update([
-            'status' => 'rejected',
-            'catatan_kepsek' => $request->catatan_kepsek,
-            'reviewed_by' => $this->currentReviewerId(),
-            'reviewed_at' => now(),
-        ]);
+        // Validasi: edit request harus dalam status pending
+        if ($editRequest->status !== 'pending') {
+            return back()->with('error', 
+                'Permintaan edit tidak dapat ditolak. Status saat ini: ' . $editRequest->status);
+        }
 
-        return back()->with('info', 'Permintaan edit ditolak.');
+        try {
+            $editRequest->update([
+                'status' => 'rejected',
+                'catatan_kepsek' => $validated['catatan_kepsek'],
+                'reviewed_by' => $this->currentReviewerId(),
+                'reviewed_at' => now(),
+            ]);
+
+            // Log audit
+            \App\Models\AuditLog::create([
+                'aktivitas' => 'Kepala Sekolah menolak edit transaksi ID ' . $editRequest->transaksi_id . 
+                              ' - Alasan: ' . $validated['catatan_kepsek'],
+                'tanggal' => now(),
+                'id_admin' => $this->currentReviewerId(),
+                'id_transaksi' => $editRequest->transaksi_id,
+            ]);
+
+            return back()->with('info', 'Permintaan edit ditolak dengan catatan.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Terjadi kesalahan saat menolak: ' . $e->getMessage());
+        }
     }
 
     public function approvePengeluaran($id): RedirectResponse
     {
         $transaksi = Transaksi::where('tipe', 'pengeluaran')->findOrFail($id);
 
-        $transaksi->update([
-            'status' => 'approved',
-            'reviewed_by' => $this->currentReviewerId(),
-            'reviewed_at' => now(),
-        ]);
+        // Validasi: transaksi harus dalam status pending
+        if ($transaksi->status->value !== 'pending') {
+            return back()->with('error', 
+                'Pengeluaran tidak dapat disetujui. Status saat ini: ' . $transaksi->status->value);
+        }
 
-        return back()->with('success', 'Pengeluaran telah disetujui.');
+        // Validasi: cek apakah sudah di-approve sebelumnya oleh reviewer yang sama
+        $reviewedBy = $this->currentReviewerId();
+        if ($transaksi->reviewed_by && $transaksi->reviewed_by == $reviewedBy) {
+            return back()->with('error', 
+                'Anda sudah melakukan approval untuk pengeluaran ini sebelumnya.');
+        }
+
+        try {
+            $transaksi->update([
+                'status' => 'approved',
+                'reviewed_by' => $reviewedBy,
+                'reviewed_at' => now(),
+            ]);
+
+            // Log audit
+            \App\Models\AuditLog::create([
+                'aktivitas' => 'Kepala Sekolah menyetujui pengeluaran ID ' . $transaksi->id . 
+                              ' - Rp ' . number_format($transaksi->jumlah, 0, ',', '.'),
+                'tanggal' => now(),
+                'id_admin' => $reviewedBy,
+                'id_transaksi' => $transaksi->id,
+            ]);
+
+            return back()->with('success', 'Pengeluaran telah disetujui.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 
     public function rejectPengeluaran(Request $request, $id): RedirectResponse
     {
-        $request->validate([
-            'catatan_kepsek' => 'nullable|string|max:300',
+        $validated = $request->validate([
+            'catatan_kepsek' => 'required|string|min:10|max:300',
+        ], [
+            'catatan_kepsek.required' => 'Catatan penolakan wajib diisi',
+            'catatan_kepsek.min' => 'Catatan minimal 10 karakter',
+            'catatan_kepsek.max' => 'Catatan maksimal 300 karakter',
         ]);
 
         $transaksi = Transaksi::where('tipe', 'pengeluaran')->findOrFail($id);
 
-        $transaksi->update([
-            'status' => 'rejected',
-            'catatan_kepsek' => $request->catatan_kepsek,
-            'reviewed_by' => $this->currentReviewerId(),
-            'reviewed_at' => now(),
-        ]);
+        // Validasi: transaksi harus dalam status pending
+        if ($transaksi->status->value !== 'pending') {
+            return back()->with('error', 
+                'Pengeluaran tidak dapat ditolak. Status saat ini: ' . $transaksi->status->value);
+        }
 
-        return back()->with('info', 'Pengeluaran ditolak.');
+        // Validasi: cek apakah sudah di-process sebelumnya oleh reviewer yang sama
+        $reviewedBy = $this->currentReviewerId();
+        if ($transaksi->reviewed_by && $transaksi->reviewed_by == $reviewedBy) {
+            return back()->with('error', 
+                'Anda sudah melakukan approval untuk pengeluaran ini sebelumnya.');
+        }
+
+        try {
+            $transaksi->update([
+                'status' => 'rejected',
+                'catatan_kepsek' => $validated['catatan_kepsek'],
+                'reviewed_by' => $reviewedBy,
+                'reviewed_at' => now(),
+            ]);
+
+            // Log audit
+            \App\Models\AuditLog::create([
+                'aktivitas' => 'Kepala Sekolah menolak pengeluaran ID ' . $transaksi->id . 
+                              ' - Rp ' . number_format($transaksi->jumlah, 0, ',', '.') . 
+                              ' - Alasan: ' . $validated['catatan_kepsek'],
+                'tanggal' => now(),
+                'id_admin' => $reviewedBy,
+                'id_transaksi' => $transaksi->id,
+            ]);
+
+            return back()->with('info', 'Pengeluaran ditolak dengan catatan.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 
     public function transaksi(Request $request)
@@ -262,31 +376,38 @@ class KepsekController extends Controller
 
     public function transaksiDetail($id)
     {
-        $transaksi = Transaksi::with('siswa')->findOrFail($id);
+        $transaksi = Transaksi::with(['siswa', 'user', 'reviewedBy'])
+            ->findOrFail($id);
 
-        $raw = $transaksi->bukti_transaksi;
-        $buktiUrl = $raw ? route('kepsek.transaksi.bukti', $id) : null;
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'id'              => $transaksi->id,
+                'tanggal'         => optional($transaksi->tanggal)->format('d/m/Y'),
+                'jenis'           => $transaksi->jenis instanceof \BackedEnum
+                    ? $transaksi->jenis->value
+                    : $transaksi->jenis,
+                'jenis_transaksi' => ucfirst($transaksi->jenis instanceof \BackedEnum
+                    ? $transaksi->jenis->value
+                    : ($transaksi->jenis ?? '-')),
+                'jumlah'          => $transaksi->jumlah,
+                'keterangan'      => $transaksi->keterangan,
+                'status'          => $transaksi->status instanceof \BackedEnum
+                    ? $transaksi->status->value
+                    : $transaksi->status,
+                'siswa'           => $transaksi->siswa ? [
+                    'nama'  => $transaksi->siswa->nama,
+                    'nik'   => $transaksi->siswa->nik,
+                    'kelas' => $transaksi->siswa->kelas,
+                ] : null,
+                'bukti_url'       => $transaksi->bukti_transaksi
+                    ? asset('storage/' . $transaksi->bukti_transaksi)
+                    : null,
+                'bukti_raw'       => $transaksi->bukti_transaksi,
+            ]);
+        }
 
-        $existsRaw = $raw ? Storage::disk('public')->exists($raw) : false;
-
-        return response()->json([
-            'id' => $transaksi->id,
-            'tanggal' => optional($transaksi->tanggal)->format('d/m/Y'),
-            'keterangan' => $transaksi->keterangan,
-            'jenis' => $transaksi->jenis,
-            'jenis_transaksi' => $transaksi->jenis_transaksi ?? null,
-            'jumlah' => $transaksi->jumlah,
-            'status' => $transaksi->status,
-            'siswa' => $transaksi->siswa ? [
-                'id' => $transaksi->siswa->id,
-                'nik' => $transaksi->siswa->nik,
-                'nama' => $transaksi->siswa->nama,
-                'kelas' => $transaksi->siswa->kelas
-            ] : null,
-            'bukti_raw' => $raw,
-            'bukti_url' => $buktiUrl,
-            'bukti_exists_raw' => $existsRaw,
-        ]);
+        // Non-AJAX fallback (optional — redirect to list)
+        return redirect()->route('kepsek.transaksi');
     }
 
     public function bukti($id)

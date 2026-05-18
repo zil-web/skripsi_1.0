@@ -1,0 +1,16 @@
+2026-04-24T21:10:41.101560Z 0 [Warning] [MY-010918] [Server] 'default_authentication_plugin' is deprecated and will be removed in a future release. Please use authentication_policy instead.
+2026-04-24T21:10:41.101591Z 0 [System] [MY-013169] [Server] E:\laragon\bin\mysql\mysql-8.0.30-winx64\bin\mysqld.exe (mysqld 8.0.30) initializing of server in progress as process 12500
+2026-04-24T21:10:41.206092Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2026-04-24T21:10:41.639652Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+2026-04-24T21:10:42.607441Z 0 [Warning] [MY-013829] [Server] Missing data directory for ICU regular expressions: E:\laragon\bin\mysql\mysql-8.0.30-winx64\lib\private\.
+2026-04-24T21:10:43.075941Z 6 [Warning] [MY-010453] [Server] root@localhost is created with an empty password ! Please consider switching off the --initialize-insecure option.
+2026-04-24T21:22:23.377565Z 0 [Warning] [MY-010097] [Server] Insecure configuration for --secure-file-priv: Current value does not restrict location of generated files. Consider setting it to a valid, non-empty path.
+2026-04-24T21:22:23.377626Z 0 [Warning] [MY-010918] [Server] 'default_authentication_plugin' is deprecated and will be removed in a future release. Please use authentication_policy instead.
+2026-04-24T21:22:23.377663Z 0 [System] [MY-010116] [Server] E:\laragon\bin\mysql\mysql-8.0.30-winx64\bin\mysqld.exe (mysqld 8.0.30) starting as process 18796
+2026-04-24T21:22:23.418567Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2026-04-24T21:22:23.647804Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+2026-04-24T21:22:23.793312Z 0 [Warning] [MY-011311] [Server] Plugin mysqlx reported: 'All I/O interfaces are disabled, X Protocol won't be accessible'
+2026-04-24T21:22:23.929342Z 0 [Warning] [MY-013829] [Server] Missing data directory for ICU regular expressions: E:\laragon\bin\mysql\mysql-8.0.30-winx64\lib\private\.
+2026-04-24T21:22:23.933618Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2026-04-24T21:22:23.934061Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+2026-04-24T21:22:23.996649Z 0 [System] [MY-010931] [Server] E:\laragon\bin\mysql\mysql-8.0.30-winx64\bin\mysqld.exe: ready for connections. Version: '8.0.30'  socket: ''  port: 0  MySQL Community Server - GPL.

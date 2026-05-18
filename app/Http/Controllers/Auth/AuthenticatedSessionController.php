@@ -31,8 +31,16 @@ class AuthenticatedSessionController extends Controller
 
         // Try web (users) guard first
         if (Auth::guard('web')->attempt($credentials, $remember)) {
-            $request->session()->regenerate();
-            return redirect()->intended('/admin/dashboard');
+            $user = Auth::guard('web')->user();
+
+            // Only admin from web guard is allowed to enter admin dashboard.
+            if ($user && strtolower((string) ($user->role ?? 'admin')) === 'admin') {
+                $request->session()->regenerate();
+                return redirect()->intended('/admin/dashboard');
+            }
+
+            // If authenticated on web but not admin, release web guard and try kepsek guard.
+            Auth::guard('web')->logout();
         }
 
         // Then try kepsek guard

@@ -6,84 +6,85 @@
 @endphp
 
 <!-- PAGE HEADER -->
-<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
-    <div>
-        <h1 style="font-size:16px; font-weight:500; color:#1f2937; margin:0;">
-            Daftar Pemasukan
-        </h1>
-        <p style="font-size:12px; color:#9ca3af; margin:4px 0 0;">
-            Kelola semua transaksi pemasukan sekolah
-        </p>
+<div style="margin-bottom:24px; padding:22px 24px; border:1px solid #e4edf9; border-radius:20px; background:linear-gradient(135deg, #f7fbff 0%, #eef6ff 52%, #ffffff 100%); box-shadow:0 18px 45px rgba(15, 23, 42, 0.06);">
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+        <div style="max-width:620px;">
+            <div style="display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; background:#dbeafe; color:#1d4ed8; font-size:11px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; margin-bottom:12px;">
+                Ringkasan Pemasukan
+            </div>
+            <h1 style="font-size:24px; line-height:1.2; font-weight:700; color:#0f172a; margin:0;">
+                Daftar Pemasukan
+            </h1>
+            <p style="font-size:13px; line-height:1.6; color:#64748b; margin:10px 0 0;">
+                Kelola semua transaksi pemasukan sekolah, lihat nominal secara cepat, dan buka detail bukti transaksi kapan saja.
+            </p>
+        </div>
+        <button 
+            id="btnBukaModal"
+            onclick="bukaModal()"
+            style="display:inline-flex; align-items:center; gap:10px; background:linear-gradient(135deg, #1D9E75, #16765a); color:white; font-size:13px; font-weight:700; border:none; padding:11px 16px; border-radius:14px; cursor:pointer; box-shadow:0 12px 24px rgba(29, 158, 117, 0.24); transition:transform .2s ease, box-shadow .2s ease;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Tambah Pemasukan</span>
+        </button>
     </div>
-    <!-- TOMBOL TRIGGER MODAL -->
-    <button 
-        id="btnBukaModal"
-        onclick="bukaModal()"
-        style="display:flex; align-items:center; gap:8px; 
-               background:#1D9E75; color:white; 
-               font-size:13px; font-weight:500;
-               border:none; padding:8px 16px; 
-               border-radius:8px; cursor:pointer;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        <span>Tambah Pemasukan</span>
-    </button>
 </div>
 
 <!-- STAT CARDS -->
-<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:24px;">
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px; margin-bottom:24px;">
     <!-- Total Pemasukan -->
-    <div style="background:white; border:1px solid #f3f4f6; border-radius:12px; padding:16px;">
-        <p style="font-size:11px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 8px;">
+    <div style="background:white; border:1px solid #eef2f7; border-radius:18px; padding:18px; box-shadow:0 12px 30px rgba(15, 23, 42, 0.05);">
+        <p style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; margin:0 0 10px; font-weight:700;">
             Total Pemasukan
         </p>
-        <p style="font-size:18px; font-weight:600; color:#059669; margin:0;">
+        <p style="font-size:22px; font-weight:700; color:#059669; margin:0; line-height:1.2;">
             {{ $formatRupiah($totalPemasukan) }}
         </p>
     </div>
 
     <!-- Total Rows -->
-    <div style="background:white; border:1px solid #f3f4f6; border-radius:12px; padding:16px;">
-        <p style="font-size:11px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 8px;">
+    <div style="background:white; border:1px solid #eef2f7; border-radius:18px; padding:18px; box-shadow:0 12px 30px rgba(15, 23, 42, 0.05);">
+        <p style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; margin:0 0 10px; font-weight:700;">
             Total Transaksi
         </p>
-        <p style="font-size:18px; font-weight:600; color:#4b5563; margin:0;">
+        <p style="font-size:22px; font-weight:700; color:#0f172a; margin:0; line-height:1.2;">
             {{ $pemasukkans->total() }}
         </p>
     </div>
 </div>
 
 <!-- TABEL PEMASUKAN -->
-<div style="background:white; border:1px solid #f3f4f6; border-radius:12px; overflow:hidden;">
+<div style="background:white; border:1px solid #eef2f7; border-radius:20px; overflow:hidden; box-shadow:0 16px 40px rgba(15, 23, 42, 0.06);">
     @if($pemasukkans->count() > 0)
         <table style="width:100%; font-size:13px;">
             <thead>
-                <tr style="background:#f9fafb; border-bottom:1px solid #f3f4f6;">
-                    <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">No</th>
-                    <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">Tanggal</th>
-                    <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">Keterangan</th>
-                    <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">Jumlah</th>
-                    <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">Jenis Pemasukan</th>
+                <tr style="background:linear-gradient(180deg, #f8fafc 0%, #f3f7fb 100%); border-bottom:1px solid #e5edf5;">
+                    <th style="text-align:left; padding:14px 16px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; font-size:10px;">No</th>
+                    <th style="text-align:left; padding:14px 16px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; font-size:10px;">Tanggal</th>
+                    <th style="text-align:left; padding:14px 16px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; font-size:10px;">Keterangan</th>
+                    <th style="text-align:left; padding:14px 16px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; font-size:10px;">Jumlah</th>
+                    <th style="text-align:left; padding:14px 16px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; font-size:10px;">Jenis Pemasukan</th>
+                    <th style="text-align:center; padding:14px 16px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; font-size:10px;">Detail</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($pemasukkans as $idx => $transaksi)
-                    <tr style="border-bottom:1px solid #f3f4f6; {{ $loop->last ? 'border-bottom:none;' : '' }}">
-                        <td style="text-align:left; padding:12px 16px; color:#6b7280;">
+                    <tr style="border-bottom:1px solid #eef2f7; {{ $loop->last ? 'border-bottom:none;' : '' }}; transition:background-color .2s ease;">
+                        <td style="text-align:left; padding:14px 16px; color:#64748b; font-weight:600;">
                             {{ ($pemasukkans->currentPage() - 1) * $pemasukkans->perPage() + $loop->iteration }}
                         </td>
-                        <td style="text-align:left; padding:12px 16px; color:#1f2937;">
+                        <td style="text-align:left; padding:14px 16px; color:#0f172a; font-weight:600;">
                             {{ \Carbon\Carbon::parse($transaksi->tanggal)->format('d M Y') }}
                         </td>
-                        <td style="text-align:left; padding:12px 16px; color:#1f2937; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                        <td style="text-align:left; padding:14px 16px; color:#334155; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                             {{ $transaksi->keterangan }}
                         </td>
-                        <td style="text-align:left; padding:12px 16px; color:#059669; font-weight:500;">
+                        <td style="text-align:left; padding:14px 16px; color:#059669; font-weight:700;">
                             + {{ $formatRupiah($transaksi->jumlah) }}
                         </td>
-                        <td style="text-align:left; padding:12px 16px; color:#6b7280;">
+                        <td style="text-align:left; padding:14px 16px; color:#64748b;">
                             @php
                                 $jenisPemasukan = $transaksi->jenis_transaksi ?? 'Lain-lain';
                                 $jenisPemasukanColor = match($jenisPemasukan) {
@@ -94,9 +95,16 @@
                                     default => 'background:#ede9fe; color:#5b21b6;',
                                 };
                             @endphp
-                            <span style="display:inline-block; padding:4px 8px; border-radius:999px; font-size:11px; font-weight:600; {{ $jenisPemasukanColor }}">
+                            <span style="display:inline-block; padding:6px 10px; border-radius:999px; font-size:11px; font-weight:700; letter-spacing:0.02em; {{ $jenisPemasukanColor }}">
                                 {{ $jenisPemasukan }}
                             </span>
+                        </td>
+                        <td style="text-align:center; padding:14px 16px;">
+                            <button 
+                                onclick="openDetailModalPemasukan('{{ $transaksi->id }}', '{{ \Carbon\Carbon::parse($transaksi->tanggal)->format('d/m/Y') }}', '{{ $formatRupiah($transaksi->jumlah) }}', '{{ $transaksi->jenis_transaksi }}', '{{ addslashes($transaksi->keterangan) }}', '{{ $transaksi->bukti_transaksi }}')" 
+                                style="background:linear-gradient(135deg, #2563eb, #1d4ed8); color:white; border:none; padding:8px 14px; border-radius:10px; font-size:11px; font-weight:700; cursor:pointer; box-shadow:0 10px 20px rgba(37, 99, 235, 0.18);">
+                                Detail
+                            </button>
                         </td>
                     </tr>
                 @endforeach
@@ -104,8 +112,8 @@
         </table>
 
         <!-- PAGINATION -->
-        <div style="padding:16px; border-top:1px solid #f3f4f6; display:flex; justify-content:space-between; align-items:center;">
-            <p style="font-size:12px; color:#9ca3af; margin:0;">
+        <div style="padding:16px 18px; border-top:1px solid #eef2f7; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; background:#fcfdff;">
+            <p style="font-size:12px; color:#64748b; margin:0; font-weight:600;">
                 Menampilkan {{ $pemasukkans->firstItem() }} - {{ $pemasukkans->lastItem() }} dari {{ $pemasukkans->total() }} data
             </p>
             <div style="display:flex; gap:4px;">
@@ -147,42 +155,43 @@
 <!-- ================================ -->
 <div id="modalTambah"
     style="display:none; position:fixed; inset:0; 
-           z-index:9999; align-items:center; 
-           justify-content:center;">
+           z-index:9999; align-items:flex-start; 
+           justify-content:center; overflow-y:auto; 
+           padding:24px 16px; background:rgba(0,0,0,0.5);">
     
     <!-- Backdrop -->
     <div 
         onclick="tutupModal()"
-        style="position:absolute; inset:0; 
-               background:rgba(0,0,0,0.45);">
+         style="position:absolute; inset:0; 
+             background:rgba(0,0,0,0.5);">
     </div>
 
     <!-- Box Modal -->
     <div style="position:relative; background:white; 
-                border-radius:16px; width:100%; 
-                max-width:520px; margin:0 16px; 
-                max-height:90vh; overflow-y:auto; 
-                z-index:10000;">
+                border-radius:12px; width:100%; 
+                max-width:520px; margin:auto; 
+                max-height:calc(100vh - 48px); overflow:hidden; 
+                display:flex; flex-direction:column; 
+                z-index:10000; box-shadow:0 20px 60px rgba(0,0,0,0.18);">
 
         <!-- Header Modal -->
         <div style="display:flex; align-items:center; 
-                    justify-content:space-between;
-                    padding:16px 24px; 
-                    border-bottom:1px solid #f3f4f6;">
+                justify-content:space-between;
+                padding:16px 20px; 
+                border-bottom:1px solid #f3f4f6; 
+                background:#10b981; color:#ffffff; flex-shrink:0;">
             <div>
                 <p style="font-size:14px; font-weight:500; 
-                          color:#1f2937; margin:0;">
+                          color:#ffffff; margin:0;">
                     Tambah Pemasukan
                 </p>
-                <p style="font-size:11px; color:#9ca3af; margin:4px 0 0;">
+                <p style="font-size:11px; color:rgba(255,255,255,0.85); margin:4px 0 0;">
                     Isi data transaksi dengan lengkap
                 </p>
             </div>
             <button onclick="tutupModal()"
-                style="width:28px; height:28px; border:none;
-                       background:#f9fafb; border-radius:8px;
-                       cursor:pointer; font-size:16px; 
-                       color:#6b7280; line-height:1;">
+                style="background:none; border:none; color:#ffffff;
+                       cursor:pointer; font-size:20px; line-height:1;">
                 &times;
             </button>
         </div>
@@ -191,7 +200,7 @@
         <form method="POST" 
               action="{{ route('admin.pemasukan.store') }}"
               enctype="multipart/form-data"
-              style="padding:20px 24px;">
+              style="padding:20px; overflow-y:auto; flex:1; -webkit-overflow-scrolling:touch;">
             @csrf
             <input type="hidden" name="jenis" value="pemasukan">
 
@@ -204,9 +213,14 @@
                               margin-bottom:4px;">
                     Jenis Pemasukan <span style="color:#ef4444;">*</span>
                 </label>
+                @error('jenis_pemasukan')
+                    <p style="font-size:11px;color:#ef4444;margin:0 0 4px;">
+                        {{ $message }}
+                    </p>
+                @enderror
                 <select id="jenisPemasukan" name="jenis_pemasukan" required
-                    style="width:100%; font-size:13px; 
-                           border:1px solid #e5e7eb; 
+                          style="width:100%; font-size:13px; 
+                              border:1px solid {{ $errors->has('jenis_pemasukan') ? '#ef4444' : '#e5e7eb' }}; 
                            border-radius:8px; padding:0 12px;
                            height:36px; box-sizing:border-box;
                            outline:none; background:white;">
@@ -227,18 +241,18 @@
                               margin-bottom:4px;">
                     Tanggal
                 </label>
-                <input type="date" name="tanggal"
-                    value="{{ old('tanggal', date('Y-m-d')) }}"
-                    style="width:100%; font-size:13px; 
-                           border:1px solid #e5e7eb; 
-                           border-radius:8px; padding:8px 12px; 
-                           height:36px; box-sizing:border-box;
-                           outline:none;">
                 @error('tanggal')
-                    <p style="font-size:11px;color:#ef4444;margin:4px 0 0;">
+                    <p style="font-size:11px;color:#ef4444;margin:0 0 4px;">
                         {{ $message }}
                     </p>
                 @enderror
+                <input type="date" name="tanggal"
+                    value="{{ old('tanggal', date('Y-m-d')) }}"
+                          style="width:100%; font-size:13px; 
+                              border:1px solid {{ $errors->has('tanggal') ? '#ef4444' : '#e5e7eb' }}; 
+                           border-radius:8px; padding:8px 12px; 
+                           height:36px; box-sizing:border-box;
+                           outline:none;">
             </div>
 
             <!-- Jumlah -->
@@ -250,6 +264,11 @@
                               margin-bottom:4px;">
                     Jumlah
                 </label>
+                @error('jumlah')
+                    <p style="font-size:11px;color:#ef4444;margin:0 0 4px;">
+                        {{ $message }}
+                    </p>
+                @enderror
                 <div style="position:relative;">
                     <span style="position:absolute; left:12px; 
                                  top:50%; transform:translateY(-50%);
@@ -260,18 +279,13 @@
                         id="inputJumlah"
                         value="{{ old('jumlah') }}"
                         min="1" placeholder="0"
-                        style="width:100%; font-size:13px; 
-                               border:1px solid #e5e7eb; 
+                           style="width:100%; font-size:13px; 
+                               border:1px solid {{ $errors->has('jumlah') ? '#ef4444' : '#e5e7eb' }}; 
                                border-radius:8px; 
                                padding:8px 12px 8px 36px;
                                height:36px; box-sizing:border-box;
                                outline:none;">
                 </div>
-                @error('jumlah')
-                    <p style="font-size:11px;color:#ef4444;margin:4px 0 0;">
-                        {{ $message }}
-                    </p>
-                @enderror
             </div>
 
             <!-- Keterangan -->
@@ -283,13 +297,18 @@
                               margin-bottom:4px;">
                     Keterangan
                 </label>
+                @error('keterangan')
+                    <p style="font-size:11px;color:#ef4444;margin:0 0 4px;">
+                        {{ $message }}
+                    </p>
+                @enderror
                 <textarea name="keterangan" rows="3"
                     id="inputKeterangan"
                     maxlength="500"
                     placeholder="Tulis keterangan transaksi..."
                     oninput="hitungKarakter()"
-                    style="width:100%; font-size:13px; 
-                           border:1px solid #e5e7eb; 
+                          style="width:100%; font-size:13px; 
+                              border:1px solid {{ $errors->has('keterangan') ? '#ef4444' : '#e5e7eb' }}; 
                            border-radius:8px; padding:8px 12px;
                            resize:none; box-sizing:border-box;
                            outline:none;">{{ old('keterangan') }}</textarea>
@@ -297,11 +316,6 @@
                           text-align:right;margin:2px 0 0;">
                     <span id="hitungChar">0</span>/500
                 </p>
-                @error('keterangan')
-                    <p style="font-size:11px;color:#ef4444;margin:4px 0 0;">
-                        {{ $message }}
-                    </p>
-                @enderror
             </div>
 
             <!-- Siswa list for bulk SPP -->
@@ -350,25 +364,22 @@
                               letter-spacing:0.05em; 
                               margin-bottom:4px;">
                     Bukti Transaksi
-                    <span style="color:#d1d5db;
-                                 text-transform:none;">
-                        (opsional)
-                    </span>
+                    <span style="color:#ef4444;">*</span>
                 </label>
+                @error('bukti_transaksi')
+                    <p style="font-size:11px;color:#ef4444;margin:0 0 4px;">
+                        {{ $message }}
+                    </p>
+                @enderror
                 <input type="file" name="bukti_transaksi"
                     accept=".jpg,.jpeg,.png,.pdf"
-                    style="width:100%; font-size:12px; 
-                           border:1px solid #e5e7eb; 
+                          style="width:100%; font-size:12px; 
+                              border:1px solid {{ $errors->has('bukti_transaksi') ? '#ef4444' : '#e5e7eb' }}; 
                            border-radius:8px; padding:6px 12px;
                            box-sizing:border-box;">
                 <p style="font-size:10px;color:#9ca3af;margin:4px 0 0;">
                     JPG, PNG, PDF maksimal 2MB
                 </p>
-                @error('bukti_transaksi')
-                    <p style="font-size:11px;color:#ef4444;margin:4px 0 0;">
-                        {{ $message }}
-                    </p>
-                @enderror
             </div>
 
             <!-- Footer Tombol -->
@@ -393,38 +404,56 @@
                 </button>
             </div>
 
+
         </form>
     </div>
 </div>
+
+@include('admin.components.detail-transaksi-modal')
+
+<script>
+    function openDetailModalPemasukan(id, tanggal, jumlah, jenis, keterangan, buktiPath) {
+        const fields = [
+            { label: 'ID Transaksi', value: id },
+            { label: 'Tanggal', value: tanggal },
+            { label: 'Jumlah', value: jumlah, isPeso: true },
+            { label: 'Jenis Pemasukan', value: jenis },
+            { label: 'Keterangan', value: keterangan || '-' }
+        ];
+        openDetailTransaksi(fields, buktiPath);
+    }
+</script>
 
 <!-- ================================ -->
 <!-- MODAL — Pilih Siswa             -->
 <!-- ================================ -->
 <div id="modalSiswa"
     style="display:none; position:fixed; inset:0; 
-           z-index:10010; align-items:center; 
-           justify-content:center;">
+           z-index:10010; align-items:flex-start; 
+           justify-content:center; overflow-y:auto; 
+           padding:24px 16px; background:rgba(0,0,0,0.5);">
     <div onclick="tutupModalSiswa()"
-        style="position:absolute; inset:0; background:rgba(0,0,0,0.45);"></div>
+        style="position:absolute; inset:0; background:rgba(0,0,0,0.5);"></div>
 
     <div style="position:relative; background:white; 
-                border-radius:16px; width:100%; 
-                max-width:720px; margin:0 16px; 
-                max-height:90vh; overflow:hidden; 
-                z-index:10020;">
+                border-radius:12px; width:100%; 
+                max-width:640px; margin:auto; 
+                max-height:calc(100vh - 48px); overflow:hidden; 
+                display:flex; flex-direction:column; 
+                z-index:10020; box-shadow:0 20px 60px rgba(0,0,0,0.18);">
         <div style="display:flex; align-items:center; justify-content:space-between;
-                    padding:16px 24px; background:#1D9E75; color:white;">
+                    padding:16px 20px; background:#10b981; color:white; flex-shrink:0;">
             <div>
                 <p style="font-size:14px; font-weight:600; margin:0;">Pilih Siswa</p>
                 <p style="font-size:11px; opacity:0.9; margin:4px 0 0;">Cari siswa berdasarkan NIK, nama, atau kelas</p>
             </div>
             <button type="button" onclick="tutupModalSiswa()"
-                style="width:28px; height:28px; border:none; background:rgba(255,255,255,0.15); border-radius:8px; cursor:pointer; font-size:16px; color:white; line-height:1;">
+                style="background:none; border:none; color:white; cursor:pointer; font-size:20px; line-height:1;">
                 &times;
             </button>
         </div>
 
-        <div style="padding:20px 24px;">
+        <div style="padding:20px; overflow-y:auto; flex:1; -webkit-overflow-scrolling:touch;">
             <input type="text" id="searchSiswa"
                 placeholder="Cari NIK, nama, atau kelas..."
                 style="width:100%; font-size:13px; border:1px solid #e5e7eb; border-radius:8px; padding:10px 12px; box-sizing:border-box; outline:none; margin-bottom:16px;">
@@ -447,14 +476,12 @@
                     </tbody>
                 </table>
             </div>
-        <div style="padding:12px 24px; border-top:1px solid #f3f4f6; text-align:right;">
+        <div style="padding:14px 20px; border-top:0.5px solid #e5e7eb; text-align:right; flex-shrink:0; background:#ffffff;">
             <button type="button" onclick="tutupModalSiswa()" style="background:#6b7280; color:white; border:none; padding:8px 12px; border-radius:8px;">Tutup</button>
         </div>
         </div>
     </div>
 </div>
-
-@endsection
 
 @push('scripts')
 <script>
@@ -663,21 +690,21 @@
 
         var total = selectedStudents.reduce(function(acc, s){ return acc + Number(s.jumlah || 0); }, 0);
 
-        var modalHtml = '\n<div id="'+modalId+'" style="display:flex; position:fixed; inset:0; z-index:11000; align-items:center; justify-content:center;">\n' +
-            '<div onclick="document.getElementById(\''+modalId+'\').remove(); document.body.style.overflow = \''+'\';" style="position:absolute; inset:0; background:rgba(0,0,0,0.45);"></div>\n' +
-            '<div style="position:relative; background:white; border-radius:12px; width:100%; max-width:720px; margin:0 16px; max-height:90vh; overflow:auto; z-index:11010;">\n' +
-            '<div style="padding:16px 20px; border-bottom:1px solid #f3f4f6; display:flex; justify-content:space-between; align-items:center;">\n' +
+        var modalHtml = '\n<div id="'+modalId+'" style="display:flex; position:fixed; inset:0; z-index:11000; align-items:flex-start; justify-content:center; overflow-y:auto; padding:24px 16px; background:rgba(0,0,0,0.5);">\n' +
+            '<div onclick="document.getElementById(\''+modalId+'\').remove(); document.body.style.overflow = \''+'\';" style="position:absolute; inset:0; background:rgba(0,0,0,0.5);"></div>\n' +
+            '<div style="position:relative; background:white; border-radius:12px; width:100%; max-width:680px; margin:auto; max-height:calc(100vh - 48px); overflow:hidden; display:flex; flex-direction:column; z-index:11010; box-shadow:0 20px 60px rgba(0,0,0,0.18);">\n' +
+            '<div style="padding:16px 20px; border-bottom:1px solid #f3f4f6; display:flex; justify-content:space-between; align-items:center; background:#10b981; color:#fff; flex-shrink:0;">\n' +
             '<div><strong>Konfirmasi Pemasukan SPP</strong><div style="font-size:12px;color:#6b7280;margin-top:6px;">Tanggal: '+escapeHtml(tanggal)+' &nbsp; • &nbsp; Jenis: '+escapeHtml(jenis)+'</div></div>' +
-            '<button onclick="document.getElementById(\''+modalId+'\').remove(); document.body.style.overflow = \''+'\';" style="background:#f3f4f6;border:none;padding:6px 10px;border-radius:8px;">&times;</button></div>' +
-            '<div style="padding:16px 20px;">' +
+            '<button onclick="document.getElementById(\''+modalId+'\').remove(); document.body.style.overflow = \''+'\';" style="background:none;border:none;color:#fff;font-size:20px;line-height:1;">&times;</button></div>' +
+            '<div style="padding:20px; overflow-y:auto; flex:1; -webkit-overflow-scrolling:touch;">' +
             '<div style="margin-bottom:12px; color:#374151;">Keterangan: '+escapeHtml(keterangan || '-')+'</div>' +
             '<div style="border:1px solid #f3f4f6; border-radius:8px; overflow:hidden;"><table style="width:100%;">' +
             '<thead><tr style="background:#f9fafb;"><th style="padding:8px 12px;">No</th><th style="padding:8px 12px;">Nama</th><th style="padding:8px 12px;">NIK</th><th style="padding:8px 12px;">Kelas</th><th style="padding:8px 12px; text-align:right;">Jumlah</th></tr></thead>' +
             '<tbody>'+rows+'</tbody>' +
             '<tfoot><tr><td colspan="4" style="padding:8px 12px; text-align:right;"><strong>Total Keseluruhan:</strong></td><td style="padding:8px 12px; text-align:right;"><strong>'+formatRupiah(total)+'</strong></td></tr></tfoot>' +
             '</table></div>' +
-            '<div style="display:flex; gap:8px; margin-top:16px;"><button onclick="document.getElementById(\''+modalId+'\').remove(); document.body.style.overflow = \''+'\';" style="flex:1; border:1px solid #e5e7eb; background:white; padding:10px; border-radius:8px;">Kembali Edit</button>' +
-            '<button onclick="submitBulkSPP()" style="flex:1; background:#10B981; color:white; border:none; padding:10px; border-radius:8px;">Simpan Semua Transaksi</button></div>' +
+            '<div style="display:flex; gap:8px; margin-top:16px;"><button onclick="document.getElementById(\''+modalId+'\').remove(); document.body.style.overflow = \''+'\';" style="flex:1; border:0.5px solid #d1d5db; background:white; padding:8px 20px; border-radius:8px;">Kembali Edit</button>' +
+            '<button onclick="submitBulkSPP()" style="flex:1; background:#10b981; color:white; border:none; padding:8px 20px; border-radius:8px;">Simpan Semua Transaksi</button></div>' +
             '</div></div></div>\n';
 
         document.body.insertAdjacentHTML('beforeend', modalHtml);
@@ -887,3 +914,5 @@
     });
 </script>
 @endpush
+
+@endsection
