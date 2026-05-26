@@ -935,51 +935,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 4000);
   }
 
-  // Client-side validation for tambah siswa form
-  var formTambah = document.getElementById('formTambahSiswa');
-  if (formTambah) {
-    formTambah.addEventListener('submit', function(e) {
-      var nik = formTambah.querySelector('input[name="nik"]').value.trim();
-      var kelas = formTambah.querySelector('select[name="kelas"]').value.trim();
-      var nama = formTambah.querySelector('input[name="nama"]').value.trim();
-      var namaOrtu = formTambah.querySelector('input[name="nama_orangtua"]').value.trim();
-      var messages = [];
-
-      if (nik.length !== 16) messages.push('NIK harus 16 digit.');
-      if (!kelas) messages.push('Kelas harus dipilih.');
-      if (!nama) messages.push('Nama siswa wajib diisi.');
-      if (!namaOrtu) messages.push('Nama orang tua wajib diisi.');
-
-      if (messages.length > 0) {
-        e.preventDefault();
-        alert(messages.join('\n'));
-        return false;
-      }
-    });
-  }
-
-  // Client-side validation for edit siswa form
-  var formEdit = document.getElementById('formEditSiswa');
-  if (formEdit) {
-    formEdit.addEventListener('submit', function(e) {
-      var nik = formEdit.querySelector('input[name="nik"]').value.trim();
-      var kelas = formEdit.querySelector('select[name="kelas"]').value.trim();
-      var nama = formEdit.querySelector('input[name="nama"]').value.trim();
-      var namaOrtu = formEdit.querySelector('input[name="nama_orangtua"]').value.trim();
-      var messages = [];
-
-      if (nik.length !== 16) messages.push('NIK harus 16 digit.');
-      if (!kelas) messages.push('Kelas harus dipilih.');
-      if (!nama) messages.push('Nama siswa wajib diisi.');
-      if (!namaOrtu) messages.push('Nama orang tua wajib diisi.');
-
-      if (messages.length > 0) {
-        e.preventDefault();
-        alert(messages.join('\n'));
-        return false;
-      }
-    });
-  }
+  submitSiswaForm('formTambahSiswa', '{{ route('admin.siswa.store') }}', 'POST');
+  submitSiswaForm('formEditSiswa', null, 'POST');
 
   // ─── Click row untuk edit modal ──────────────
   var siswaRows = document.querySelectorAll('.siswa-row');
@@ -1048,5 +1005,6 @@ function konfirmasiHapus(id, nama) {
     document.getElementById('formHapus' + id).submit();
   }
 }
+
 </script>
 @endpush

@@ -327,13 +327,14 @@
                               margin-bottom:8px;">
                     Daftar Siswa (SPP - bulk)
                 </label>
-                <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+                <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap;">
                     <button type="button" id="btnTambahSiswa" style="background:#10B981; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:600;">+ Cari & Tambah Siswa</button>
+                    <button type="button" id="btnKosongkanSiswa" style="background:#ef4444; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:600;">Kosongkan</button>
                     <span id="totalSelectedBadge" style="margin-left:auto; font-size:13px; color:#6b7280;">Total: 0 siswa dipilih</span>
                 </div>
 
-                <div style="border:1px solid #f3f4f6; border-radius:12px; overflow:hidden;">
-                    <table style="width:100%; font-size:13px;" id="siswa-table">
+                <div style="border:1px solid #f3f4f6; border-radius:12px; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch;">
+                    <table style="width:100%; min-width:760px; font-size:13px;" id="siswa-table">
                         <thead>
                             <tr style="background:#f9fafb; border-bottom:1px solid #f3f4f6;">
                                 <th style="padding:10px 12px; text-align:center; width:48px;">No</th>
@@ -350,10 +351,6 @@
                     </table>
                 </div>
 
-                <div style="display:flex; gap:8px; margin-top:12px;">
-                    <button type="button" id="btnPreviewSimpan" disabled style="background:#10B981; color:white; border:none; padding:10px 12px; border-radius:8px; cursor:pointer; font-weight:600;">Preview & Simpan</button>
-                    <button type="button" id="btnKosongkanSiswa" style="background:#ef4444; color:white; border:none; padding:10px 12px; border-radius:8px; cursor:pointer; font-weight:600;">Kosongkan</button>
-                </div>
             </div>
 
             <!-- Upload Bukti -->
@@ -611,18 +608,15 @@
     function renderSiswaTable() {
         var tbody = document.getElementById('siswa-table-body');
         var badge = document.getElementById('totalSelectedBadge');
-        var previewBtn = document.getElementById('btnPreviewSimpan');
         if (!tbody) return;
 
         if (selectedStudents.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" style="padding:16px; text-align:center; color:#9ca3af;">Belum ada siswa ditambahkan.</td></tr>';
             badge.textContent = 'Total: 0 siswa dipilih';
-            previewBtn.disabled = true;
             return;
         }
 
         badge.textContent = 'Total: ' + selectedStudents.length + ' siswa dipilih';
-        previewBtn.disabled = false;
 
         tbody.innerHTML = selectedStudents.map(function (s, idx) {
             return '<tr style="border-bottom:1px solid #f3f4f6;">' +
@@ -630,10 +624,41 @@
                 '<td style="padding:12px 16px;">' + escapeHtml(s.nama) + '</td>' +
                 '<td style="padding:12px 16px;">' + escapeHtml(s.nik || '-') + '</td>' +
                 '<td style="padding:12px 16px;">' + escapeHtml(s.kelas || '-') + '</td>' +
-                '<td style="padding:12px 16px; text-align:right;"><input type="number" min="1" value="' + (s.jumlah || '') + '" data-idx="' + idx + '" class="siswa-jumlah-input" style="width:120px; padding:6px 8px; border:1px solid #e5e7eb; border-radius:8px; text-align:right;" /></td>' +
+                '<td style="padding:12px 16px; text-align:right;">' +
+                    '<div style="display:flex; align-items:center; justify-content:flex-end; gap:8px;">' +
+                        '<input type="number" min="1" value="' + (s.jumlah || '') + '" data-idx="' + idx + '" class="siswa-jumlah-input" style="width:120px; padding:6px 8px; border:1px solid #e5e7eb; border-radius:8px; text-align:right;" />' +
+                        '<button type="button" class="btn-kosongkan-siswa" data-idx="' + idx + '" onclick="kosongkanSiswa(this)" style="font-size:11px; padding:4px 8px; background:#e5e7eb; color:#374151; border:none; border-radius:6px; cursor:pointer; white-space:nowrap;">Kosongkan</button>' +
+                    '</div>' +
+                '</td>' +
                 '<td style="padding:12px 16px; text-align:center;"><button type="button" class="btn-hapus-siswa" data-idx="' + idx + '" style="background:#ef4444; color:white; border:none; padding:6px 10px; border-radius:8px;">Hapus</button></td>' +
             '</tr>';
         }).join('');
+    }
+
+    function kosongkanSiswa(button) {
+        if (!button) {
+            return;
+        }
+
+        var row = button.closest('tr');
+        if (!row) {
+            return;
+        }
+
+        var idx = button.dataset.idx;
+        var jumlahInput = row.querySelector('.siswa-jumlah-input');
+        if (jumlahInput) {
+            jumlahInput.value = '';
+        }
+
+        var checkbox = row.querySelector('input[type="checkbox"]');
+        if (checkbox) {
+            checkbox.checked = false;
+        }
+
+        if (typeof idx !== 'undefined' && selectedStudents[Number(idx)]) {
+            selectedStudents[Number(idx)].jumlah = '';
+        }
     }
 
     function addSelectedStudent(siswa) {
@@ -858,9 +883,9 @@
             return;
         }
 
-        // Preview & Simpan
-        if (event.target && event.target.id === 'btnPreviewSimpan') {
-            bukaPreviewModal();
+        // Kosongkan per baris siswa
+        if (event.target && event.target.classList.contains('btn-kosongkan-siswa')) {
+            kosongkanSiswa(event.target);
             return;
         }
     });

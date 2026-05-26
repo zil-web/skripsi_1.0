@@ -1,0 +1,576 @@
+{
+  "info": {
+    "_postman_id": "c2c5f4f7-2f4f-4c1c-8e5f-6a2b1b2d7a11",
+    "name": "SIKEU Laravel Blackbox Tests",
+    "description": "Koleksi request untuk smoke test login, siswa, pemasukan, pengeluaran, dan approval pada aplikasi SIKEU Laravel.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "GET Login Page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "var match = pm.response.text().match(/name=\"_token\" value=\"([^\"]+)\"/);",
+                  "pm.test('csrf token ditemukan', function () {",
+                  "  pm.expect(match, 'csrf token hidden input').to.not.be.null;",
+                  "});",
+                  "if (match) {",
+                    "  pm.environment.set('csrf_token', match[1]);",
+                    "  pm.collectionVariables.set('csrf_token', match[1]);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST Login Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "text/html" },
+              { "key": "X-CSRF-TOKEN", "value": "{{csrf_token}}" }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "username", "value": "{{admin_username}}", "type": "text" },
+                { "key": "password", "value": "{{admin_password}}", "type": "text" },
+                { "key": "remember", "value": "on", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "http://{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            },
+            "protocolProfileBehavior": {
+              "followRedirects": false
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('login admin merespons', function () {",
+                  "  pm.expect([200, 302]).to.include(pm.response.code);",
+                  "});",
+                  "var location = pm.response.headers.get('Location') || '';",
+                  "if (pm.response.code === 302) {",
+                  "  pm.test('redirect ke dashboard admin', function () {",
+                  "    pm.expect(location).to.include('/admin/dashboard');",
+                  "  });",
+                  "}",
+                  "// Refresh CSRF token from cookie after login (session may have been regenerated)",
+                  "(function(){",
+                  "  try {",
+                  "    var cookieToken = pm.cookies.get('XSRF-TOKEN') || '';",
+                  "    if (cookieToken) {",
+                  "      var decoded = decodeURIComponent(cookieToken);",
+                  "      pm.environment.set('csrf_token', decoded);",
+                  "      pm.collectionVariables.set('csrf_token', decoded);",
+                  "      pm.test('csrf token refreshed from cookie', function() { pm.expect(decoded).to.not.equal(''); });",
+                  "    }",
+                    "    // fallback: try to extract from body if present",
+                    "    var m = pm.response.text().match(/name=\"_token\" value=\"([^\"]+)\"/);",
+                    "    if (m) { pm.environment.set('csrf_token', m[1]); pm.collectionVariables.set('csrf_token', m[1]); }",
+                          "  } catch (e) { pm.environment.unset('csrf_token'); }",
+                  "})();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "text/html" },
+              { "key": "X-CSRF-TOKEN", "value": "{{csrf_token}}" }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "http://{{base_url}}/logout",
+              "host": ["{{base_url}}"],
+              "path": ["logout"]
+            },
+            "protocolProfileBehavior": {
+              "followRedirects": false
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('logout merespons', function () {",
+                  "  pm.expect([200, 302]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "GET Dashboard Admin",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "text/html" }
+            ],
+            "url": {
+              "raw": "http://{{base_url}}/admin/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "dashboard"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('dashboard admin tampil', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET Cari Siswa",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "http://{{base_url}}/siswa/search?q={{siswa_search_query}}",
+              "host": ["{{base_url}}"],
+              "path": ["siswa", "search"],
+              "query": [
+                { "key": "q", "value": "{{siswa_search_query}}" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('search siswa JSON', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST Siswa Create Valid",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-Requested-With", "value": "XMLHttpRequest" },
+              { "key": "X-CSRF-TOKEN", "value": "{{csrf_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nik\": \"1234567890123456\",\n  \"nama\": \"Budi Santoso\",\n  \"nama_orangtua\": \"Siti Aminah\",\n  \"kelas\": \"7A\",\n  \"jenis_kelamin\": \"L\",\n  \"no_telepon\": \"081234567890\",\n  \"alamat\": \"Jl. Merdeka No. 1\",\n  \"is_active\": 1\n}"
+            },
+            "url": {
+              "raw": "http://{{base_url}}/admin/siswa",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "siswa"]
+            },
+            "protocolProfileBehavior": {
+              "followRedirects": false
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('siswa valid tersimpan', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('response json redirect_url ada', function () {",
+                  "  var body = pm.response.json();",
+                  "  pm.expect(body).to.have.property('message', 'Berhasil');",
+                  "  pm.expect(body).to.have.property('redirect_url');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST Siswa Create Invalid",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-Requested-With", "value": "XMLHttpRequest" },
+              { "key": "X-CSRF-TOKEN", "value": "{{csrf_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"Data Salah\"\n}"
+            },
+            "url": {
+              "raw": "http://{{base_url}}/admin/siswa",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "siswa"]
+            },
+            "protocolProfileBehavior": {
+              "followRedirects": false
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('validasi siswa gagal', function () {",
+                  "  pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT Siswa Update Valid",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-Requested-With", "value": "XMLHttpRequest" },
+              { "key": "X-CSRF-TOKEN", "value": "{{csrf_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nik\": \"6543210987654321\",\n  \"nama\": \"Budi Update\",\n  \"nama_orangtua\": \"Siti Aminah\",\n  \"kelas\": \"8B\",\n  \"jenis_kelamin\": \"L\",\n  \"no_telepon\": \"081234567891\",\n  \"alamat\": \"Jl. Merdeka No. 2\",\n  \"is_active\": 1\n}"
+            },
+            "url": {
+              "raw": "http://{{base_url}}/admin/siswa/{{siswa_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "siswa", "{{siswa_id}}"]
+            },
+            "protocolProfileBehavior": {
+              "followRedirects": false
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('siswa update sukses', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  var body = pm.response.json();",
+                  "  pm.expect(body).to.have.property('message', 'Berhasil');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE Siswa",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "text/html" },
+              { "key": "X-CSRF-TOKEN", "value": "{{csrf_token}}" }
+            ],
+            "url": {
+              "raw": "http://{{base_url}}/admin/siswa/{{siswa_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "siswa", "{{siswa_id}}"]
+            },
+            "protocolProfileBehavior": {
+              "followRedirects": false
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('hapus siswa merespons', function () {",
+                  "  pm.expect([200, 302]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST Pemasukan Valid Non-SPP",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "text/html" },
+              { "key": "X-CSRF-TOKEN", "value": "{{csrf_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "tanggal", "value": "{{tanggal_transaksi}}", "type": "text" },
+                { "key": "jumlah", "value": "150000", "type": "text" },
+                { "key": "keterangan", "value": "Test Postman pemasukan non-SPP", "type": "text" },
+                { "key": "jenis_pemasukan", "value": "Donasi", "type": "text" },
+                { "key": "bukti_transaksi", "type": "file", "src": "" }
+              ]
+            },
+            "url": {
+              "raw": "http://{{base_url}}/admin/pemasukan",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "pemasukan"]
+            },
+            "protocolProfileBehavior": {
+              "followRedirects": false
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('pemasukan valid merespons', function () {",
+                  "  pm.expect([200, 302]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST Pemasukan Invalid Zero Amount",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-CSRF-TOKEN", "value": "{{csrf_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tanggal\": \"{{tanggal_transaksi}}\",\n  \"jumlah\": 0,\n  \"keterangan\": \"Jumlah nol\",\n  \"jenis_pemasukan\": \"Donasi\"\n}"
+            },
+            "url": {
+              "raw": "http://{{base_url}}/admin/pemasukan",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "pemasukan"]
+            },
+            "protocolProfileBehavior": {
+              "followRedirects": false
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('validasi pemasukan gagal', function () {",
+                  "  pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST Pengeluaran Valid",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "text/html" },
+              { "key": "X-CSRF-TOKEN", "value": "{{csrf_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "tanggal", "value": "{{tanggal_transaksi}}", "type": "text" },
+                { "key": "jumlah", "value": "250000", "type": "text" },
+                { "key": "keterangan", "value": "Test Postman pengeluaran", "type": "text" },
+                { "key": "jenis_pengeluaran", "value": "ATK", "type": "text" },
+                { "key": "bukti_transaksi", "type": "file", "src": "" }
+              ]
+            },
+            "url": {
+              "raw": "http://{{base_url}}/admin/pengeluaran",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "pengeluaran"]
+            },
+            "protocolProfileBehavior": {
+              "followRedirects": false
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('pengeluaran valid merespons', function () {",
+                  "  pm.expect([200, 302]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST Pengeluaran Invalid Negative Amount",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-CSRF-TOKEN", "value": "{{csrf_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tanggal\": \"{{tanggal_transaksi}}\",\n  \"jumlah\": -1,\n  \"keterangan\": \"Jumlah negatif\",\n  \"jenis_pengeluaran\": \"ATK\"\n}"
+            },
+            "url": {
+              "raw": "http://{{base_url}}/admin/pengeluaran",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "pengeluaran"]
+            },
+            "protocolProfileBehavior": {
+              "followRedirects": false
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('validasi pengeluaran gagal', function () {",
+                  "  pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Kepsek",
+      "item": [
+        {
+          "name": "GET Dashboard Kepsek",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "text/html" }
+            ],
+            "url": {
+              "raw": "http://{{base_url}}/kepsek/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["kepsek", "dashboard"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('dashboard kepsek tampil', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST Approve Pengeluaran",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "text/html" },
+              { "key": "X-CSRF-TOKEN", "value": "{{csrf_token}}" }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "http://{{base_url}}/kepsek/pengeluaran/{{transaksi_id}}/approve",
+              "host": ["{{base_url}}"],
+              "path": ["kepsek", "pengeluaran", "{{transaksi_id}}", "approve"]
+            },
+            "protocolProfileBehavior": {
+              "followRedirects": false
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('approval pengeluaran merespons', function () {",
+                  "  pm.expect([200, 302]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

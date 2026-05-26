@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use App\Models\Siswa;
 
 class UpdateSiswaRequest extends FormRequest
 {
@@ -13,12 +15,17 @@ class UpdateSiswaRequest extends FormRequest
 
     public function rules(): array
     {
+        $siswaRoute = $this->route('siswa');
+        $ignoreId = $siswaRoute instanceof Siswa
+            ? $siswaRoute->id
+            : $siswaRoute;
+
         return [
             'nik' => [
                 'required',
                 'string',
                 'size:16',
-                'unique:siswas,nik,'.$this->route('siswa'),
+                Rule::unique('siswas', 'nik')->ignore($ignoreId),
                 'regex:/^[0-9]+$/',
             ],
             'nama' => [
@@ -34,9 +41,9 @@ class UpdateSiswaRequest extends FormRequest
                 'regex:/^[a-zA-Z\s\.,]+$/',
             ],
             'kelas'         => 'required|string|max:10',
-            'jenis_kelamin' => 'nullable|in:L,P',
+            'jenis_kelamin' => 'required|in:L,P',
             'no_telepon'    => [
-                'nullable',
+                'required',
                 'string',
                 'max:15',
                 'regex:/^[0-9\+\-\s]+$/',
@@ -58,15 +65,13 @@ class UpdateSiswaRequest extends FormRequest
             'nama_orangtua.required' => 'Nama orang tua wajib diisi',
             'nama_orangtua.regex'    => 'Nama hanya boleh huruf',
             'kelas.required'         => 'Kelas wajib dipilih',
+            'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih',
             'jenis_kelamin.in'       => 'Jenis kelamin tidak valid',
+            'no_telepon.required'    => 'Nomor telepon wajib diisi',
             'no_telepon.regex'       => 'Format nomor telepon tidak valid',
         ];
     }
 
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'is_active' => $this->is_active ?? true,
-        ]);
-    }
+    // Intentionally no prepareForValidation here to avoid implicitly
+    // changing `is_active` when the field is omitted on update.
 }

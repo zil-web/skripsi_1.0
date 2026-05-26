@@ -1,4 +1,5 @@
 import './bootstrap';
+import './siswa-form';
 
 import Alpine from 'alpinejs';
 

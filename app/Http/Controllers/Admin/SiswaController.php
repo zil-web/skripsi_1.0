@@ -95,11 +95,20 @@ class SiswaController extends Controller
             'id_admin'     => auth()->id(),
         ]);
 
+        $message = 'Data siswa ' . $siswa->nama . ' berhasil ditambahkan';
+
+        if ($request->expectsJson()) {
+            session()->flash('success', $message);
+
+            return response()->json([
+                'message' => 'Berhasil',
+                'redirect_url' => route('admin.siswa.index'),
+            ]);
+        }
+
         return redirect()
             ->route('admin.siswa.index')
-            ->with('success', 
-                'Data siswa ' . $siswa->nama 
-                . ' berhasil ditambahkan');
+            ->with('success', $message);
     }
 
     // ── UPDATE ────────────────────────────
@@ -120,11 +129,20 @@ class SiswaController extends Controller
             'id_admin'     => auth()->id(),
         ]);
 
+        $message = 'Data siswa ' . $siswa->nama . ' berhasil diperbarui';
+
+        if ($request->expectsJson()) {
+            session()->flash('success', $message);
+
+            return response()->json([
+                'message' => 'Berhasil',
+                'redirect_url' => route('admin.siswa.index'),
+            ]);
+        }
+
         return redirect()
             ->route('admin.siswa.index')
-            ->with('success', 
-                'Data siswa ' . $siswa->nama 
-                . ' berhasil diperbarui');
+            ->with('success', $message);
     }
 
     // ── DESTROY ───────────────────────────
