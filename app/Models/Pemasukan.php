@@ -51,4 +51,9 @@ class Pemasukan extends Model
     {
         return $this->belongsTo(User::class, 'id_admin');
     }
+
+    public function getFormatUangAttribute(): string
+    {
+        return 'Rp ' . number_format((int) $this->jumlah, 0, ',', '.');
+    }
 }

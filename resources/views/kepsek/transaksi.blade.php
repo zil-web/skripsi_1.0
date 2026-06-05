@@ -139,6 +139,8 @@
             </form>
         </div>
 
+        <div id="detailLoadMessage" class="hidden mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-500"></div>
+
         @if($transaksis->count())
             <div class="bg-white border border-gray-100 rounded-xl overflow-hidden">
                 <div class="overflow-x-auto">
@@ -167,7 +169,7 @@
                                     </td>
                                     <td class="text-sm px-4 py-2.5">{{ $t->siswa?->nama ?? '-' }}</td>
                                     <td class="text-sm px-4 py-2.5 font-medium {{ $statusValue($t->jenis) === 'pengeluaran' ? 'text-red-500' : 'text-emerald-600' }}">
-                                        {{ $statusValue($t->jenis) === 'pengeluaran' ? '- ' : '+ ' }}{{ $formatRupiah($t->jumlah) }}
+                                        {{ $statusValue($t->jenis) === 'pengeluaran' ? '- ' : '+ ' }}{{ $t->format_uang }}
                                     </td>
                                     <td class="text-sm px-4 py-2.5">
                                         <span class="text-[10px] font-medium px-2 py-0.5 rounded-full {{ $statusClass($t->status) }}">{{ $statusLabel($t->status) }}</span>
@@ -215,11 +217,20 @@
             }).format(Number(v || 0));
         }
 
+        function setDetailMessage(message) {
+            const el = document.getElementById('detailLoadMessage');
+            if (!el) return;
+
+            el.textContent = message || '';
+            el.classList.toggle('hidden', !message);
+        }
+
         document.addEventListener('click', async function(e) {
             const btn = e.target.closest('.open-transaksi-detail');
             if (!btn) return;
 
             const id = btn.dataset.id;
+            setDetailMessage('');
 
             try {
                 const res = await fetch(`{{ url('/kepsek/transaksi') }}/${id}`, {
@@ -250,10 +261,10 @@
                 if (typeof openDetailTransaksi === 'function') {
                     openDetailTransaksi(fields, buktiPath);
                 } else {
-                    alert('Fungsi detail belum tersedia.');
+                    setDetailMessage('Fungsi detail belum tersedia.');
                 }
             } catch (err) {
-                alert('Gagal memuat detail: ' + err.message);
+                setDetailMessage('Gagal memuat detail: ' + err.message);
             }
         });
 

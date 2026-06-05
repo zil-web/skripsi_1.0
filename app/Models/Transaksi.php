@@ -88,6 +88,11 @@ class Transaksi extends Model
         return rupiah((int) $this->jumlah);
     }
 
+    public function getFormatUangAttribute(): string
+    {
+        return 'Rp ' . number_format((int) $this->jumlah, 0, ',', '.');
+    }
+
     /**
      * Get status badge HTML with Tailwind CSS styling
      */

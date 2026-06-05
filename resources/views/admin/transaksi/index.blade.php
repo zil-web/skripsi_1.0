@@ -146,6 +146,8 @@
             </form>
         </div>
 
+        <div id="detailLoadMessage" class="hidden mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-500"></div>
+
         @if($transaksis->count())
             <div class="bg-white border border-gray-100 rounded-xl overflow-hidden">
                 <div class="overflow-x-auto">
@@ -175,7 +177,7 @@
                                     </td>
                                     <td class="text-sm px-4 py-2.5">{{ $t->siswa?->nama ?? '-' }}</td>
                                     <td class="text-sm px-4 py-2.5 font-medium {{ $statusValue($t->jenis) === 'pengeluaran' ? 'text-red-500' : 'text-emerald-600' }}">
-                                        {{ $statusValue($t->jenis) === 'pengeluaran' ? '- ' : '+ ' }}{{ $formatRupiah($t->jumlah) }}
+                                        {{ $statusValue($t->jenis) === 'pengeluaran' ? '- ' : '+ ' }}{{ $t->format_uang }}</td>
                                     </td>
                                     <td class="text-sm px-4 py-2.5">
                                         <span class="text-[10px] font-medium px-2 py-0.5 rounded-full {{ $statusClass($t->status) }}">{{ $statusLabel($t->status) }}</span>
@@ -256,7 +258,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="er-new-jumlah" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Baru <span class="text-red-500">*</span></label>
-                        <input id="er-new-jumlah" type="number" name="new_jumlah" min="1" required class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[#1D9E75]">
+                        <input id="er-new-jumlah" type="text" name="new_jumlah" inputmode="numeric" required class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[#1D9E75]">
                     </div>
                     <div>
                         <label for="er-new-jenis" class="block text-sm font-medium text-gray-700 mb-1">Jenis Baru <span class="text-red-500">*</span></label>
@@ -297,9 +299,18 @@
         function openEditRequestModal(){ editRequestModal.classList.remove('hidden'); editRequestModal.classList.add('flex'); document.body.style.overflow = 'hidden'; }
         function closeEditRequestModal(){ editRequestModal.classList.add('hidden'); editRequestModal.classList.remove('flex'); document.body.style.overflow = ''; }
 
+        function setDetailMessage(message) {
+            const el = document.getElementById('detailLoadMessage');
+            if (!el) return;
+
+            el.textContent = message || '';
+            el.classList.toggle('hidden', !message);
+        }
+
         els('.open-transaksi-detail').forEach(btn => {
             btn.addEventListener('click', async function(){
                 const id = this.dataset.id;
+                setDetailMessage('');
 
                 try {
                     const res = await fetch(`{{ url('/admin/transaksi') }}/${id}/detail`, {
@@ -332,7 +343,7 @@
 
                     openDetailTransaksi(fields, data.bukti_raw || data.bukti_url || data.bukti_transaksi || '');
                 } catch (error) {
-                    alert('Gagal memuat detail: ' + error.message);
+                    setDetailMessage('Gagal memuat detail: ' + error.message);
                 }
             });
         });
@@ -349,12 +360,24 @@
                 el('#er-old-jenis').value = oldJenis;
                 el('#er-old-keterangan').value = oldKeterangan;
 
-                el('#er-new-jumlah').value = Number(oldJumlah || 0);
+                el('#er-new-jumlah').value = formatRupiah(oldJumlah);
                 el('#er-new-jenis').value = oldJenis;
                 el('#er-new-keterangan').value = oldKeterangan;
 
                 openEditRequestModal();
             });
+        });
+
+        el('#er-new-jumlah').addEventListener('input', function () {
+            const digits = String(this.value || '').replace(/\D/g, '');
+            this.value = digits ? Number(digits).toLocaleString('id-ID') : '';
+        });
+
+        editRequestForm.addEventListener('submit', function () {
+            const amountInput = el('#er-new-jumlah');
+            if (amountInput) {
+                amountInput.value = String(amountInput.value || '').replace(/\D/g, '');
+            }
         });
 
         // Edit request modal close handlers

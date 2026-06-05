@@ -19,16 +19,25 @@
                 Kelola semua transaksi pemasukan sekolah, lihat nominal secara cepat, dan buka detail bukti transaksi kapan saja.
             </p>
         </div>
-        <button 
-            id="btnBukaModal"
-            onclick="bukaModal()"
-            style="display:inline-flex; align-items:center; gap:10px; background:linear-gradient(135deg, #1D9E75, #16765a); color:white; font-size:13px; font-weight:700; border:none; padding:11px 16px; border-radius:14px; cursor:pointer; box-shadow:0 12px 24px rgba(29, 158, 117, 0.24); transition:transform .2s ease, box-shadow .2s ease;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            <span>Tambah Pemasukan</span>
-        </button>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:nowrap;">
+            <button
+                id="btnBukaModal"
+                onclick="bukaModal()"
+                style="display:inline-flex; align-items:center; gap:10px; min-height:46px; margin:0; padding:11px 16px; border:none; border-radius:14px; background:linear-gradient(135deg, #1D9E75, #16765a); color:white; font-size:13px; font-weight:700; line-height:1; text-decoration:none; cursor:pointer; box-shadow:0 12px 24px rgba(29, 158, 117, 0.24); transition:transform .2s ease, box-shadow .2s ease;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>Tambah Pemasukan</span>
+            </button>
+            <a href="{{ route('admin.pemasukan.spp.create') }}" style="display:inline-flex; align-items:center; gap:10px; min-height:46px; margin:0; padding:11px 16px; border:none; border-radius:14px; background:linear-gradient(135deg, #2563eb, #1d4ed8); color:white; font-size:13px; font-weight:700; line-height:1; text-decoration:none; cursor:pointer; box-shadow:0 12px 24px rgba(37, 99, 235, 0.18); transition:transform .2s ease, box-shadow .2s ease;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M12 5v14"></path>
+                    <path d="M5 12h14"></path>
+                </svg>
+                <span>Tambah SPP</span>
+            </a>
+        </div>
     </div>
 </div>
 
@@ -82,7 +91,7 @@
                             {{ $transaksi->keterangan }}
                         </td>
                         <td style="text-align:left; padding:14px 16px; color:#059669; font-weight:700;">
-                            + {{ $formatRupiah($transaksi->jumlah) }}
+                            + {{ $transaksi->format_uang }}
                         </td>
                         <td style="text-align:left; padding:14px 16px; color:#64748b;">
                             @php
@@ -101,7 +110,7 @@
                         </td>
                         <td style="text-align:center; padding:14px 16px;">
                             <button 
-                                onclick="openDetailModalPemasukan('{{ $transaksi->id }}', '{{ \Carbon\Carbon::parse($transaksi->tanggal)->format('d/m/Y') }}', '{{ $formatRupiah($transaksi->jumlah) }}', '{{ $transaksi->jenis_transaksi }}', '{{ addslashes($transaksi->keterangan) }}', '{{ $transaksi->bukti_transaksi }}')" 
+                                onclick="openDetailModalPemasukan('{{ $transaksi->id }}', '{{ \Carbon\Carbon::parse($transaksi->tanggal)->format('d/m/Y') }}', '{{ $transaksi->format_uang }}', '{{ $transaksi->jenis_transaksi }}', '{{ addslashes($transaksi->keterangan) }}', '{{ $transaksi->bukti_transaksi }}')" 
                                 style="background:linear-gradient(135deg, #2563eb, #1d4ed8); color:white; border:none; padding:8px 14px; border-radius:10px; font-size:11px; font-weight:700; cursor:pointer; box-shadow:0 10px 20px rgba(37, 99, 235, 0.18);">
                                 Detail
                             </button>
@@ -225,7 +234,6 @@
                            height:36px; box-sizing:border-box;
                            outline:none; background:white;">
                     <option value="">-- Pilih Jenis Pemasukan --</option>
-                    <option value="SPP" {{ old('jenis_pemasukan') === 'SPP' ? 'selected' : '' }}>SPP</option>
                     <option value="Donasi" {{ old('jenis_pemasukan') === 'Donasi' ? 'selected' : '' }}>Donasi</option>
                     <option value="Dana BOS" {{ old('jenis_pemasukan') === 'Dana BOS' ? 'selected' : '' }}>Dana BOS</option>
                     <option value="Lain-lain" {{ old('jenis_pemasukan') === 'Lain-lain' ? 'selected' : '' }}>Lain-lain</option>
@@ -275,10 +283,10 @@
                                  font-size:13px; color:#9ca3af;">
                         Rp
                     </span>
-                    <input type="number" name="jumlah" 
+                    <input type="text" name="jumlah" 
                         id="inputJumlah"
-                        value="{{ old('jumlah') }}"
-                        min="1" placeholder="0"
+                        value="{{ old('jumlah') ? number_format((int) old('jumlah'), 0, ',', '.') : '' }}"
+                        inputmode="numeric" placeholder="0"
                            style="width:100%; font-size:13px; 
                                border:1px solid {{ $errors->has('jumlah') ? '#ef4444' : '#e5e7eb' }}; 
                                border-radius:8px; 
@@ -318,41 +326,6 @@
                 </p>
             </div>
 
-            <!-- Siswa list for bulk SPP -->
-            <div id="siswa-list-section" style="display:none; margin-bottom:16px;">
-                <label style="display:block; font-size:11px; 
-                              font-weight:500; color:#6b7280;
-                              text-transform:uppercase; 
-                              letter-spacing:0.05em; 
-                              margin-bottom:8px;">
-                    Daftar Siswa (SPP - bulk)
-                </label>
-                <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap;">
-                    <button type="button" id="btnTambahSiswa" style="background:#10B981; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:600;">+ Cari & Tambah Siswa</button>
-                    <button type="button" id="btnKosongkanSiswa" style="background:#ef4444; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:600;">Kosongkan</button>
-                    <span id="totalSelectedBadge" style="margin-left:auto; font-size:13px; color:#6b7280;">Total: 0 siswa dipilih</span>
-                </div>
-
-                <div style="border:1px solid #f3f4f6; border-radius:12px; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch;">
-                    <table style="width:100%; min-width:760px; font-size:13px;" id="siswa-table">
-                        <thead>
-                            <tr style="background:#f9fafb; border-bottom:1px solid #f3f4f6;">
-                                <th style="padding:10px 12px; text-align:center; width:48px;">No</th>
-                                <th style="padding:10px 12px; text-align:left;">Nama</th>
-                                <th style="padding:10px 12px; text-align:left;">NIK</th>
-                                <th style="padding:10px 12px; text-align:left;">Kelas</th>
-                                <th style="padding:10px 12px; text-align:right; width:160px;">Jumlah (Rp)</th>
-                                <th style="padding:10px 12px; text-align:center; width:96px;">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="siswa-table-body">
-                            <tr><td colspan="6" style="padding:16px; text-align:center; color:#9ca3af;">Belum ada siswa ditambahkan.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-            </div>
-
             <!-- Upload Bukti -->
             <div style="margin-bottom:20px;">
                 <label style="display:block; font-size:11px; 
@@ -378,6 +351,8 @@
                     JPG, PNG, PDF maksimal 2MB
                 </p>
             </div>
+
+            <p id="pemasukanMainMessage" class="hidden text-sm font-medium text-red-500 mb-3"></p>
 
             <!-- Footer Tombol -->
             <div style="display:flex; gap:8px; 
@@ -421,73 +396,73 @@
     }
 </script>
 
-<!-- ================================ -->
-<!-- MODAL — Pilih Siswa             -->
-<!-- ================================ -->
-<div id="modalSiswa"
-    style="display:none; position:fixed; inset:0; 
-           z-index:10010; align-items:flex-start; 
-           justify-content:center; overflow-y:auto; 
-           padding:24px 16px; background:rgba(0,0,0,0.5);">
-    <div onclick="tutupModalSiswa()"
-        style="position:absolute; inset:0; background:rgba(0,0,0,0.5);"></div>
-
-    <div style="position:relative; background:white; 
-                border-radius:12px; width:100%; 
-                max-width:640px; margin:auto; 
-                max-height:calc(100vh - 48px); overflow:hidden; 
-                display:flex; flex-direction:column; 
-                z-index:10020; box-shadow:0 20px 60px rgba(0,0,0,0.18);">
-        <div style="display:flex; align-items:center; justify-content:space-between;
-                    padding:16px 20px; background:#10b981; color:white; flex-shrink:0;">
-            <div>
-                <p style="font-size:14px; font-weight:600; margin:0;">Pilih Siswa</p>
-                <p style="font-size:11px; opacity:0.9; margin:4px 0 0;">Cari siswa berdasarkan NIK, nama, atau kelas</p>
-            </div>
-            <button type="button" onclick="tutupModalSiswa()"
-                style="background:none; border:none; color:white; cursor:pointer; font-size:20px; line-height:1;">
-                &times;
-            </button>
-        </div>
-
-        <div style="padding:20px; overflow-y:auto; flex:1; -webkit-overflow-scrolling:touch;">
-            <input type="text" id="searchSiswa"
-                placeholder="Cari NIK, nama, atau kelas..."
-                style="width:100%; font-size:13px; border:1px solid #e5e7eb; border-radius:8px; padding:10px 12px; box-sizing:border-box; outline:none; margin-bottom:16px;">
-
-            <div style="border:1px solid #f3f4f6; border-radius:12px; overflow:hidden;">
-                <table style="width:100%; font-size:13px;">
-                    <thead>
-                        <tr style="background:#f9fafb; border-bottom:1px solid #f3f4f6;">
-                            <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">NIK</th>
-                            <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">Nama</th>
-                            <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">Kelas</th>
-                            <th style="text-align:left; padding:12px 16px; font-weight:500; color:#6b7280;">Jenis Kelamin</th>
-                            <th style="text-align:center; padding:12px 16px; font-weight:500; color:#6b7280;">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="hasilSiswa">
-                        <tr>
-                            <td colspan="5" style="padding:20px 16px; text-align:center; color:#9ca3af;">Ketik minimal 1 karakter untuk mencari siswa.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        <div style="padding:14px 20px; border-top:0.5px solid #e5e7eb; text-align:right; flex-shrink:0; background:#ffffff;">
-            <button type="button" onclick="tutupModalSiswa()" style="background:#6b7280; color:white; border:none; padding:8px 12px; border-radius:8px;">Tutup</button>
-        </div>
-        </div>
-    </div>
-</div>
-
 @push('scripts')
 <script>
     const initialPemasukanSiswa = null;
+
+    function setInlineMessage(elementId, message, type) {
+        var el = document.getElementById(elementId);
+        if (!el) {
+            return;
+        }
+
+        el.textContent = message || '';
+        el.classList.remove('hidden', 'text-red-500', 'text-emerald-600');
+
+        if (!message) {
+            el.classList.add('hidden');
+            return;
+        }
+
+        el.classList.add(type === 'success' ? 'text-emerald-600' : 'text-red-500');
+    }
+
+    function clearInlineMessage(elementId) {
+        setInlineMessage(elementId, '', 'error');
+    }
+
+    function digitsOnly(value) {
+        return String(value || '').replace(/\D/g, '');
+    }
+
+    function formatMoneyValue(value) {
+        var digits = digitsOnly(value);
+        if (!digits || Number(digits) <= 0) {
+            return '';
+        }
+
+        return Number(digits).toLocaleString('id-ID');
+    }
+
+    function formatMoneyInput(input) {
+        if (!input) {
+            return '';
+        }
+
+        var raw = digitsOnly(input.value);
+        input.dataset.raw = raw;
+        input.value = formatMoneyValue(raw);
+        return raw;
+    }
+
+    function formatSiswaJumlahInput(input) {
+        var raw = formatMoneyInput(input);
+        var idx = Number(input.dataset.idx);
+
+        if (!Number.isNaN(idx) && selectedStudents[idx]) {
+            selectedStudents[idx].jumlah = raw ? Number(raw) : 0;
+        }
+
+        clearInlineMessage('pemasukanMainMessage');
+        updateSummary();
+    }
 
     function bukaModal() {
         var modal = document.getElementById('modalTambah');
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
+        clearInlineMessage('pemasukanMainMessage');
+        formatMoneyInput(document.getElementById('inputJumlah'));
         toggleSiswaSection();
     }
 
@@ -543,6 +518,7 @@
                 inputJumlah.disabled = false;
                 inputJumlah.style.background = '';
                 inputJumlah.placeholder = '0';
+                formatMoneyInput(inputJumlah);
             }
             // clear selectedStudents
             selectedStudents = [];
@@ -626,7 +602,7 @@
                 '<td style="padding:12px 16px;">' + escapeHtml(s.kelas || '-') + '</td>' +
                 '<td style="padding:12px 16px; text-align:right;">' +
                     '<div style="display:flex; align-items:center; justify-content:flex-end; gap:8px;">' +
-                        '<input type="number" min="1" value="' + (s.jumlah || '') + '" data-idx="' + idx + '" class="siswa-jumlah-input" style="width:120px; padding:6px 8px; border:1px solid #e5e7eb; border-radius:8px; text-align:right;" />' +
+                        '<input type="text" inputmode="numeric" value="' + formatMoneyValue(s.jumlah || '') + '" data-raw="' + (s.jumlah || '') + '" data-idx="' + idx + '" oninput="formatSiswaJumlahInput(this)" class="siswa-jumlah-input" style="width:120px; padding:6px 8px; border:1px solid #e5e7eb; border-radius:8px; text-align:right;" />' +
                         '<button type="button" class="btn-kosongkan-siswa" data-idx="' + idx + '" onclick="kosongkanSiswa(this)" style="font-size:11px; padding:4px 8px; background:#e5e7eb; color:#374151; border:none; border-radius:6px; cursor:pointer; white-space:nowrap;">Kosongkan</button>' +
                     '</div>' +
                 '</td>' +
@@ -649,6 +625,7 @@
         var jumlahInput = row.querySelector('.siswa-jumlah-input');
         if (jumlahInput) {
             jumlahInput.value = '';
+            jumlahInput.dataset.raw = '';
         }
 
         var checkbox = row.querySelector('input[type="checkbox"]');
@@ -685,14 +662,16 @@
     function bukaPreviewModal() {
         // validate
         if (selectedStudents.length === 0) {
-            alert('Pilih minimal 1 siswa.');
+            setInlineMessage('pemasukanMainMessage', 'Pilih minimal 1 siswa.', 'error');
             return;
         }
         var invalid = selectedStudents.find(s => !s.jumlah || Number(s.jumlah) <= 0);
         if (invalid) {
-            alert('Pastikan semua siswa memiliki jumlah > 0.');
+            setInlineMessage('pemasukanMainMessage', 'Pastikan semua siswa memiliki jumlah > 0.', 'error');
             return;
         }
+
+        clearInlineMessage('pemasukanMainMessage');
 
         // build preview HTML
         var modalId = 'modalPreviewSPP';
@@ -722,6 +701,7 @@
             '<div><strong>Konfirmasi Pemasukan SPP</strong><div style="font-size:12px;color:#6b7280;margin-top:6px;">Tanggal: '+escapeHtml(tanggal)+' &nbsp; • &nbsp; Jenis: '+escapeHtml(jenis)+'</div></div>' +
             '<button onclick="document.getElementById(\''+modalId+'\').remove(); document.body.style.overflow = \''+'\';" style="background:none;border:none;color:#fff;font-size:20px;line-height:1;">&times;</button></div>' +
             '<div style="padding:20px; overflow-y:auto; flex:1; -webkit-overflow-scrolling:touch;">' +
+            '<p id="previewBulkMessage" class="hidden mb-3 text-sm font-medium"></p>' +
             '<div style="margin-bottom:12px; color:#374151;">Keterangan: '+escapeHtml(keterangan || '-')+'</div>' +
             '<div style="border:1px solid #f3f4f6; border-radius:8px; overflow:hidden;"><table style="width:100%;">' +
             '<thead><tr style="background:#f9fafb;"><th style="padding:8px 12px;">No</th><th style="padding:8px 12px;">Nama</th><th style="padding:8px 12px;">NIK</th><th style="padding:8px 12px;">Kelas</th><th style="padding:8px 12px; text-align:right;">Jumlah</th></tr></thead>' +
@@ -749,6 +729,8 @@
         var keterangan = document.getElementById('inputKeterangan').value;
         var fileInput = document.querySelector('input[name="bukti_transaksi"]');
 
+        clearInlineMessage('previewBulkMessage');
+
         // prepare siswa_list
         var siswa_list = selectedStudents.map(s => ({ siswa_id: s.id, jumlah: Number(s.jumlah) }));
 
@@ -773,14 +755,16 @@
 
             var data = await resp.json();
             if (data.success) {
-                alert('Berhasil menyimpan ' + data.count + ' transaksi SPP.');
-                window.location.reload();
+                setInlineMessage('previewBulkMessage', 'Berhasil menyimpan ' + data.count + ' transaksi SPP.', 'success');
+                setTimeout(function () {
+                    window.location.reload();
+                }, 1200);
             } else {
-                alert(data.message || 'Terjadi kesalahan.');
+                setInlineMessage('previewBulkMessage', data.message || 'Terjadi kesalahan.', 'error');
             }
         } catch (e) {
             console.error(e);
-            alert('Terjadi kesalahan saat menyimpan.');
+            setInlineMessage('previewBulkMessage', 'Terjadi kesalahan saat menyimpan.', 'error');
         }
     }
 
@@ -830,7 +814,44 @@
 
     document.addEventListener('change', function (event) {
         if (event.target && event.target.id === 'jenisPemasukan') {
+            clearInlineMessage('pemasukanMainMessage');
             toggleSiswaSection();
+        }
+
+        if (event.target && event.target.name === 'bukti_transaksi') {
+            clearInlineMessage('pemasukanMainMessage');
+        }
+    });
+
+    document.addEventListener('input', function (event) {
+        if (!event.target) {
+            return;
+        }
+
+        if (event.target.id === 'inputJumlah') {
+            formatMoneyInput(event.target);
+            clearInlineMessage('pemasukanMainMessage');
+        }
+
+        if (event.target.classList.contains('siswa-jumlah-input')) {
+            formatSiswaJumlahInput(event.target);
+            return;
+        }
+
+        if (event.target.id === 'inputKeterangan') {
+            clearInlineMessage('pemasukanMainMessage');
+        }
+    });
+
+    document.addEventListener('submit', function (event) {
+        var form = event.target;
+        if (!form || !form.querySelector('#inputJumlah')) {
+            return;
+        }
+
+        var inputJumlah = form.querySelector('#inputJumlah');
+        if (inputJumlah && !inputJumlah.disabled) {
+            inputJumlah.value = digitsOnly(inputJumlah.dataset.raw || inputJumlah.value);
         }
     });
 
@@ -900,7 +921,8 @@
         if (event.target && event.target.classList && event.target.classList.contains('siswa-jumlah-input')) {
             var idx = event.target.dataset.idx;
             if (typeof idx !== 'undefined' && selectedStudents[Number(idx)]) {
-                selectedStudents[Number(idx)].jumlah = event.target.value ? Number(event.target.value) : 0;
+                var rawJumlah = digitsOnly(event.target.dataset.raw || event.target.value);
+                selectedStudents[Number(idx)].jumlah = rawJumlah ? Number(rawJumlah) : 0;
             }
         }
     });

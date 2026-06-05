@@ -141,7 +141,7 @@
                                         {{ ucfirst($status) }}
                                     </span>
                                 </td>
-                                <td class="px-5 py-3 text-right font-semibold text-gray-900">{{ $formatRupiah($transaksi->jumlah) }}</td>
+                                <td class="px-5 py-3 text-right font-semibold text-gray-900">{{ $transaksi->format_uang }}</td>
                             </tr>
                         @empty
                             <tr>

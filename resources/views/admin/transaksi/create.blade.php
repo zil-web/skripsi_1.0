@@ -86,8 +86,8 @@
 <script>
     function transaksiForm() {
         return {
-            displayJumlah: '{{ old('jumlah', '') }}',
-            rawJumlah: {{ old('jumlah', 'null') }} ?? null,
+            displayJumlah: '{{ old('jumlah') ? number_format((int) old('jumlah'), 0, ',', '.') : '' }}',
+            rawJumlah: {{ old('jumlah') !== null ? (int) old('jumlah') : 'null' }},
             keterangan: `{{ addslashes(old('keterangan', '')) }}`,
             filePreview: null,
             fileName: null,

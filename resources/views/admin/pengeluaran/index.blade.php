@@ -103,7 +103,7 @@
                             {{ $transaksi->keterangan }}
                         </td>
                         <td style="text-align:left; padding:14px 16px; color:#dc2626; font-weight:700;">
-                            - {{ $formatRupiah($transaksi->jumlah) }}
+                            - {{ $transaksi->format_uang }}
                         </td>
                         <td style="text-align:left; padding:14px 16px; color:#64748b;">
                             @php
@@ -134,7 +134,7 @@
                         </td>
                         <td style="text-align:center; padding:14px 16px;">
                             <button 
-                                onclick="openDetailModal('{{ $transaksi->id }}', '{{ $transaksi->tanggal }}', '{{ $formatRupiah($transaksi->jumlah) }}', '{{ $transaksi->jenis_transaksi }}', '{{ addslashes($transaksi->keterangan) }}', '{{ $transaksi->bukti_transaksi }}', '{{ ucfirst($transaksi->status) }}')" 
+                                onclick="openDetailModal('{{ $transaksi->id }}', '{{ $transaksi->tanggal }}', '{{ $transaksi->format_uang }}', '{{ $transaksi->jenis_transaksi }}', '{{ addslashes($transaksi->keterangan) }}', '{{ $transaksi->bukti_transaksi }}', '{{ ucfirst($transaksi->status) }}')" 
                                 style="background:linear-gradient(135deg, #2563eb, #1d4ed8); color:white; border:none; padding:8px 14px; border-radius:10px; font-size:11px; font-weight:700; cursor:pointer; box-shadow:0 10px 20px rgba(37, 99, 235, 0.18);">
                                 Detail
                             </button>
@@ -301,10 +301,10 @@
                                  font-size:13px; color:#9ca3af;">
                         Rp
                     </span>
-                    <input type="number" name="jumlah" 
+                    <input type="text" name="jumlah" 
                         id="inputJumlah"
-                        value="{{ old('jumlah') }}"
-                        min="1" placeholder="0"
+                        value="{{ old('jumlah') ? number_format((int) old('jumlah'), 0, ',', '.') : '' }}"
+                        inputmode="numeric" placeholder="0"
                         style="width:100%; font-size:13px; 
                                border:1px solid #e5e7eb; 
                                border-radius:8px; 
@@ -425,6 +425,7 @@
         var modal = document.getElementById('modalTambah');
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
+        formatMoneyInput(document.getElementById('inputJumlah'));
     }
 
     function tutupModal() {
@@ -441,9 +442,51 @@
         }
     }
 
+    function digitsOnly(value) {
+        return String(value || '').replace(/\D/g, '');
+    }
+
+    function formatMoneyValue(value) {
+        var digits = digitsOnly(value);
+        if (!digits || Number(digits) <= 0) {
+            return '';
+        }
+
+        return Number(digits).toLocaleString('id-ID');
+    }
+
+    function formatMoneyInput(input) {
+        if (!input) {
+            return '';
+        }
+
+        var raw = digitsOnly(input.value);
+        input.dataset.raw = raw;
+        input.value = formatMoneyValue(raw);
+        return raw;
+    }
+
     // Tutup modal dengan tombol ESC
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') tutupModal();
+    });
+
+    document.addEventListener('input', function (event) {
+        if (event.target && event.target.id === 'inputJumlah') {
+            formatMoneyInput(event.target);
+        }
+    });
+
+    document.addEventListener('submit', function (event) {
+        var form = event.target;
+        if (!form || !form.querySelector('#inputJumlah')) {
+            return;
+        }
+
+        var inputJumlah = form.querySelector('#inputJumlah');
+        if (inputJumlah) {
+            inputJumlah.value = digitsOnly(inputJumlah.dataset.raw || inputJumlah.value);
+        }
     });
 
     // Buka otomatis jika ada error validasi

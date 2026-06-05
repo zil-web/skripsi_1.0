@@ -44,6 +44,7 @@
                             inputmode="numeric">
                         <input type="hidden" id="jumlah" name="jumlah" x-model="jumlahActual">
                     </div>
+                    <p id="jumlahInlineError" class="text-red-500 text-sm mt-1 hidden"></p>
                     <p class="text-gray-500 text-xs mt-1">Masukkan angka tanpa separator (misal: 1500000)</p>
                 </div>
 
@@ -148,6 +149,7 @@
                             accept=".jpg,.jpeg,.png,.pdf" x-ref="fileInput" class="hidden"
                             {{ old('bukti_transaksi') ? '' : '' }}>
                     </div>
+                    <p id="buktiTransaksiError" class="text-red-500 text-sm mt-1 hidden"></p>
                 </div>
 
                 <!-- Action Buttons -->
@@ -185,6 +187,10 @@
             handleJumlahInput(event) {
                 let value = event.target.value.replace(/\D/g, '');
                 this.jumlahActual = value || '0';
+                this.jumlahDisplay = value ? parseInt(value, 10).toLocaleString('id-ID') : '';
+                if (Number(this.jumlahActual) > 0) {
+                    this.clearFieldError('jumlahInlineError');
+                }
             },
 
             /**
@@ -211,6 +217,7 @@
              */
             handleFileSelect(event) {
                 const file = event.target.files[0];
+                this.clearFieldError('buktiTransaksiError');
                 if (file) {
                     this.processFile(file);
                 }
@@ -222,6 +229,7 @@
             handleFileDrop(event) {
                 this.isDragOver = false;
                 const file = event.dataTransfer.files[0];
+                this.clearFieldError('buktiTransaksiError');
                 if (file) {
                     this.$refs.fileInput.files = event.dataTransfer.files;
                     this.processFile(file);
@@ -236,16 +244,18 @@
                 const maxSize = 2 * 1024 * 1024; // 2MB
 
                 if (!allowedTypes.includes(file.type)) {
-                    alert('Format file tidak didukung. Gunakan JPG, PNG, atau PDF.');
+                    this.showFieldError('buktiTransaksiError', 'Format file tidak didukung. Gunakan JPG, PNG, atau PDF.');
                     this.$refs.fileInput.value = '';
                     return;
                 }
 
                 if (file.size > maxSize) {
-                    alert('Ukuran file terlalu besar. Maksimal 2MB.');
+                    this.showFieldError('buktiTransaksiError', 'Ukuran file terlalu besar. Maksimal 2MB.');
                     this.$refs.fileInput.value = '';
                     return;
                 }
+
+                this.clearFieldError('buktiTransaksiError');
 
                 this.fileName = file.name;
                 this.fileType = file.type;
@@ -270,6 +280,7 @@
                 this.fileName = '';
                 this.fileType = '';
                 this.$refs.fileInput.value = '';
+                this.clearFieldError('buktiTransaksiError');
             },
 
             /**
@@ -277,10 +288,28 @@
              */
             handleSubmit(event) {
                 if (!this.jumlahActual || this.jumlahActual === '0') {
-                    alert('Jumlah harus lebih dari 0');
+                    this.showFieldError('jumlahInlineError', 'Jumlah harus lebih dari 0');
                     event.preventDefault();
                     return;
                 }
+
+                this.clearFieldError('jumlahInlineError');
+            },
+
+            showFieldError(fieldId, message) {
+                const field = document.getElementById(fieldId);
+                if (!field) return;
+
+                field.textContent = message;
+                field.classList.remove('hidden');
+            },
+
+            clearFieldError(fieldId) {
+                const field = document.getElementById(fieldId);
+                if (!field) return;
+
+                field.textContent = '';
+                field.classList.add('hidden');
             }
         };
     }

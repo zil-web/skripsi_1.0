@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\EditRequest;
+use App\Models\User;
 use App\Models\Transaksi;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
 
@@ -14,7 +16,28 @@ class KepsekController extends Controller
 {
     private function currentReviewerId(): int|string|null
     {
-        return auth()->guard('kepsek')->id() ?? auth()->id();
+        $userId = Auth::id();
+        if ($userId) {
+            return $userId;
+        }
+
+        $kepsek = Auth::guard('kepsek')->user();
+        if (!$kepsek) {
+            return null;
+        }
+
+        $linkedUserId = User::query()
+            ->where('username', $kepsek->username)
+            ->value('id');
+
+        \Log::debug('Kepsek reviewer lookup', [
+            'kepsek_id' => $kepsek->id,
+            'kepsek_username' => $kepsek->username,
+            'auth_id' => $userId,
+            'linked_user_id' => $linkedUserId,
+        ]);
+
+        return $linkedUserId ? (int) $linkedUserId : null;
     }
 
     public function index(): View
@@ -55,6 +78,11 @@ class KepsekController extends Controller
         }
 
         try {
+            $reviewedBy = $this->currentReviewerId();
+            if (!$reviewedBy) {
+                return back()->with('error', 'Akun Kepala Sekolah belum terhubung dengan user yang valid.');
+            }
+
             $editRequest->transaksi->update([
                 'jumlah' => $editRequest->new_jumlah,
                 'jenis' => $editRequest->new_jenis,
@@ -63,7 +91,7 @@ class KepsekController extends Controller
 
             $editRequest->update([
                 'status' => 'approved',
-                'reviewed_by' => $this->currentReviewerId(),
+                'reviewed_by' => $reviewedBy,
                 'reviewed_at' => now(),
             ]);
 
@@ -72,7 +100,7 @@ class KepsekController extends Controller
                 'aktivitas' => 'Kepala Sekolah menyetujui edit transaksi ID ' . $editRequest->transaksi_id . 
                               ' (dari ' . $editRequest->old_jumlah . ' menjadi ' . $editRequest->new_jumlah . ')',
                 'tanggal' => now(),
-                'id_admin' => $this->currentReviewerId(),
+                'id_admin' => $reviewedBy,
                 'id_transaksi' => $editRequest->transaksi_id,
             ]);
 
@@ -135,6 +163,9 @@ class KepsekController extends Controller
 
         // Validasi: cek apakah sudah di-approve sebelumnya oleh reviewer yang sama
         $reviewedBy = $this->currentReviewerId();
+        if (!$reviewedBy) {
+            return back()->with('error', 'Akun Kepala Sekolah belum terhubung dengan user yang valid.');
+        }
         if ($transaksi->reviewed_by && $transaksi->reviewed_by == $reviewedBy) {
             return back()->with('error', 
                 'Anda sudah melakukan approval untuk pengeluaran ini sebelumnya.');
@@ -182,6 +213,9 @@ class KepsekController extends Controller
 
         // Validasi: cek apakah sudah di-process sebelumnya oleh reviewer yang sama
         $reviewedBy = $this->currentReviewerId();
+        if (!$reviewedBy) {
+            return back()->with('error', 'Akun Kepala Sekolah belum terhubung dengan user yang valid.');
+        }
         if ($transaksi->reviewed_by && $transaksi->reviewed_by == $reviewedBy) {
             return back()->with('error', 
                 'Anda sudah melakukan approval untuk pengeluaran ini sebelumnya.');

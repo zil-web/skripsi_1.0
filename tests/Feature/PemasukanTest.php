@@ -47,6 +47,56 @@ class PemasukanTest extends TestCase
         ], $overrides));
     }
 
+    public function test_spp_dedicated_page_dapat_diakses(): void
+    {
+        $admin = $this->makeAdmin();
+
+        $this->actingAs($admin);
+        $response = $this->get(route('admin.pemasukan.spp.create'));
+
+        $response->assertStatus(200);
+    }
+
+    public function test_spp_dedicated_page_menyimpan_bukti_per_siswa(): void
+    {
+        Storage::fake('public');
+        $admin = $this->makeAdmin();
+        $siswa1 = $this->makeSiswa(['nama' => 'Siswa Satu']);
+        $siswa2 = $this->makeSiswa(['nama' => 'Siswa Dua']);
+
+        $this->actingAs($admin);
+        $response = $this->postWithCsrf(route('admin.pemasukan.spp.store'), [
+            'tanggal' => '2026-05-26',
+            'keterangan' => 'SPP Mei 2026',
+            'siswa_list' => json_encode([
+                ['siswa_id' => $siswa1->id, 'jumlah' => 100000],
+                ['siswa_id' => $siswa2->id, 'jumlah' => 120000],
+            ]),
+            'bukti_siswa' => [
+                $siswa1->id => UploadedFile::fake()->create('bukti-1.jpg', 100, 'image/jpeg'),
+                $siswa2->id => UploadedFile::fake()->create('bukti-2.pdf', 100, 'application/pdf'),
+            ],
+        ]);
+
+        $response->assertRedirect(route('admin.pemasukan.index'));
+
+        $this->assertDatabaseHas('transaksis', [
+            'jenis' => 'pemasukan',
+            'jenis_transaksi' => 'SPP',
+            'siswa_id' => $siswa1->id,
+            'jumlah' => 100000,
+        ]);
+        $this->assertDatabaseHas('transaksis', [
+            'jenis' => 'pemasukan',
+            'jenis_transaksi' => 'SPP',
+            'siswa_id' => $siswa2->id,
+            'jumlah' => 120000,
+        ]);
+
+        $this->assertNotNull(Pemasukan::where('siswa_id', $siswa1->id)->first()->bukti_transaksi);
+        $this->assertNotNull(Pemasukan::where('siswa_id', $siswa2->id)->first()->bukti_transaksi);
+    }
+
     public function test_tambah_pemasukan_valid_non_spp_menyimpan_data(): void
     {
         Storage::fake('public');

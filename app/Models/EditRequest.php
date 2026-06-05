@@ -55,6 +55,21 @@ class EditRequest extends Model
         return $this->belongsTo(User::class, 'reviewed_by');
     }
 
+    public function getFormatUangAttribute(): string
+    {
+        return 'Rp ' . number_format((int) $this->new_jumlah, 0, ',', '.');
+    }
+
+    public function getFormatUangLamaAttribute(): string
+    {
+        return 'Rp ' . number_format((int) $this->old_jumlah, 0, ',', '.');
+    }
+
+    public function getFormatUangBaruAttribute(): string
+    {
+        return 'Rp ' . number_format((int) $this->new_jumlah, 0, ',', '.');
+    }
+
     // ── Scopes ──────────────────────────────────
 
     /**

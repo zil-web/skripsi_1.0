@@ -36,7 +36,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 border border-gray-100 rounded-lg p-4">
                         <div>
                             <label class="block text-xs text-gray-500 mb-1">Jumlah</label>
-                            <input type="text" value="{{ rupiah((int) $transaksi->jumlah) }}" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-100" readonly>
+                            <input type="text" value="{{ $transaksi->format_uang }}" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-100" readonly>
                         </div>
                         <div>
                             <label class="block text-xs text-gray-500 mb-1">Jenis</label>

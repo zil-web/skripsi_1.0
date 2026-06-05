@@ -40,7 +40,7 @@
                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">Pengeluaran</span>
                             @endif
                         </td>
-                        <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">{{ rupiah($t->jumlah) }}</td>
+                        <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">{{ $t->format_uang }}</td>
                         <td class="px-4 py-3 text-sm">
                             @switch($status)
                                 @case('pending')

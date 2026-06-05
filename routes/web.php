@@ -60,6 +60,8 @@ Route::middleware(['auth.admin'])->prefix('admin')->name('admin.')->group(functi
     Route::get('transaksi/export-csv', [TransaksiController::class, 'exportCsv'])->name('transaksi.export-csv');
     Route::get('transaksi/{id}/detail', [TransaksiController::class, 'detail'])->name('transaksi.detail');
     Route::get('transaksi/{id}/bukti', [TransaksiController::class, 'bukti'])->name('transaksi.bukti');
+    Route::get('pemasukan/spp', [PemasukanController::class, 'sppCreate'])->name('pemasukan.spp.create');
+    Route::post('pemasukan/spp', [PemasukanController::class, 'sppStore'])->name('pemasukan.spp.store');
     Route::resource('pemasukan', PemasukanController::class)->only(['index', 'create', 'store']);
     Route::resource('pengeluaran', PengeluaranController::class)->only(['index', 'create', 'store']);
     Route::resource('siswa', SiswaController::class)
