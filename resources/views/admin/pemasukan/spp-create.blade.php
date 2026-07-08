@@ -114,7 +114,7 @@
 
         {{-- Table header --}}
         <div class="px-4 py-3 border-b border-gray-100 flex flex-wrap gap-2 items-center">
-          <input type="text" id="searchSiswa" placeholder="Cari nama atau NIK..."
+          <input type="text" id="searchSiswa" placeholder="Cari nama atau NIS..."
             class="text-sm rounded-lg border border-gray-300 px-3 py-2 flex-1 min-w-0 focus:outline-none focus:ring-2 focus:ring-green-400">
           <span id="selectedCount"
             class="text-xs font-semibold px-3 py-1.5 rounded-full bg-green-100 text-green-700 whitespace-nowrap">
@@ -138,7 +138,7 @@
                 <th class="px-4 py-3 text-center w-10">
                   <input type="checkbox" id="checkAll" class="rounded border-gray-300 text-green-600 focus:ring-green-400">
                 </th>
-                <th class="px-4 py-3 text-left w-36">NIK</th>
+                <th class="px-4 py-3 text-left w-36">NIS</th>
                 <th class="px-4 py-3 text-left">Nama</th>
                 <th class="px-4 py-3 text-center w-20">Kelas</th>
                 <th class="px-4 py-3 text-left w-40">Jumlah (Rp)</th>
@@ -150,12 +150,12 @@
                 <tr class="siswa-row hover:bg-gray-50 transition-colors"
                   data-kelas="{{ $siswa->kelas }}"
                   data-nama="{{ strtolower($siswa->nama) }}"
-                  data-nik="{{ $siswa->nik }}">
+                  data-nis="{{ $siswa->nis }}">
                 <td class="px-4 py-3 text-center">
                   <input type="checkbox" class="siswa-check rounded border-gray-300 text-green-600 focus:ring-green-400"
                     value="{{ $siswa->id }}">
                 </td>
-                <td class="px-4 py-3 text-gray-500 font-mono text-xs">{{ $siswa->nik }}</td>
+                <td class="px-4 py-3 text-gray-500 font-mono text-xs">{{ $siswa->nis }}</td>
                 <td class="px-4 py-3 font-medium text-gray-800">{{ $siswa->nama }}</td>
                 <td class="px-4 py-3 text-center">
                   <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600 font-medium">
@@ -169,6 +169,10 @@
                       class="jumlah-input flex-1 text-sm px-2 py-2 focus:outline-none focus:ring-1 focus:ring-green-400 min-w-0"
                       inputmode="numeric" placeholder="0" value="" data-raw="">
                   </div>
+                  <p class="jumlah-warning text-xs font-medium text-red-500 mt-1 hidden"
+                     data-warning-for="{{ $siswa->id }}">
+                    Nominal harus diisi.
+                  </p>
                 </td>
                 <td class="px-4 py-3">
                   <p class="bukti-warning text-xs font-medium text-red-500 mb-1 hidden"
@@ -226,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const q = document.getElementById('searchSiswa').value.toLowerCase();
     document.querySelectorAll('.siswa-row').forEach(row => {
       const km = kelas === 'semua' || row.dataset.kelas === kelas;
-      const sm = row.dataset.nama.includes(q) || row.dataset.nik.includes(q);
+      const sm = row.dataset.nama.includes(q) || row.dataset.nis.includes(q);
       row.style.display = (km && sm) ? '' : 'none';
     });
     updateCheckAllState();
@@ -297,6 +301,7 @@ document.addEventListener('DOMContentLoaded', function () {
       clearBulkMessage();
       setFormattedAmount(this);
       updateSummary();
+      clearJumlahWarning(this.closest('tr'));
     });
   });
 
@@ -304,6 +309,7 @@ document.addEventListener('DOMContentLoaded', function () {
     input.addEventListener('change', function () {
       clearBulkMessage();
       syncBuktiWarning(this.closest('tr'));
+      clearJumlahWarning(this.closest('tr'));
     });
   });
 
@@ -311,6 +317,7 @@ document.addEventListener('DOMContentLoaded', function () {
     input.addEventListener('change', function () {
       clearBulkMessage();
       syncBuktiWarning(this.closest('tr'));
+      clearJumlahWarning(this.closest('tr'));
     });
   });
 
@@ -355,6 +362,39 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.siswa-row').forEach(row => syncBuktiWarning(row));
   }
 
+  function clearJumlahWarning(row) {
+    if (!row) return;
+    const jumlahInput = row.querySelector('.jumlah-input');
+    const jumlahWarning = row.querySelector('.jumlah-warning');
+    if (jumlahWarning) {
+      jumlahWarning.classList.add('hidden');
+    }
+    if (jumlahInput) {
+      jumlahInput.classList.remove('border', 'border-red-400', 'rounded-lg');
+    }
+  }
+
+  function syncJumlahWarning(row) {
+    if (!row) return;
+    const checkbox = row.querySelector('.siswa-check');
+    const jumlahInput = row.querySelector('.jumlah-input');
+    const jumlahWarning = row.querySelector('.jumlah-warning');
+    const jumlahValue = parseFloat(jumlahInput.dataset.raw || digitsOnly(jumlahInput.value)) || 0;
+    const shouldShow = checkbox && checkbox.checked && jumlahValue <= 0;
+    if (jumlahWarning) {
+      jumlahWarning.classList.toggle('hidden', !shouldShow);
+    }
+    if (jumlahInput) {
+      jumlahInput.classList.toggle('border', shouldShow);
+      jumlahInput.classList.toggle('border-red-400', shouldShow);
+      jumlahInput.classList.toggle('rounded-lg', shouldShow);
+    }
+  }
+
+  function refreshAllJumlahWarnings() {
+    document.querySelectorAll('.siswa-row').forEach(row => syncJumlahWarning(row));
+  }
+
   function updateCheckAllState() {
     const vis = visibleRows();
     const checked = vis.filter(r => r.querySelector('.siswa-check').checked).length;
@@ -373,29 +413,44 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const list = [];
     let missingBukti = false;
+    let missingJumlah = false;
     checked.forEach(cb => {
       const row = cb.closest('tr');
       const fileInput = row.querySelector('.bukti-input');
-      const warning = row.querySelector('.bukti-warning');
+      const buktiWarning = row.querySelector('.bukti-warning');
+      const jumlahInput = row.querySelector('.jumlah-input');
+      const jumlahWarning = row.querySelector('.jumlah-warning');
+      const jumlahValue = parseFloat(jumlahInput.dataset.raw || digitsOnly(jumlahInput.value)) || 0;
 
       if (!fileInput.files.length) {
         missingBukti = true;
-        if (warning) {
-          warning.classList.remove('hidden');
+        if (buktiWarning) {
+          buktiWarning.classList.remove('hidden');
         }
         fileInput.classList.add('border', 'border-red-400', 'rounded-lg');
       }
 
+      if (jumlahValue <= 0) {
+        missingJumlah = true;
+        if (jumlahWarning) {
+          jumlahWarning.classList.remove('hidden');
+        }
+        if (jumlahInput) {
+          jumlahInput.classList.add('border', 'border-red-400', 'rounded-lg');
+        }
+      }
+
       list.push({
         siswa_id: cb.value,
-        jumlah: parseFloat(row.querySelector('.jumlah-input').dataset.raw || digitsOnly(row.querySelector('.jumlah-input').value)) || 0
+        jumlah: jumlahValue
       });
     });
 
-    if (missingBukti) {
+    if (missingBukti || missingJumlah) {
       e.preventDefault();
-      showBulkMessage('Semua siswa yang dipilih wajib memiliki bukti transaksi.');
+      showBulkMessage(missingJumlah ? 'Nominal harus diisi untuk semua siswa yang dipilih.' : 'Semua siswa yang dipilih wajib memiliki bukti transaksi.');
       refreshAllBuktiWarnings();
+      refreshAllJumlahWarnings();
       return;
     }
 

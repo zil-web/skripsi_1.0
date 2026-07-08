@@ -36,7 +36,7 @@ class PemasukanTest extends TestCase
     private function makeSiswa(array $overrides = []): Siswa
     {
         return Siswa::create(array_merge([
-            'nik' => fake()->unique()->numerify('################'),
+            'nis' => fake()->unique()->numerify('################'),
             'nama' => fake()->name(),
             'nama_orangtua' => fake()->name(),
             'kelas' => '7A',

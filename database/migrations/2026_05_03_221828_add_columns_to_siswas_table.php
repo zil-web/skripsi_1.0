@@ -12,13 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('siswas', function (Blueprint $table) {
-            // Tambah NIK (NIK siswa 16 digit)
-            if (!Schema::hasColumn('siswas', 'nik')) {
-                $table->string('nik', 20)
+            // Tambah NIS (NIS siswa 16 digit)
+            if (!Schema::hasColumn('siswas', 'nis')) {
+                $table->string('nis', 20)
                       ->unique()
                       ->nullable()
                       ->after('id')
-                      ->comment('NIK siswa 16 digit');
+                      ->comment('NIS siswa 16 digit');
             }
 
             // Tambah nama_orangtua
@@ -72,7 +72,7 @@ return new class extends Migration
     {
         Schema::table('siswas', function (Blueprint $table) {
             // Hapus kolom dalam urutan kebalikan (untuk menghindari foreign key conflicts)
-            $columns = ['deleted_at', 'is_active', 'no_telepon', 'alamat', 'jenis_kelamin', 'nama_orangtua', 'nik'];
+            $columns = ['deleted_at', 'is_active', 'no_telepon', 'alamat', 'jenis_kelamin', 'nama_orangtua', 'nis'];
             foreach ($columns as $column) {
                 if (Schema::hasColumn('siswas', $column)) {
                     $table->dropColumn($column);
@@ -81,3 +81,4 @@ return new class extends Migration
         });
     }
 };
+

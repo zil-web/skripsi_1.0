@@ -49,7 +49,7 @@
             Total Pemasukan
         </p>
         <p style="font-size:22px; font-weight:700; color:#059669; margin:0; line-height:1.2;">
-            {{ $formatRupiah($totalPemasukan) }}
+            {{ $formatRupiah($totalPemasukan ?? 0) }}
         </p>
     </div>
 
@@ -481,7 +481,7 @@
     }
 
     function formatSiswaLabel(siswa) {
-        return siswa ? siswa.nama + ' (NIK: ' + siswa.nik + ')' : '';
+        return siswa ? siswa.nama + ' (NIS: ' + siswa.nis + ')' : '';
     }
 
     function escapeHtml(value) {
@@ -567,9 +567,9 @@
         // When rendering search results, mark already selected students
         tbody.innerHTML = data.map(function (siswa) {
             var already = selectedStudents.find(function (s) { return String(s.id) === String(siswa.id); });
-            var btnHtml = already ? '<button type="button" disabled style="background:#9ca3af; color:white; border:none; border-radius:8px; padding:7px 12px; font-size:12px;">Sudah Dipilih</button>' : '<button type="button" class="btn-pilih-siswa" data-id="' + escapeHtml(siswa.id) + '" data-nik="' + escapeHtml(siswa.nik || '') + '" data-nama="' + escapeHtml(siswa.nama || '') + '" data-kelas="' + escapeHtml(siswa.kelas || '') + '" style="background:#1D9E75; color:white; border:none; border-radius:8px; padding:7px 12px; font-size:12px; cursor:pointer;">Pilih</button>';
+            var btnHtml = already ? '<button type="button" disabled style="background:#9ca3af; color:white; border:none; border-radius:8px; padding:7px 12px; font-size:12px;">Sudah Dipilih</button>' : '<button type="button" class="btn-pilih-siswa" data-id="' + escapeHtml(siswa.id) + '" data-nis="' + escapeHtml(siswa.nis || '') + '" data-nama="' + escapeHtml(siswa.nama || '') + '" data-kelas="' + escapeHtml(siswa.kelas || '') + '" style="background:#1D9E75; color:white; border:none; border-radius:8px; padding:7px 12px; font-size:12px; cursor:pointer;">Pilih</button>';
             return '<tr style="border-bottom:1px solid #f3f4f6;">' +
-                '<td style="padding:12px 16px; color:#1f2937;">' + escapeHtml(siswa.nik || '-') + '</td>' +
+                '<td style="padding:12px 16px; color:#1f2937;">' + escapeHtml(siswa.nis || '-') + '</td>' +
                 '<td style="padding:12px 16px; color:#1f2937;">' + escapeHtml(siswa.nama || '-') + '</td>' +
                 '<td style="padding:12px 16px; color:#1f2937;">' + escapeHtml(siswa.kelas || '-') + '</td>' +
                 '<td style="padding:12px 16px; color:#1f2937;">' + escapeHtml(siswa.jenis_kelamin || '-') + '</td>' +
@@ -598,7 +598,7 @@
             return '<tr style="border-bottom:1px solid #f3f4f6;">' +
                 '<td style="padding:12px 16px; text-align:center;">' + (idx+1) + '</td>' +
                 '<td style="padding:12px 16px;">' + escapeHtml(s.nama) + '</td>' +
-                '<td style="padding:12px 16px;">' + escapeHtml(s.nik || '-') + '</td>' +
+                '<td style="padding:12px 16px;">' + escapeHtml(s.nis || '-') + '</td>' +
                 '<td style="padding:12px 16px;">' + escapeHtml(s.kelas || '-') + '</td>' +
                 '<td style="padding:12px 16px; text-align:right;">' +
                     '<div style="display:flex; align-items:center; justify-content:flex-end; gap:8px;">' +
@@ -640,7 +640,7 @@
 
     function addSelectedStudent(siswa) {
         if (selectedStudents.find(s => String(s.id) === String(siswa.id))) return;
-        selectedStudents.push({ id: siswa.id, nama: siswa.nama, nik: siswa.nik, kelas: siswa.kelas, jumlah: 0 });
+        selectedStudents.push({ id: siswa.id, nama: siswa.nama, nis: siswa.nis, kelas: siswa.kelas, jumlah: 0 });
         renderSiswaTable();
         // re-render search results to update buttons
         var searchInput = document.getElementById('searchSiswa');
@@ -686,7 +686,7 @@
             return '<tr style="border-bottom:1px solid #f3f4f6;">' +
                 '<td style="padding:8px 12px;">'+(idx+1)+'</td>' +
                 '<td style="padding:8px 12px;">'+escapeHtml(s.nama)+'</td>' +
-                '<td style="padding:8px 12px;">'+escapeHtml(s.nik || '-')+'</td>' +
+                '<td style="padding:8px 12px;">'+escapeHtml(s.nis || '-')+'</td>' +
                 '<td style="padding:8px 12px;">'+escapeHtml(s.kelas || '-')+'</td>' +
                 '<td style="padding:8px 12px; text-align:right;">'+formatRupiah(s.jumlah || 0)+'</td>' +
             '</tr>';
@@ -704,7 +704,7 @@
             '<p id="previewBulkMessage" class="hidden mb-3 text-sm font-medium"></p>' +
             '<div style="margin-bottom:12px; color:#374151;">Keterangan: '+escapeHtml(keterangan || '-')+'</div>' +
             '<div style="border:1px solid #f3f4f6; border-radius:8px; overflow:hidden;"><table style="width:100%;">' +
-            '<thead><tr style="background:#f9fafb;"><th style="padding:8px 12px;">No</th><th style="padding:8px 12px;">Nama</th><th style="padding:8px 12px;">NIK</th><th style="padding:8px 12px;">Kelas</th><th style="padding:8px 12px; text-align:right;">Jumlah</th></tr></thead>' +
+            '<thead><tr style="background:#f9fafb;"><th style="padding:8px 12px;">No</th><th style="padding:8px 12px;">Nama</th><th style="padding:8px 12px;">NIS</th><th style="padding:8px 12px;">Kelas</th><th style="padding:8px 12px; text-align:right;">Jumlah</th></tr></thead>' +
             '<tbody>'+rows+'</tbody>' +
             '<tfoot><tr><td colspan="4" style="padding:8px 12px; text-align:right;"><strong>Total Keseluruhan:</strong></td><td style="padding:8px 12px; text-align:right;"><strong>'+formatRupiah(total)+'</strong></td></tr></tfoot>' +
             '</table></div>' +
@@ -873,7 +873,7 @@
             // If siswa-list-section is visible (bulk mode), add to selectedStudents
             var siswaObj = {
                 id: event.target.dataset.id,
-                nik: event.target.dataset.nik,
+                nis: event.target.dataset.nis,
                 nama: event.target.dataset.nama,
                 kelas: event.target.dataset.kelas
             };
@@ -963,3 +963,4 @@
 @endpush
 
 @endsection
+

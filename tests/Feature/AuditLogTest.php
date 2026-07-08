@@ -56,7 +56,7 @@ class AuditLogTest extends TestCase
     private function siswaPayload(array $overrides = []): array
     {
         return array_merge([
-            'nik' => '1234567890123456',
+            'nis' => '1234567890123456',
             'nama' => 'Budi Santoso',
             'nama_orangtua' => 'Siti Aminah',
             'kelas' => '7A',
@@ -115,7 +115,7 @@ class AuditLogTest extends TestCase
         $this->actingAs($admin);
         $response = $this->putWithCsrf(route('admin.siswa.update', $siswa), $this->siswaPayload([
             'nama' => 'Budi Update',
-            'nik' => '6543210987654321',
+            'nis' => '6543210987654321',
         ]));
 
         $response->assertRedirect(route('admin.siswa.index'));

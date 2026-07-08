@@ -1,0 +1,150 @@
+erDiagram
+    USERS {
+        bigint id PK "Primary Key"
+        varchar name "Nama lengkap"
+        varchar username UK "Username login"
+        varchar email UK "Email unik"
+        timestamp email_verified_at "Verifikasi email"
+        varchar password "Password ter-hash"
+        enum role "admin | kepsek"
+        varchar remember_token "Token remember me"
+        timestamp created_at "Waktu dibuat"
+        timestamp updated_at "Waktu diupdate"
+    }
+
+    KEPALA_SEKOLAHS {
+        bigint id PK "Primary Key"
+        varchar nama "Nama kepala sekolah"
+        varchar nip UK "NIP unik"
+        varchar username UK "Username login"
+        varchar password "Password ter-hash"
+        varchar foto "Path foto profil"
+        boolean is_active "Status aktif"
+        varchar remember_token "Token remember me"
+        timestamp created_at "Waktu dibuat"
+        timestamp updated_at "Waktu diupdate"
+    }
+
+    SISWAS {
+        bigint id PK "Primary Key"
+        varchar nis UK "Nomor Induk Siswa"
+        varchar nama "Nama siswa"
+        varchar kelas "Kelas siswa"
+        varchar nama_orangtua "Nama orang tua"
+        enum jenis_kelamin "L | P"
+        text alamat "Alamat siswa"
+        varchar no_telepon "Telepon orang tua"
+        boolean is_active "Status aktif"
+        timestamp deleted_at "Soft delete"
+        timestamp created_at "Waktu dibuat"
+        timestamp updated_at "Waktu diupdate"
+    }
+
+    TRANSAKSIS {
+        bigint id PK "Primary Key"
+        varchar tipe "pemasukan | pengeluaran"
+        varchar jenis_transaksi "Detail jenis transaksi"
+        date tanggal "Tanggal transaksi"
+        enum jenis "pemasukan | pengeluaran"
+        varchar jenis_pengeluaran "Kategori pengeluaran"
+        decimal jumlah "Nominal rupiah 15,2"
+        text keterangan "Deskripsi transaksi"
+        varchar bukti_transaksi "Path file bukti"
+        enum status "pending | approved | rejected"
+        text catatan_kepsek "Catatan review kepsek"
+        bigint id_admin FK "FK ke USERS"
+        bigint reviewed_by FK "FK ke USERS"
+        timestamp reviewed_at "Waktu review"
+        bigint id_siswa FK "FK ke SISWAS legacy"
+        bigint siswa_id FK "FK ke SISWAS"
+        timestamp deleted_at "Soft delete"
+        timestamp created_at "Waktu dibuat"
+        timestamp updated_at "Waktu diupdate"
+    }
+
+    AUDIT_LOGS {
+        bigint id PK "Primary Key"
+        varchar aktivitas "Deskripsi aktivitas"
+        datetime tanggal "Waktu aktivitas"
+        bigint id_admin FK "FK ke USERS"
+        bigint id_transaksi FK "FK ke TRANSAKSIS nullable"
+        timestamp created_at "Waktu dibuat"
+        timestamp updated_at "Waktu diupdate"
+    }
+
+    APPROVALS {
+        bigint id PK "Primary Key"
+        bigint id_transaksi FK "FK ke TRANSAKSIS"
+        bigint id_kepsek FK "FK ke USERS"
+        enum status "approved | rejected"
+        text catatan "Catatan persetujuan"
+        timestamp created_at "Waktu dibuat"
+        timestamp updated_at "Waktu diupdate"
+    }
+
+    VALIDASIS {
+        bigint id PK "Primary Key"
+        bigint id_transaksi FK "FK ke TRANSAKSIS"
+        bigint id_kepsek FK "FK ke KEPALA_SEKOLAHS"
+        enum status "pending | approved | rejected"
+        text catatan "Catatan validasi"
+        timestamp created_at "Waktu dibuat"
+        timestamp updated_at "Waktu diupdate"
+    }
+
+    EDIT_REQUESTS {
+        bigint id PK "Primary Key"
+        bigint transaksi_id FK "FK ke TRANSAKSIS"
+        bigint requested_by FK "FK ke USERS"
+        bigint old_jumlah "Nominal lama"
+        varchar old_jenis "Jenis lama"
+        text old_keterangan "Keterangan lama"
+        bigint new_jumlah "Nominal baru"
+        varchar new_jenis "Jenis baru"
+        text new_keterangan "Keterangan baru"
+        enum status "pending | approved | rejected"
+        text catatan_kepsek "Catatan kepsek"
+        bigint reviewed_by FK "FK ke USERS"
+        timestamp reviewed_at "Waktu review"
+        timestamp created_at "Waktu dibuat"
+        timestamp updated_at "Waktu diupdate"
+    }
+
+    LAPORANS {
+        bigint id PK "Primary Key"
+        varchar judul "Judul laporan"
+        text isi "Isi laporan"
+        date tanggal_laporan "Tanggal laporan"
+        bigint id_kepsek FK "FK ke KEPALA_SEKOLAHS"
+        enum jenis "keuangan | operasional | lainnya"
+        timestamp created_at "Waktu dibuat"
+        timestamp updated_at "Waktu diupdate"
+    }
+
+    NOTIFICATIONS {
+        uuid id PK "Primary Key UUID"
+        varchar type "Class notifikasi"
+        varchar notifiable_type "Tipe model penerima"
+        bigint notifiable_id "ID model penerima"
+        json data "Payload notifikasi"
+        timestamp read_at "Waktu dibaca"
+        timestamp created_at "Waktu dibuat"
+        timestamp updated_at "Waktu diupdate"
+    }
+
+    USERS ||--o{ TRANSAKSIS : "input transaksi"
+    USERS ||--o{ TRANSAKSIS : "review transaksi"
+    USERS ||--o{ AUDIT_LOGS : "melakukan aktivitas"
+    USERS ||--o{ APPROVALS : "menyetujui transaksi"
+    USERS ||--o{ EDIT_REQUESTS : "mengajukan edit"
+    USERS ||--o{ EDIT_REQUESTS : "mereview edit"
+
+    KEPALA_SEKOLAHS ||--o{ VALIDASIS : "memvalidasi"
+    KEPALA_SEKOLAHS ||--o{ LAPORANS : "membuat laporan"
+
+    SISWAS ||--o{ TRANSAKSIS : "terkait pemasukan"
+
+    TRANSAKSIS ||--o{ AUDIT_LOGS : "dilog"
+    TRANSAKSIS ||--o{ APPROVALS : "disetujui"
+    TRANSAKSIS ||--o{ VALIDASIS : "divalidasi"
+    TRANSAKSIS ||--o{ EDIT_REQUESTS : "diajukan edit"

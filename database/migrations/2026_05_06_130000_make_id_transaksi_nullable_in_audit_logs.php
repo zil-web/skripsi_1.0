@@ -19,8 +19,17 @@ return new class extends Migration
             }
         });
 
-        // Modify column to nullable (use raw statement to avoid requiring doctrine/dbal)
-        DB::statement('ALTER TABLE `audit_logs` MODIFY `id_transaksi` BIGINT UNSIGNED NULL');
+        // Modify column to nullable - use driver-specific syntax
+        if (DB::getDriverName() === 'sqlite') {
+            // SQLite requires a different approach for column modification
+            // Using change() method which recreates the table
+            Schema::table('audit_logs', function (Blueprint $table) {
+                $table->unsignedBigInteger('id_transaksi')->nullable()->change();
+            });
+        } else {
+            // MySQL/MariaDB syntax
+            DB::statement('ALTER TABLE `audit_logs` MODIFY `id_transaksi` BIGINT UNSIGNED NULL');
+        }
 
         Schema::table('audit_logs', function (Blueprint $table) {
             $table->foreign('id_transaksi')->references('id')->on('transaksis')->onDelete('cascade');

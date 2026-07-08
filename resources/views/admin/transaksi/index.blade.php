@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('page-title', 'Riwayat Transaksi')
-@section('page-subtitle', 'Cari dan filter semua transaksi pemasukan & pengeluaran berdasarkan nominal')
+@section('page-subtitle', 'Cari dan saring semua transaksi pemasukan & pengeluaran berdasarkan nominal')
 
 @section('sidebar-menu')
     <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded mb-1 text-gray-700 hover:bg-gray-100">Dashboard</a>
@@ -9,6 +9,40 @@
     <a href="{{ route('admin.pengeluaran.index') }}" class="block px-3 py-2 rounded mb-1 text-gray-700 hover:bg-gray-100">Pengeluaran</a>
     <a href="{{ route('admin.transaksi.index') }}" class="block px-3 py-2 rounded mb-1 bg-[var(--accent)] text-white">Transaksi</a>
 @endsection
+
+@push('styles')
+<style>
+.custom-flatpickr .flatpickr-monthDropdown-months {
+    appearance: auto;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 2px 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2937;
+    cursor: pointer;
+}
+.custom-flatpickr .numInputWrapper input.numInput {
+    appearance: auto;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 2px 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2937;
+    width: 60px;
+}
+.custom-flatpickr .flatpickr-day.selected {
+    background: #1D9E75;
+    border-color: #1D9E75;
+}
+.custom-flatpickr .flatpickr-day:hover {
+    background: #e6f7f2;
+}
+</style>
+@endpush
 
 @section('content')
     @php
@@ -32,7 +66,7 @@
         <div class="flex items-start justify-between gap-4">
             <div>
                 <h1 class="text-base font-medium text-gray-800">Riwayat Transaksi</h1>
-                <p class="text-xs text-gray-400 mt-0.5">Cari dan filter semua transaksi pemasukan & pengeluaran</p>
+                <p class="text-xs text-gray-400 mt-0.5">Cari dan Saring semua transaksi pemasukan & pengeluaran</p>
             </div>
         </div>
 
@@ -52,8 +86,8 @@
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <div class="text-xs text-gray-400">Total Pemasukan</div>
-                        <div class="mt-1 text-xl font-medium text-gray-800">{{ $formatRupiah($total_pemasukan) }}</div>
-                        <div class="text-xs text-gray-400 mt-1">Transaksi approved</div>
+                        <div class="mt-1 text-xl font-medium text-gray-800">{{ $formatRupiah($total_pemasukan ?? 0) }}</div>
+                        <div class="text-xs text-gray-400 mt-1">Transaksi disetujui</div>
                     </div>
                     <div class="rounded-lg p-2 w-8 h-8 bg-emerald-50 text-emerald-600 flex items-center justify-center">
                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12l5-5 4 4 5-5M5 19h14" /></svg>
@@ -65,8 +99,8 @@
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <div class="text-xs text-gray-400">Total Pengeluaran</div>
-                        <div class="mt-1 text-xl font-medium text-gray-800">{{ $formatRupiah($total_pengeluaran) }}</div>
-                        <div class="text-xs text-gray-400 mt-1">Transaksi approved</div>
+                        <div class="mt-1 text-xl font-medium text-gray-800">{{ $formatRupiah($total_pengeluaran ?? 0) }}</div>
+                        <div class="text-xs text-gray-400 mt-1">Transaksi disetujui</div>
                     </div>
                     <div class="rounded-lg p-2 w-8 h-8 bg-red-50 text-red-600 flex items-center justify-center">
                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12l-5 5-4-4-5 5" /></svg>
@@ -78,7 +112,7 @@
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <div class="text-xs text-gray-400">Saldo Bersih</div>
-                        <div class="mt-1 text-xl font-medium {{ $saldo_bersih >= 0 ? 'text-blue-800' : 'text-red-600' }}">{{ $formatRupiah($saldo_bersih) }}</div>
+                        <div class="mt-1 text-xl font-medium {{ ($saldo_bersih ?? 0) >= 0 ? 'text-blue-800' : 'text-red-600' }}">{{ $formatRupiah($saldo_bersih ?? 0) }}</div>
                         <div class="text-xs text-gray-400 mt-1">Pemasukan - pengeluaran</div>
                     </div>
                     <div class="rounded-lg p-2 w-8 h-8 {{ $saldo_bersih >= 0 ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-600' }} flex items-center justify-center">
@@ -101,48 +135,104 @@
             </div>
         </div>
 
-        <div class="bg-white border border-gray-100 rounded-xl p-4 mb-4">
-            <form method="GET" class="flex flex-wrap gap-2 items-end">
-                <div>
-                    <label class="block text-sm text-gray-600 mb-1">Dari Tanggal</label>
-                    <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari') }}" class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-[#1D9E75] h-9">
+        <div class="bg-white border border-gray-100 rounded-xl p-4 mb-4" x-data="{ showFilter: false }" @keydown.window.escape="showFilter = false">
+            <form method="GET" class="space-y-4">
+                <div class="flex flex-col gap-3">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div class="min-w-0 flex-1">
+                            <label class="sr-only" for="q">Cari transaksi</label>
+                            <input type="text" id="q" name="q" value="{{ request('q') }}" placeholder="Cari transaksi..." class="text-sm border border-gray-200 rounded-xl px-3 py-2 w-full focus:ring-emerald-500">
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <div class="min-w-0 max-w-[150px] relative">
+                                <label class="sr-only" for="tanggal_dari">Dari Tanggal</label>
+                                <input type="text" id="tanggal_dari" name="tanggal_dari" value="{{ request('tanggal_dari') }}" class="sr-only" aria-hidden="true">
+                                <button type="button" id="btn_tanggal_dari" class="text-sm border border-gray-200 rounded-xl px-3 py-2 w-full bg-white text-left text-left">
+                                    <div class="text-[10px] text-gray-500">Dari</div>
+                                    <div id="btn_tanggal_dari_text" class="text-sm text-gray-800">
+                                        {{ request('tanggal_dari') ? \Carbon\Carbon::parse(request('tanggal_dari'))->format('d M Y') : 'Pilih tanggal' }}
+                                    </div>
+                                </button>
+                            </div>
+                            <span class="text-sm text-gray-400">→</span>
+                            <div class="min-w-0 max-w-[150px] relative">
+                                <label class="sr-only" for="tanggal_sampai">Sampai Tanggal</label>
+                                <input type="text" id="tanggal_sampai" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}" class="sr-only" aria-hidden="true">
+                                <button type="button" id="btn_tanggal_sampai" class="text-sm border border-gray-200 rounded-xl px-3 py-2 w-full bg-white text-left">
+                                    <div class="text-[10px] text-gray-500">Sampai</div>
+                                    <div id="btn_tanggal_sampai_text" class="text-sm text-gray-800">
+                                        {{ request('tanggal_sampai') ? \Carbon\Carbon::parse(request('tanggal_sampai'))->format('d M Y') : 'Pilih tanggal' }}
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" @click="showFilter = true" class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-100 transition">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h7" /></svg>
+                            Saring
+                        </button>
+                        <a href="{{ route('admin.transaksi.index') }}" class="inline-flex items-center rounded-full border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition">Ulang</a>
+                        <a href="{{ route('admin.transaksi.export-excel', request()->query()) }}" class="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 transition">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><path d="M7 10l5 5 5-5" /><path d="M12 15V3" /></svg>
+                            Excel
+                        </a>
+                    </div>
+
+                <div x-show="showFilter" x-cloak x-transition.opacity class="fixed inset-0 z-50 flex items-start justify-center overflow-auto p-4 sm:p-6">
+                    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" @click="showFilter = false"></div>
+                    <div class="relative z-10 w-full max-w-3xl overflow-hidden rounded-[32px] border border-emerald-200 bg-white p-6 shadow-2xl">
+                        <div class="flex items-center justify-between gap-3 mb-6">
+                            <div class="flex items-center gap-3 text-sm font-semibold text-emerald-800">
+                                <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h7" /></svg>
+                                </span>
+                                Saring Transaksi
+                            </div>
+                            <button type="button" @click="showFilter = false" class="inline-flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-gray-700">
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6M6 6l12 12" /></svg>
+                                Tutup
+                            </button>
+                        </div>
+                        <div class="grid gap-4 md:grid-cols-2">
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1">Jenis</label>
+                                <select name="jenis" class="text-sm border border-gray-200 rounded-xl px-3 py-2 w-full focus:ring-emerald-500">
+                                    <option value="">Semua Jenis</option>
+                                    <option value="pemasukan" {{ request('jenis') === 'pemasukan' ? 'selected' : '' }}>Pemasukan</option>
+                                    <option value="pengeluaran" {{ request('jenis') === 'pengeluaran' ? 'selected' : '' }}>Pengeluaran</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1">Status</label>
+                                <select name="status" class="text-sm border border-gray-200 rounded-xl px-3 py-2 w-full focus:ring-emerald-500">
+                                    <option value="">Semua Status</option>
+                                    <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Tertunda</option>
+                                    <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Disetujui</option>
+                                    <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Ditolak</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1">Nominal</label>
+                                <input type="text" name="nominal" value="{{ request('nominal') }}" placeholder="Contoh: 1000000" class="text-sm border border-gray-200 rounded-xl px-3 py-2 w-full focus:ring-emerald-500">
+                            </div>
+                            <div class="grid gap-3 md:grid-cols-2">
+                                <div>
+                                    <label class="block text-xs text-gray-600 mb-1">Minimal</label>
+                                    <input type="text" name="nominal_min" value="{{ request('nominal_min') }}" placeholder="Minimal" class="text-sm border border-gray-200 rounded-xl px-3 py-2 w-full focus:ring-emerald-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-600 mb-1">Maksimal</label>
+                                    <input type="text" name="nominal_max" value="{{ request('nominal_max') }}" placeholder="Maksimal" class="text-sm border border-gray-200 rounded-xl px-3 py-2 w-full focus:ring-emerald-500">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-6 flex flex-wrap items-center justify-end gap-3">
+                            <button type="submit" class="inline-flex items-center justify-center rounded-full bg-emerald-600 px-5 py-2 text-xs font-semibold text-white hover:bg-emerald-700 transition">Terapkan</button>
+                            <button type="button" @click="showFilter = false" class="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-5 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition">Batal</button>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm text-gray-600 mb-1">Sampai Tanggal</label>
-                    <input type="date" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}" class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-[#1D9E75] h-9">
-                </div>
-                <div>
-                    <label class="block text-sm text-gray-600 mb-1">Jenis</label>
-                    <select name="jenis" class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-[#1D9E75] h-9 min-w-32">
-                        <option value="">Semua Jenis</option>
-                        <option value="pemasukan" {{ request('jenis') === 'pemasukan' ? 'selected' : '' }}>Pemasukan</option>
-                        <option value="pengeluaran" {{ request('jenis') === 'pengeluaran' ? 'selected' : '' }}>Pengeluaran</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm text-gray-600 mb-1">Status</label>
-                    <select name="status" class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-[#1D9E75] h-9 min-w-32">
-                        <option value="">Semua Status</option>
-                        <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved</option>
-                        <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm text-gray-600 mb-1">Nominal</label>
-                    <input type="text" name="nominal" value="{{ request('nominal') }}" placeholder="Contoh: 1000000" class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-[#1D9E75] h-9">
-                </div>
-                <div>
-                    <label class="block text-sm text-gray-600 mb-1">Nominal Minimum</label>
-                    <input type="text" name="nominal_min" value="{{ request('nominal_min') }}" placeholder="Min" class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-[#1D9E75] h-9">
-                </div>
-                <div>
-                    <label class="block text-sm text-gray-600 mb-1">Nominal Maksimum</label>
-                    <input type="text" name="nominal_max" value="{{ request('nominal_max') }}" placeholder="Max" class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-[#1D9E75] h-9">
-                </div>
-                <button type="submit" class="bg-[#1D9E75] text-white text-xs rounded-lg px-4 h-9">Filter</button>
-                <a href="{{ route('admin.transaksi.index') }}" class="bg-white border border-gray-200 text-xs rounded-lg px-4 h-9 inline-flex items-center">Reset</a>
-                <a href="{{ route('admin.transaksi.export-csv', request()->query()) }}" class="bg-emerald-600 text-white text-xs rounded-lg px-4 h-9 inline-flex items-center hover:bg-emerald-700">Ekspor</a>
             </form>
         </div>
 
@@ -177,7 +267,7 @@
                                     </td>
                                     <td class="text-sm px-4 py-2.5">{{ $t->siswa?->nama ?? '-' }}</td>
                                     <td class="text-sm px-4 py-2.5 font-medium {{ $statusValue($t->jenis) === 'pengeluaran' ? 'text-red-500' : 'text-emerald-600' }}">
-                                        {{ $statusValue($t->jenis) === 'pengeluaran' ? '- ' : '+ ' }}{{ $t->format_uang }}</td>
+                                        {{ $statusValue($t->jenis) === 'pengeluaran' ? '- ' : '+ ' }}{{ $t->format_uang }}
                                     </td>
                                     <td class="text-sm px-4 py-2.5">
                                         <span class="text-[10px] font-medium px-2 py-0.5 rounded-full {{ $statusClass($t->status) }}">{{ $statusLabel($t->status) }}</span>
@@ -190,11 +280,11 @@
                                         @endif
                                     </td>
                                     <td class="text-sm px-4 py-2.5">
-                                        <button data-id="{{ $t->id }}" class="open-transaksi-detail text-[11px] px-3 py-1 rounded-lg border font-medium border-gray-200 text-gray-600 hover:bg-gray-50">Detail</button>
+                                        <button data-id="{{ $t->id }}" class="open-transaksi-detail text-[11px] px-3 py-1 rounded-lg border font-medium border-gray-200 text-gray-600 hover:bg-gray-50">Rincian</button>
                                     </td>
                                     <td class="text-sm px-4 py-2.5">
                                         @if($t->pendingEditRequest)
-                                            <span class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">Menunggu Approval</span>
+                                            <span class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">Menunggu Persetujuan</span>
                                         @else
                                             <button
                                                 type="button"
@@ -203,8 +293,9 @@
                                                 data-old-jumlah="{{ (int) $t->jumlah }}"
                                                 data-old-jenis="{{ $statusValue($t->jenis) }}"
                                                 data-old-keterangan="{{ $t->keterangan }}"
+                                                data-jenis-pemasukan="{{ $t->jenis_transaksi ?? '' }}"
                                             >
-                                                Edit
+                                                Ubah
                                             </button>
                                         @endif
                                     </td>
@@ -229,7 +320,6 @@
 
     @include('admin.components.detail-transaksi-modal')
 
-    <!-- Edit Request Modal -->
     <div id="edit-request-modal" class="fixed inset-0 hidden items-start justify-center z-[70] overflow-y-auto px-4 py-6 bg-black/50">
         <div class="absolute inset-0 bg-black/50"></div>
         <div class="relative bg-white rounded-[12px] shadow-xl w-full max-w-[460px] mx-auto overflow-hidden flex flex-col max-h-[calc(100vh-48px)]">
@@ -245,8 +335,8 @@
                         <label class="block text-xs text-gray-500 mb-1">Jumlah Saat Ini</label>
                         <input id="er-old-jumlah" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-100" readonly>
                     </div>
-                    <div>
-                        <label class="block text-xs text-gray-500 mb-1">Jenis Saat Ini</label>
+                    <div id="er-old-jenis-wrapper">
+                        <label class="block text-xs text-gray-500 mb-1"><span id="er-old-jenis-label">Jenis Pemasukan Saat Ini</span></label>
                         <input id="er-old-jenis" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-100" readonly>
                     </div>
                     <div class="md:col-span-2">
@@ -257,18 +347,18 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label for="er-new-jumlah" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Baru <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Baru <span class="text-red-500">*</span></label>
                         <input id="er-new-jumlah" type="text" name="new_jumlah" inputmode="numeric" required class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[#1D9E75]">
                     </div>
-                    <div>
-                        <label for="er-new-jenis" class="block text-sm font-medium text-gray-700 mb-1">Jenis Baru <span class="text-red-500">*</span></label>
+                    <div id="er-jenis-wrapper">
+                        <label class="block text-sm font-medium text-gray-700 mb-1"><span id="er-jenis-label">Jenis Pemasukan Baru</span> <span class="text-red-500">*</span></label>
                         <select id="er-new-jenis" name="new_jenis" required class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[#1D9E75]">
                             <option value="pemasukan">Pemasukan</option>
                             <option value="pengeluaran">Pengeluaran</option>
                         </select>
                     </div>
                     <div class="md:col-span-2">
-                        <label for="er-new-keterangan" class="block text-sm font-medium text-gray-700 mb-1">Keterangan Baru</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan Baru</label>
                         <textarea id="er-new-keterangan" name="new_keterangan" rows="4" maxlength="500" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[#1D9E75]"></textarea>
                     </div>
                 </div>
@@ -293,6 +383,7 @@
         const editRequestClose = el('#edit-request-close');
         const editRequestCancel = el('#edit-request-cancel');
         const editRequestActionTemplate = `{{ url('/transaksi/__ID__/edit-request') }}`;
+        let currentTransaksiButton = null;
 
         function formatRupiah(v){ return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits:0 }).format(Number(v||0)); }
 
@@ -302,7 +393,6 @@
         function setDetailMessage(message) {
             const el = document.getElementById('detailLoadMessage');
             if (!el) return;
-
             el.textContent = message || '';
             el.classList.toggle('hidden', !message);
         }
@@ -311,16 +401,11 @@
             btn.addEventListener('click', async function(){
                 const id = this.dataset.id;
                 setDetailMessage('');
-
                 try {
                     const res = await fetch(`{{ url('/admin/transaksi') }}/${id}/detail`, {
                         headers: { 'X-Requested-With': 'XMLHttpRequest' }
                     });
-
-                    if (!res.ok) {
-                        throw new Error('Gagal mengambil data');
-                    }
-
+                    if (!res.ok) throw new Error('Gagal mengambil data');
                     const data = await res.json();
                     const fields = [
                         { label: 'ID Transaksi', value: data.id ?? id },
@@ -330,17 +415,15 @@
                         { label: 'Keterangan', value: data.keterangan || '-' },
                         { label: 'Status', value: data.status ?? '-' }
                     ];
-
                     if ((data.jenis_transaksi ?? data.jenis) === 'pemasukan' && data.siswa) {
                         const siswaNama = data.siswa.nama ?? 'N/A';
-                        const siswaNik = data.siswa.nik ?? 'N/A';
+                        const siswaNis = data.siswa.nis ?? 'N/A';
                         const siswaKelas = data.siswa.kelas ?? '';
                         fields.push({
                             label: 'Siswa',
-                            value: `${siswaNama} (NIK: ${siswaNik}${siswaKelas ? `, Kelas: ${siswaKelas}` : ''})`
+                            value: `${siswaNama} (NIS: ${siswaNis}${siswaKelas ? `, Kelas: ${siswaKelas}` : ''})`
                         });
                     }
-
                     openDetailTransaksi(fields, data.bukti_raw || data.bukti_url || data.bukti_transaksi || '');
                 } catch (error) {
                     setDetailMessage('Gagal memuat detail: ' + error.message);
@@ -354,19 +437,75 @@
                 const oldJumlah = this.dataset.oldJumlah ?? '0';
                 const oldJenis = this.dataset.oldJenis ?? '-';
                 const oldKeterangan = this.dataset.oldKeterangan ?? '';
+                const jenis = this.dataset.oldJenis ?? '';
+                const jenis_transaksi = this.dataset.jenisPemasukan ?? '';
+
+                currentTransaksiButton = this;
 
                 editRequestForm.action = editRequestActionTemplate.replace('__ID__', id);
                 el('#er-old-jumlah').value = formatRupiah(oldJumlah);
                 el('#er-old-jenis').value = oldJenis;
                 el('#er-old-keterangan').value = oldKeterangan;
-
                 el('#er-new-jumlah').value = formatRupiah(oldJumlah);
-                el('#er-new-jenis').value = oldJenis;
                 el('#er-new-keterangan').value = oldKeterangan;
 
+                updateJenisField(jenis, jenis_transaksi);
                 openEditRequestModal();
             });
         });
+
+        function updateJenisField(jenis, jenis_transaksi) {
+            const jenisLabel = el('#er-jenis-label');
+            const jenisSelect = el('#er-new-jenis');
+            const jenisWrapper = el('#er-jenis-wrapper');
+            const oldJenisLabel = el('#er-old-jenis-label');
+            const oldJenisWrapper = el('#er-old-jenis-wrapper');
+            const isSPP = jenis_transaksi === 'SPP';
+
+            if (isSPP) {
+                jenisWrapper.style.display = 'none';
+                oldJenisWrapper.style.display = 'none';
+                jenisSelect.removeAttribute('required');
+                return;
+            } else {
+                jenisWrapper.style.display = 'block';
+                oldJenisWrapper.style.display = 'block';
+                jenisSelect.setAttribute('required', '');
+            }
+
+            if (jenis === 'pemasukan') {
+                jenisLabel.textContent = 'Jenis Pemasukan Baru';
+                oldJenisLabel.textContent = 'Jenis Pemasukan Saat Ini';
+                jenisSelect.innerHTML = '';
+                [{ value: 'SPP', label: 'SPP' }, { value: 'Donasi', label: 'Donasi' }, { value: 'Lain-lain', label: 'Lain-lain' }]
+                    .forEach(opt => {
+                        const o = document.createElement('option');
+                        o.value = opt.value; o.textContent = opt.label;
+                        jenisSelect.appendChild(o);
+                    });
+                if (currentTransaksiButton) jenisSelect.value = currentTransaksiButton.dataset.jenisPemasukan || 'Lain-lain';
+            } else if (jenis === 'pengeluaran') {
+                jenisLabel.textContent = 'Jenis Pengeluaran Baru';
+                oldJenisLabel.textContent = 'Jenis Pengeluaran Saat Ini';
+                jenisSelect.innerHTML = '';
+                [
+                    { value: 'ATK', label: 'ATK (Alat Tulis Kantor)' },
+                    { value: 'Konsumsi Harian', label: 'Konsumsi Harian' },
+                    { value: 'Pembelian Aset', label: 'Pembelian Aset' },
+                    { value: 'Renovasi', label: 'Renovasi' },
+                    { value: 'Kegiatan Besar', label: 'Kegiatan Besar' },
+                    { value: 'Lain-lain', label: 'Lain-lain' }
+                ].forEach(opt => {
+                    const o = document.createElement('option');
+                    o.value = opt.value; o.textContent = opt.label;
+                    jenisSelect.appendChild(o);
+                });
+                if (currentTransaksiButton) jenisSelect.value = currentTransaksiButton.dataset.jenisPemasukan || 'Lain-lain';
+            } else {
+                jenisLabel.textContent = 'Jenis Baru';
+                oldJenisLabel.textContent = 'Jenis Saat Ini';
+            }
+        }
 
         el('#er-new-jumlah').addEventListener('input', function () {
             const digits = String(this.value || '').replace(/\D/g, '');
@@ -375,21 +514,104 @@
 
         editRequestForm.addEventListener('submit', function () {
             const amountInput = el('#er-new-jumlah');
-            if (amountInput) {
-                amountInput.value = String(amountInput.value || '').replace(/\D/g, '');
-            }
+            if (amountInput) amountInput.value = String(amountInput.value || '').replace(/\D/g, '');
         });
 
-        // Edit request modal close handlers
         editRequestClose.addEventListener('click', closeEditRequestModal);
         editRequestCancel.addEventListener('click', closeEditRequestModal);
         editRequestModal.addEventListener('click', function(e){ if(e.target === editRequestModal) closeEditRequestModal(); });
-
         document.addEventListener('keydown', function(e){
-            if (e.key === 'Escape' && editRequestModal && !editRequestModal.classList.contains('hidden')) {
-                closeEditRequestModal();
-            }
+            if (e.key === 'Escape' && editRequestModal && !editRequestModal.classList.contains('hidden')) closeEditRequestModal();
         });
     })();
+
+    function initTransaksiDatePickers(availableDates = null) {
+        if (typeof flatpickr !== 'function') return;
+
+        const dariEl = document.getElementById('tanggal_dari');
+        const sampaiEl = document.getElementById('tanggal_sampai');
+        if (!dariEl || !sampaiEl) return;
+
+        let pickerSampai;
+
+        const pickerDariOptions = {
+            locale: 'id',
+            dateFormat: 'Y-m-d',
+            allowInput: false,
+            disableMobile: true,
+            clickOpens: true,
+            onReady: function(_, __, fp) {
+                fp.calendarContainer.classList.add('custom-flatpickr');
+                const btn = document.getElementById('btn_tanggal_dari');
+                if (btn) btn.addEventListener('click', function(){ fp.open(); });
+            },
+            onChange: function(selectedDates, dateStr, instance) {
+                pickerSampai.set('minDate', dateStr);
+                if (selectedDates.length) pickerSampai.open();
+                const btnText = document.getElementById('btn_tanggal_dari_text');
+                if (btnText) btnText.textContent = selectedDates.length ? instance.formatDate(selectedDates[0], 'd M Y') : 'Pilih tanggal';
+                dariEl.value = dateStr || '';
+            }
+        };
+
+        if (Array.isArray(availableDates)) {
+            pickerDariOptions.enable = availableDates;
+        }
+
+        const pickerSampaiOptions = {
+            locale: 'id',
+            dateFormat: 'Y-m-d',
+            allowInput: false,
+            disableMobile: true,
+            clickOpens: true,
+            onReady: function(_, __, fp) {
+                fp.calendarContainer.classList.add('custom-flatpickr');
+                const btn = document.getElementById('btn_tanggal_sampai');
+                if (btn) btn.addEventListener('click', function(){ fp.open(); });
+            },
+            onChange: function(selectedDates, dateStr, instance) {
+                pickerDari.set('maxDate', dateStr);
+                const btnText = document.getElementById('btn_tanggal_sampai_text');
+                if (btnText) btnText.textContent = selectedDates.length ? instance.formatDate(selectedDates[0], 'd M Y') : 'Pilih tanggal';
+                sampaiEl.value = dateStr || '';
+            }
+        };
+
+        if (Array.isArray(availableDates)) {
+            pickerSampaiOptions.enable = availableDates;
+        }
+
+        const pickerDari = flatpickr(dariEl, pickerDariOptions);
+        pickerSampai = flatpickr(sampaiEl, pickerSampaiOptions);
+
+        // expose instances for external buttons
+        try { window.adminPickerDari = pickerDari; window.adminPickerSampai = pickerSampai; } catch(e) {}
+
+        @if(request('tanggal_dari'))
+            pickerDari.setDate("{{ request('tanggal_dari') }}", false);
+        @endif
+        @if(request('tanggal_sampai'))
+            pickerSampai.setDate("{{ request('tanggal_sampai') }}", false);
+        @endif
+    }
+
+    const availableDatesRoute = {!! Route::has('admin.transaksi.available-dates') ? json_encode(route('admin.transaksi.available-dates')) : 'null' !!};
+
+    function setupTransaksiDatePickers() {
+        if (availableDatesRoute) {
+            fetch(availableDatesRoute)
+                .then(res => res.json())
+                .then(data => initTransaksiDatePickers(Array.isArray(data) ? data : null))
+                .catch(() => initTransaksiDatePickers());
+        } else {
+            initTransaksiDatePickers();
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupTransaksiDatePickers);
+    } else {
+        setupTransaksiDatePickers();
+    }
 </script>
 @endpush

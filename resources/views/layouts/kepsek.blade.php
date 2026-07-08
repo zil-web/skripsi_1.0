@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Kepala Sekolah') - SIKEU</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    {{-- Flatpickr CDN --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
     <style>
         :root { --accent: #1D9E75; }
     </style>

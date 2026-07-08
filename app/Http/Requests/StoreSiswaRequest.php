@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -14,11 +13,11 @@ class StoreSiswaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nik' => [
+            'nis' => [
                 'required',
                 'string',
                 'size:16',
-                'unique:siswas,nik',
+                'unique:siswas,nis',
                 'regex:/^[0-9]+$/',
             ],
             'nama' => [
@@ -49,10 +48,10 @@ class StoreSiswaRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'nik.required'           => 'NIK wajib diisi',
-            'nik.size'               => 'NIK harus 16 digit',
-            'nik.unique'             => 'NIK sudah terdaftar',
-            'nik.regex'              => 'NIK hanya boleh angka',
+            'nis.required'           => 'NIS wajib diisi',
+            'nis.size'               => 'NIS harus 16 digit',
+            'nis.unique'             => 'NIS sudah terdaftar',
+            'nis.regex'              => 'NIS hanya boleh angka',
             'nama.required'          => 'Nama siswa wajib diisi',
             'nama.regex'             => 'Nama hanya boleh huruf dan spasi',
             'nama_orangtua.required' => 'Nama orang tua wajib diisi',
@@ -68,10 +67,10 @@ class StoreSiswaRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         // Normalisasi input agar validasi boolean dan format lebih andal
-        $nik = $this->nik ?? null;
-        if ($nik !== null) {
+        $nis = $this->nis ?? null;
+        if ($nis !== null) {
             // hapus semua non-digit
-            $nik = preg_replace('/\D+/', '', $nik);
+            $nis = preg_replace('/\D+/', '', $nis);
         }
 
         $no = $this->no_telepon ?? null;
@@ -90,7 +89,7 @@ class StoreSiswaRequest extends FormRequest
         }
 
         $this->merge([
-            'nik' => $nik,
+            'nis' => $nis,
             'no_telepon' => $no,
             'is_active' => $isActive,
             'nama' => $this->nama ? trim(preg_replace('/\s+/', ' ', $this->nama)) : null,
@@ -98,3 +97,4 @@ class StoreSiswaRequest extends FormRequest
         ]);
     }
 }
+

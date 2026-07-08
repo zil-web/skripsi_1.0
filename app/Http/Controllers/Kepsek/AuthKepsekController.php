@@ -1,6 +1,4 @@
-php artisan migrate
-php artisan db:seed --class=UserSeeder<?php
-
+<?php
 namespace App\Http\Controllers\Kepsek;
 
 use App\Http\Controllers\Controller;

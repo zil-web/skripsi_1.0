@@ -25,7 +25,7 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// Profile and dashboard examples (existing)
+// Profile and dashboard examples
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -56,14 +56,22 @@ Route::get('/siswa/search', [SiswaController::class, 'search'])
 // Admin routes (protected by auth.admin middleware)
 Route::middleware(['auth.admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::resource('transaksi', TransaksiController::class)->only(['index', 'create', 'store']);
-    Route::get('transaksi/export-csv', [TransaksiController::class, 'exportCsv'])->name('transaksi.export-csv');
+    
+    // PERBAIKAN: Custom Route diletakkan di ATAS Route::resource agar tidak bentrok id
+    Route::get('transaksi/export-excel', [TransaksiController::class, 'exportExcel'])->name('transaksi.export-excel');
+    Route::get('transaksi/available-dates', [TransaksiController::class, 'availableDates'])->name('transaksi.available-dates');
+    
+    // Resource route
+    Route::resource('transaksi', TransaksiController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
+    
     Route::get('transaksi/{id}/detail', [TransaksiController::class, 'detail'])->name('transaksi.detail');
     Route::get('transaksi/{id}/bukti', [TransaksiController::class, 'bukti'])->name('transaksi.bukti');
+    
     Route::get('pemasukan/spp', [PemasukanController::class, 'sppCreate'])->name('pemasukan.spp.create');
     Route::post('pemasukan/spp', [PemasukanController::class, 'sppStore'])->name('pemasukan.spp.store');
     Route::resource('pemasukan', PemasukanController::class)->only(['index', 'create', 'store']);
     Route::resource('pengeluaran', PengeluaranController::class)->only(['index', 'create', 'store']);
+    
     Route::resource('siswa', SiswaController::class)
         ->only(['index', 'store', 'update', 'destroy'])
         ->names([
@@ -79,7 +87,10 @@ Route::middleware(['auth.kepsek'])->prefix('kepsek')->name('kepsek.')->group(fun
     Route::get('dashboard', [DashboardKepsekController::class, 'index'])->name('dashboard');
     Route::get('/approvals', [KepsekController::class, 'index'])->name('approvals');
     Route::get('/transaksi', [KepsekController::class, 'transaksi'])->name('transaksi');
-    Route::get('/transaksi/export-csv', [KepsekController::class, 'exportCsv'])->name('transaksi.export-csv');
+    Route::get('/transaksi/available-dates', [KepsekController::class, 'availableDates'])->name('transaksi.available-dates');
+    
+    Route::get('/admin/transaksi/export-excel', [KepsekController::class, 'exportExcel'])->name('admin.transaksi.export-excel');
+    
     Route::get('/transaksi/{id}', [KepsekController::class, 'transaksiDetail'])->name('transaksi.detail');
     Route::get('/transaksi/{id}/bukti', [KepsekController::class, 'bukti'])->name('transaksi.bukti');
     Route::post('/edit-request/{id}/approve', [KepsekController::class, 'approveEdit'])->name('edit-request.approve');

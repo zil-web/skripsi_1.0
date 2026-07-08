@@ -93,7 +93,7 @@
 
   <input type="text" name="search"
     value="{{ request('search') }}"
-    placeholder="Cari NIK atau nama siswa..."
+    placeholder="Cari NIS atau nama siswa..."
     style="flex:1; min-width:180px; font-size:13px;
            border:1px solid #e5e7eb; border-radius:8px;
            padding:0 12px; height:36px; outline:none;">
@@ -130,7 +130,7 @@
     style="background:#1D9E75; color:white; border:none;
            border-radius:8px; padding:0 16px; height:36px;
            font-size:13px; cursor:pointer;">
-    Filter
+    Saring
   </button>
 
   <a href="{{ route('admin.siswa.index') }}"
@@ -139,7 +139,7 @@
            padding:0 16px; height:36px; font-size:13px;
            display:flex; align-items:center;
            text-decoration:none;">
-    Reset
+    Ulang
   </a>
 
 </div>
@@ -158,7 +158,7 @@
         <th style="font-size:10px; color:#9ca3af;
                    font-weight:500; text-align:left;
                    padding:12px 16px; text-transform:uppercase;
-                   letter-spacing:0.05em;">NIK</th>
+                   letter-spacing:0.05em;">NIS</th>
         <th style="font-size:10px; color:#9ca3af;
                    font-weight:500; text-align:left;
                    padding:12px 16px; text-transform:uppercase;
@@ -190,7 +190,7 @@
       <tr style="border-bottom:1px solid #f3f4f6; cursor:pointer;"
           class="siswa-row"
           data-id="{{ $siswa->id }}"
-          data-nik="{{ $siswa->nik }}"
+          data-nis="{{ $siswa->nis }}"
           data-nama="{{ $siswa->nama }}"
           data-nama-orangtua="{{ $siswa->nama_orangtua }}"
           data-kelas="{{ $siswa->kelas }}"
@@ -208,7 +208,7 @@
 
         <td style="font-size:12px; color:#1f2937;
                    padding:12px 16px; font-family:monospace;">
-          {{ $siswa->nik }}
+          {{ $siswa->nis }}
         </td>
 
         <td style="padding:12px 16px;">
@@ -266,7 +266,7 @@
               class="btn-edit-action"
               onclick="event.stopPropagation(); bukaModalEdit(
                 '{{ $siswa->id }}',
-                '{{ $siswa->nik }}',
+                '{{ $siswa->nis }}',
                 '{{ addslashes($siswa->nama) }}',
                 '{{ addslashes($siswa->nama_orangtua) }}',
                 '{{ $siswa->kelas }}',
@@ -405,7 +405,7 @@
       style="padding:20px 24px;">
       @csrf
 
-      {{-- NIK + Kelas --}}
+      {{-- NIS + Kelas --}}
       <div style="display:grid;
                   grid-template-columns:1fr 1fr;
                   gap:12px; margin-bottom:14px;">
@@ -415,10 +415,10 @@
                         text-transform:uppercase;
                         letter-spacing:0.05em;
                         margin-bottom:4px;">
-            NIK * (16 digit)
+            NIS * (16 digit)
           </label>
-          <input type="text" name="nik"
-            value="{{ old('nik') }}"
+          <input type="text" name="nis"
+            value="{{ old('nis') }}"
             maxlength="16"
             placeholder="3271XXXXXXXXXXXX"
             oninput="this.value=
@@ -429,7 +429,7 @@
                    padding:8px 12px; height:36px;
                    box-sizing:border-box; outline:none;
                    font-family:monospace;">
-          @error('nik')
+          @error('nis')
             <p style="font-size:11px; color:#ef4444;
                       margin:4px 0 0;">
               {{ $message }}
@@ -671,7 +671,7 @@
       @csrf
       @method('PUT')
 
-      {{-- NIK + Kelas --}}
+      {{-- NIS + Kelas --}}
       <div style="display:grid;
                   grid-template-columns:1fr 1fr;
                   gap:12px; margin-bottom:14px;">
@@ -681,9 +681,9 @@
                         text-transform:uppercase;
                         letter-spacing:0.05em;
                         margin-bottom:4px;">
-            NIK * (16 digit)
+            NIS * (16 digit)
           </label>
-          <input type="text" id="editNik" name="nik"
+          <input type="text" id="editNis" name="nis"
             maxlength="16"
             oninput="this.value=
               this.value.replace(/\D/g,'')"
@@ -815,6 +815,7 @@
       <div style="margin-bottom:20px;
                   display:flex; align-items:center;
                   gap:8px;">
+        <input type="hidden" name="is_active" value="0">
         <input type="checkbox" id="editIsActive"
           name="is_active" value="1"
           style="width:16px; height:16px;
@@ -949,7 +950,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       
       var id = this.dataset.id;
-      var nik = this.dataset.nik;
+      var nis = this.dataset.nis;
       var nama = this.dataset.nama;
       var namaOrangtua = this.dataset['nama-orangtua'];
       var kelas = this.dataset.kelas;
@@ -958,7 +959,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var alamat = this.dataset.alamat;
       var isActive = this.dataset['is-active'] === 'true';
       
-      bukaModalEdit(id, nik, nama, namaOrangtua, 
+      bukaModalEdit(id, nis, nama, namaOrangtua, 
                     kelas, jk, telp, alamat, isActive);
     });
   });
@@ -966,13 +967,13 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Fungsi isi & buka modal edit (dipanggil dari tombol tabel)
-function bukaModalEdit(id, nik, nama, namaOrtu,
+function bukaModalEdit(id, nis, nama, namaOrtu,
   kelas, jk, telp, alamat, isActive) {
 
   var form = document.getElementById('formEditSiswa');
   form.action = '/admin/siswa/' + id;
 
-  document.getElementById('editNik').value    = nik;
+  document.getElementById('editNis').value    = nis;
   document.getElementById('editNama').value   = nama;
   document.getElementById('editNamaOrtu').value = namaOrtu;
   document.getElementById('editTelp').value   = telp  || '';
@@ -1008,3 +1009,4 @@ function konfirmasiHapus(id, nama) {
 
 </script>
 @endpush
+

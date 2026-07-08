@@ -42,7 +42,7 @@ class SiswaTest extends TestCase
     private function siswaPayload(array $overrides = []): array
     {
         return array_merge([
-            'nik' => '1234567890123456',
+            'nis' => '1234567890123456',
             'nama' => 'Budi Santoso',
             'nama_orangtua' => 'Siti Aminah',
             'kelas' => '7A',
@@ -62,7 +62,7 @@ class SiswaTest extends TestCase
 
         $response->assertRedirect(route('admin.siswa.index'));
         $this->assertDatabaseHas('siswas', [
-            'nik' => '1234567890123456',
+            'nis' => '1234567890123456',
             'nama' => 'Budi Santoso',
             'kelas' => '7A',
             'jenis_kelamin' => 'L',
@@ -79,7 +79,7 @@ class SiswaTest extends TestCase
 
         $response->assertRedirect(route('admin.siswa.index'));
         $response->assertSessionHasErrors([
-            'nik',
+            'nis',
             'nama',
             'nama_orangtua',
             'kelas',
@@ -98,7 +98,7 @@ class SiswaTest extends TestCase
             'nama' => 'Andi Wijaya',
         ]));
 
-        $response->assertSessionHasErrors('nik');
+        $response->assertSessionHasErrors('nis');
         $this->assertDatabaseCount('siswas', 1);
     }
 
@@ -108,10 +108,10 @@ class SiswaTest extends TestCase
 
         $this->actingAs($admin);
         $response = $this->postWithCsrf(route('admin.siswa.store'), $this->siswaPayload([
-            'nik' => '123456789012345',
+            'nis' => '123456789012345',
         ]));
 
-        $response->assertSessionHasErrors('nik');
+        $response->assertSessionHasErrors('nis');
     }
 
     public function test_tambah_siswa_nama_berisi_angka(): void
@@ -138,7 +138,7 @@ class SiswaTest extends TestCase
 
         $response->assertRedirect(route('admin.siswa.index'));
         $this->assertDatabaseHas('siswas', [
-            'nik' => '1234567890123456',
+            'nis' => '1234567890123456',
             'alamat' => 'Jl. Merdeka No.1 <RT/RW> 002/003 "Blok-A"',
         ]);
     }
@@ -164,7 +164,7 @@ class SiswaTest extends TestCase
 
         $this->actingAs($admin);
         $response = $this->putWithCsrf(route('admin.siswa.update', $siswa), $this->siswaPayload([
-            'nik' => '6543210987654321',
+            'nis' => '6543210987654321',
             'nama' => 'Budi Update',
             'kelas' => '8B',
             'jenis_kelamin' => 'P',
@@ -174,7 +174,7 @@ class SiswaTest extends TestCase
         $response->assertRedirect(route('admin.siswa.index'));
         $this->assertDatabaseHas('siswas', [
             'id' => $siswa->id,
-            'nik' => '6543210987654321',
+            'nis' => '6543210987654321',
             'nama' => 'Budi Update',
             'kelas' => '8B',
             'jenis_kelamin' => 'P',
@@ -184,18 +184,18 @@ class SiswaTest extends TestCase
     public function test_update_siswa_nik_duplikat_ditolak(): void
     {
         $admin = $this->makeAdmin();
-        $siswa1 = Siswa::create($this->siswaPayload(['nik' => '1234567890123456']));
+        $siswa1 = Siswa::create($this->siswaPayload(['nis' => '1234567890123456']));
         $siswa2 = Siswa::create($this->siswaPayload([
-            'nik' => '6543210987654321',
+            'nis' => '6543210987654321',
             'nama' => 'Siswa Dua',
         ]));
 
         $this->actingAs($admin);
         $response = $this->putWithCsrf(route('admin.siswa.update', $siswa2), $this->siswaPayload([
-            'nik' => $siswa1->nik,
+            'nis' => $siswa1->nis,
             'nama' => 'Siswa Dua Update',
         ]));
 
-        $response->assertSessionHasErrors('nik');
+        $response->assertSessionHasErrors('nis');
     }
 }

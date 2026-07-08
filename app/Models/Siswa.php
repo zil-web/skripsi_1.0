@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +13,7 @@ class Siswa extends Model
     protected $table = 'siswas';
 
     protected $fillable = [
-        'nik',
+        'nis',
         'nama',
         'nama_orangtua',
         'kelas',
@@ -48,7 +47,7 @@ class Siswa extends Model
 
     public function getNamaNikAttribute(): string
     {
-        return trim(($this->nama ?? '') . ' (NIK: ' . ($this->nik ?? '-') . ')');
+        return trim(($this->nama ?? '') . ' (NIS: ' . ($this->nis ?? '-') . ')');
     }
 
     public function getJenisKelaminLabelAttribute(): string
@@ -71,3 +70,4 @@ class Siswa extends Model
         return $query->where('kelas', $kelas);
     }
 }
+

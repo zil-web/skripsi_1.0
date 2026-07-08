@@ -33,15 +33,21 @@
 
                 <div>
                     <h2 class="text-sm font-semibold text-gray-700 mb-3">Data Saat Ini</h2>
+                    @php
+                        $isSPP = $transaksi->jenis_transaksi === 'SPP';
+                        $jenisLabel = $transaksi->jenis === 'pemasukan' ? 'Jenis Pemasukan' : 'Jenis Pengeluaran';
+                    @endphp
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 border border-gray-100 rounded-lg p-4">
                         <div>
                             <label class="block text-xs text-gray-500 mb-1">Jumlah</label>
                             <input type="text" value="{{ $transaksi->format_uang }}" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-100" readonly>
                         </div>
+                        @if(!$isSPP)
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">Jenis</label>
-                            <input type="text" value="{{ $transaksi->jenis }}" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-100" readonly>
+                            <label class="block text-xs text-gray-500 mb-1">{{ $jenisLabel }}</label>
+                            <input type="text" value="{{ $transaksi->jenis_transaksi ?? $transaksi->jenis }}" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-100" readonly>
                         </div>
+                        @endif
                         <div class="md:col-span-2">
                             <label class="block text-xs text-gray-500 mb-1">Keterangan</label>
                             <textarea class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-100" rows="3" readonly>{{ $transaksi->keterangan }}</textarea>
@@ -56,13 +62,25 @@
                             <label for="new_jumlah" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Baru <span class="text-red-500">*</span></label>
                             <input id="new_jumlah" type="number" name="new_jumlah" min="1" value="{{ old('new_jumlah', (int) $transaksi->jumlah) }}" required class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[#1D9E75]">
                         </div>
+                        @if(!$isSPP)
                         <div>
-                            <label for="new_jenis" class="block text-sm font-medium text-gray-700 mb-1">Jenis Baru <span class="text-red-500">*</span></label>
+                            <label for="new_jenis" class="block text-sm font-medium text-gray-700 mb-1">{{ $jenisLabel }} <span class="text-red-500">*</span></label>
                             <select id="new_jenis" name="new_jenis" required class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[#1D9E75]">
-                                <option value="pemasukan" {{ old('new_jenis', (string) $transaksi->jenis) === 'pemasukan' ? 'selected' : '' }}>Pemasukan</option>
-                                <option value="pengeluaran" {{ old('new_jenis', (string) $transaksi->jenis) === 'pengeluaran' ? 'selected' : '' }}>Pengeluaran</option>
+                                @if($transaksi->jenis === 'pemasukan')
+                                    <option value="SPP" {{ old('new_jenis', $transaksi->jenis_transaksi) === 'SPP' ? 'selected' : '' }}>SPP</option>
+                                    <option value="Donasi" {{ old('new_jenis', $transaksi->jenis_transaksi) === 'Donasi' ? 'selected' : '' }}>Donasi</option>
+                                    <option value="Lain-lain" {{ old('new_jenis', $transaksi->jenis_transaksi) === 'Lain-lain' ? 'selected' : '' }}>Lain-lain</option>
+                                @elseif($transaksi->jenis === 'pengeluaran')
+                                    <option value="ATK" {{ old('new_jenis', $transaksi->jenis_transaksi) === 'ATK' ? 'selected' : '' }}>ATK (Alat Tulis Kantor)</option>
+                                    <option value="Konsumsi Harian" {{ old('new_jenis', $transaksi->jenis_transaksi) === 'Konsumsi Harian' ? 'selected' : '' }}>Konsumsi Harian</option>
+                                    <option value="Pembelian Aset" {{ old('new_jenis', $transaksi->jenis_transaksi) === 'Pembelian Aset' ? 'selected' : '' }}>Pembelian Aset</option>
+                                    <option value="Renovasi" {{ old('new_jenis', $transaksi->jenis_transaksi) === 'Renovasi' ? 'selected' : '' }}>Renovasi</option>
+                                    <option value="Kegiatan Besar" {{ old('new_jenis', $transaksi->jenis_transaksi) === 'Kegiatan Besar' ? 'selected' : '' }}>Kegiatan Besar</option>
+                                    <option value="Lain-lain" {{ old('new_jenis', $transaksi->jenis_transaksi) === 'Lain-lain' ? 'selected' : '' }}>Lain-lain</option>
+                                @endif
                             </select>
                         </div>
+                        @endif
                         <div class="md:col-span-2">
                             <label for="new_keterangan" class="block text-sm font-medium text-gray-700 mb-1">Keterangan Baru</label>
                             <textarea id="new_keterangan" name="new_keterangan" rows="4" maxlength="500" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[#1D9E75]">{{ old('new_keterangan', $transaksi->keterangan) }}</textarea>

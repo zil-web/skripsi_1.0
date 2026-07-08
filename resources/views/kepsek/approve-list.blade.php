@@ -37,7 +37,7 @@
                                 <td class="text-sm px-4 py-3">{{ $request->requestedBy->name ?? '-' }}</td>
                                 <td class="text-sm px-4 py-3 text-gray-700">
                                     <div><span class="text-gray-500">Jumlah:</span> {{ $request->format_uang_lama }} <span class="text-gray-400">→</span> {{ $request->format_uang_baru }}</div>
-                                    <div class="mt-1"><span class="text-gray-500">Jenis:</span> {{ ucfirst((string) $request->old_jenis) }} <span class="text-gray-400">→</span> {{ ucfirst((string) $request->new_jenis) }}</div>
+                                    
                                     <div class="mt-1"><span class="text-gray-500">Keterangan:</span> {{ $request->old_keterangan ?? '-' }} <span class="text-gray-400">→</span> {{ $request->new_keterangan ?? '-' }}</div>
                                 </td>
                                 <td class="text-sm px-4 py-3">
@@ -47,7 +47,7 @@
                                         data-title="Detail Permintaan Edit"
                                         data-subtitle="Permintaan edit transaksi dari bendahara"
                                         data-bukti="{{ $request->transaksi->bukti_transaksi ?? '' }}"
-                                        data-points='{{ json_encode([['label' => 'Tanggal', 'value' => optional($request->created_at)->format('d/m/Y H:i')], ['label' => 'Diajukan oleh', 'value' => $request->requestedBy->name ?? '-'], ['label' => 'Jumlah lama', 'value' => $request->format_uang_lama], ['label' => 'Jumlah baru', 'value' => $request->format_uang_baru], ['label' => 'Jenis lama', 'value' => ucfirst((string) $request->old_jenis)], ['label' => 'Jenis baru', 'value' => ucfirst((string) $request->new_jenis)], ['label' => 'Keterangan lama', 'value' => $request->old_keterangan ?? '-'], ['label' => 'Keterangan baru', 'value' => $request->new_keterangan ?? '-']]) }}'
+                                        data-points='{{ json_encode([['label' => 'Tanggal', 'value' => optional($request->created_at)->format('d/m/Y H:i')], ['label' => 'Diajukan oleh', 'value' => $request->requestedBy->name ?? '-'], ['label' => 'Jumlah lama', 'value' => $request->format_uang_lama], ['label' => 'Jumlah baru', 'value' => $request->format_uang_baru], ['label' => 'Keterangan lama', 'value' => $request->old_keterangan ?? '-'], ['label' => 'Keterangan baru', 'value' => $request->new_keterangan ?? '-']]) }}'
                                     >Detail</button>
                                 </td>
                                 <td class="text-sm px-4 py-3">
@@ -64,14 +64,12 @@
                                             <button type="submit" class="w-full text-[11px] px-3 py-1.5 rounded-lg border font-medium border-[#1D9E75] bg-[#1D9E75] text-white hover:bg-[#188864]">Setujui</button>
                                         </form>
 
-                                        <details>
-                                            <summary class="cursor-pointer text-center text-[11px] px-3 py-1.5 rounded-lg border font-medium border-red-200 text-red-600 hover:bg-red-50">Tolak</summary>
-                                            <form method="POST" action="{{ route('kepsek.edit-request.reject', $request->id) }}" class="mt-2 space-y-2" onsubmit="return confirmReject('edit transaksi', event)">
-                                                @csrf
-                                                <textarea name="catatan_kepsek" rows="2" maxlength="300" class="w-full border border-gray-200 rounded-lg px-2 py-1 text-xs" placeholder="Catatan penolakan (min. 10 karakter)">{{ old('catatan_kepsek') }}</textarea>
-                                                <button type="submit" class="w-full text-[11px] px-3 py-1.5 rounded-lg border font-medium border-red-300 text-red-700 hover:bg-red-50">Kirim Penolakan</button>
-                                            </form>
-                                        </details>
+                                        <button
+                                            type="button"
+                                            class="reject-button w-full text-[11px] px-3 py-1.5 rounded-lg border font-medium border-red-200 text-red-600 hover:bg-red-50"
+                                            data-reject-action="{{ route('kepsek.edit-request.reject', $request->id) }}"
+                                            data-reject-item="permintaan edit transaksi"
+                                        >Tolak</button>
                                     </div>
                                 </td>
                             </tr>
@@ -100,8 +98,6 @@
                             <th class="text-[10px] uppercase tracking-wide text-gray-400 font-medium px-4 py-3 border-b border-gray-50 text-left">No</th>
                             <th class="text-[10px] uppercase tracking-wide text-gray-400 font-medium px-4 py-3 border-b border-gray-50 text-left">Tanggal</th>
                             <th class="text-[10px] uppercase tracking-wide text-gray-400 font-medium px-4 py-3 border-b border-gray-50 text-left">Jumlah</th>
-                            <th class="text-[10px] uppercase tracking-wide text-gray-400 font-medium px-4 py-3 border-b border-gray-50 text-left">Jenis</th>
-                            <th class="text-[10px] uppercase tracking-wide text-gray-400 font-medium px-4 py-3 border-b border-gray-50 text-left">Keterangan</th>
                             <th class="text-[10px] uppercase tracking-wide text-gray-400 font-medium px-4 py-3 border-b border-gray-50 text-left">Detail</th>
                             <th class="text-[10px] uppercase tracking-wide text-gray-400 font-medium px-4 py-3 border-b border-gray-50 text-left">Aksi</th>
                         </tr>
@@ -112,8 +108,6 @@
                                 <td class="text-sm px-4 py-3">{{ $i + 1 }}</td>
                                 <td class="text-sm px-4 py-3">{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
                                 <td class="text-sm px-4 py-3 font-medium text-emerald-700">{{ $item->format_uang }}</td>
-                                <td class="text-sm px-4 py-3">{{ $item->jenis ?? '-' }}</td>
-                                <td class="text-sm px-4 py-3">{{ Str::limit($item->keterangan, 40) }}</td>
                                 <td class="text-sm px-4 py-3">
                                     <button
                                         type="button"
@@ -121,7 +115,7 @@
                                         data-title="Detail Pengeluaran"
                                         data-subtitle="Detail transaksi pengeluaran yang menunggu persetujuan"
                                         data-bukti="{{ $item->bukti_transaksi ?? '' }}"
-                                        data-points='{{ json_encode([['label' => 'Tanggal', 'value' => \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y')], ['label' => 'Jumlah', 'value' => $item->format_uang], ['label' => 'Jenis', 'value' => $item->jenis ?? '-'], ['label' => 'Keterangan', 'value' => $item->keterangan ?? '-'], ['label' => 'Status', 'value' => ucfirst($toValue($item->status))]]) }}'
+                                        data-points='{{ json_encode([['label' => 'Tanggal', 'value' => \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y')], ['label' => 'Jumlah', 'value' => $item->format_uang], ['label' => 'Keterangan', 'value' => $item->keterangan ?? '-'], ['label' => 'Status', 'value' => ucfirst($toValue($item->status))]]) }}'
                                     >Detail</button>
                                 </td>
                                 <td class="text-sm px-4 py-3">
@@ -129,7 +123,6 @@
                                         <form method="POST" action="{{ route('kepsek.pengeluaran.approve', $item->id) }}"
                                               onsubmit="return openApproveModal(event, this)"
                                               data-approve-date="{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}"
-                                              data-approve-type="pengeluaran"
                                               data-approve-requested-by="-"
                                               data-approve-amount="{{ $item->format_uang }}"
                                               data-approve-amount-detail="{{ $item->format_uang }}"
@@ -138,14 +131,12 @@
                                             <button type="submit" class="w-full text-[11px] px-3 py-1.5 rounded-lg border font-medium border-[#1D9E75] bg-[#1D9E75] text-white hover:bg-[#188864]">Setujui</button>
                                         </form>
 
-                                        <details>
-                                            <summary class="cursor-pointer text-center text-[11px] px-3 py-1.5 rounded-lg border font-medium border-red-200 text-red-600 hover:bg-red-50">Tolak</summary>
-                                            <form method="POST" action="{{ route('kepsek.pengeluaran.reject', $item->id) }}" class="mt-2 space-y-2" onsubmit="return confirmReject('pengeluaran ' + '{{ $item->format_uang }}', event)">
-                                                @csrf
-                                                <textarea name="catatan_kepsek" rows="2" maxlength="300" class="w-full border border-gray-200 rounded-lg px-2 py-1 text-xs" placeholder="Catatan penolakan (min. 10 karakter)">{{ old('catatan_kepsek') }}</textarea>
-                                                <button type="submit" class="w-full text-[11px] px-3 py-1.5 rounded-lg border font-medium border-red-300 text-red-700 hover:bg-red-50">Kirim Penolakan</button>
-                                            </form>
-                                        </details>
+                                        <button
+                                            type="button"
+                                            class="reject-button w-full text-[11px] px-3 py-1.5 rounded-lg border font-medium border-red-200 text-red-600 hover:bg-red-50"
+                                            data-reject-action="{{ route('kepsek.pengeluaran.reject', $item->id) }}"
+                                            data-reject-item="pengeluaran {{ $item->format_uang }}"
+                                        >Tolak</button>
                                     </div>
                                 </td>
                             </tr>
@@ -191,14 +182,7 @@
                         <div class="text-[11px] uppercase tracking-wide text-gray-400">Tanggal transaksi</div>
                         <div id="approveModalDate" class="mt-1 text-sm text-gray-800">-</div>
                     </div>
-                    <div class="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-                        <div class="text-[11px] uppercase tracking-wide text-gray-400">Jenis</div>
-                        <div id="approveModalType" class="mt-1 text-sm text-gray-800">-</div>
-                    </div>
-                    <div class="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-                        <div class="text-[11px] uppercase tracking-wide text-gray-400">Diajukan oleh</div>
-                        <div id="approveModalRequestedBy" class="mt-1 text-sm text-gray-800">-</div>
-                    </div>
+                    
                     <div class="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
                         <div class="text-[11px] uppercase tracking-wide text-gray-400">Jumlah</div>
                         <div id="approveModalAmount" class="mt-1 text-sm font-medium text-gray-800">-</div>
@@ -210,7 +194,6 @@
 
             <div class="shrink-0 border-t border-gray-100 bg-white px-6 py-4">
                 <div class="flex flex-nowrap items-center gap-3">
-                    <button type="button" id="approveModalCancel" class="w-24 shrink-0 rounded-md border border-red-500 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50">Tolak</button>
                     <button type="button" id="approveModalConfirm" class="flex-1 min-w-0 rounded-md px-5 py-2.5 text-sm font-semibold text-white shadow-sm" style="background:#3B6D11; color:#ffffff; min-height:42px;">Ya, setujui</button>
                 </div>
             </div>
@@ -219,18 +202,20 @@
 
     <div id="rejectPopup" class="fixed inset-0 z-[110] hidden items-center justify-center">
         <div class="absolute inset-0 bg-black/50" data-reject-close></div>
-        <div class="relative flex max-h-[90vh] w-full max-w-md mx-4 flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <form id="rejectPopupForm" method="POST" class="relative flex max-h-[90vh] w-full max-w-md mx-4 flex-col overflow-hidden rounded-2xl bg-white shadow-2xl" novalidate>
+            @csrf
             <div class="bg-[#FDEDED] px-6 pt-8 pb-6 text-center">
-                <div id="rejectPopupIconWrap" class="mx-auto flex h-20 w-20 items-center justify-center rounded-full border-4 border-red-200 bg-white text-4xl font-bold leading-none text-[#B42318]">!</div>
+                <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-full border-4 border-red-200 bg-white text-4xl font-bold leading-none text-[#B42318]">!</div>
                 <h3 id="rejectPopupTitle" class="mt-5 text-2xl font-medium text-gray-700">Konfirmasi penolakan</h3>
-                <p id="rejectPopupMessage" class="mt-3 whitespace-pre-line text-sm leading-6 text-gray-600">Pastikan data sudah benar sebelum menolak</p>
+                <p id="rejectPopupMessage" class="mt-3 whitespace-pre-line text-sm leading-6 text-gray-600">Tuliskan alasan penolakan.</p>
             </div>
 
             <div class="flex-1 overflow-y-auto px-6 py-5">
                 <div class="grid gap-3">
                     <div class="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-                        <div class="text-[11px] uppercase tracking-wide text-gray-400">Keterangan</div>
-                        <div id="rejectPopupNote" class="mt-1 text-sm text-gray-800 whitespace-pre-line">-</div>
+                        <label for="rejectPopupTextarea" class="text-[11px] uppercase tracking-wide text-gray-400">Catatan penolakan</label>
+                        <textarea id="rejectPopupTextarea" name="catatan_kepsek" rows="4" maxlength="300" required minlength="10" class="mt-2 w-full border border-gray-200 rounded-lg bg-white px-3 py-2 text-sm text-gray-700" placeholder="Tulis alasan penolakan minimal 10 karakter"></textarea>
+                        <p id="rejectPopupError" class="mt-2 text-sm text-red-600 hidden">harus mengisi minimal 10 karakter</p>
                     </div>
                 </div>
 
@@ -239,11 +224,11 @@
 
             <div class="shrink-0 border-t border-gray-100 bg-white px-6 py-4">
                 <div class="flex flex-nowrap items-center gap-3">
-                    <button type="button" id="rejectPopupConfirm" class="hidden w-24 shrink-0 rounded-md border border-red-500 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50">Ya</button>
+                    <button type="submit" class="flex-1 min-w-0 rounded-md bg-red-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-red-700">Kirim Penolakan</button>
                     <button type="button" id="rejectPopupCancel" class="flex-1 min-w-0 rounded-md border border-blue-500 px-5 py-2.5 text-sm font-medium text-blue-600 hover:bg-blue-50" data-reject-close>Batal</button>
                 </div>
             </div>
-        </div>
+        </form>
     </div>
 
     <script>
@@ -342,8 +327,6 @@
 
             const modal = document.getElementById('approveModal');
             document.getElementById('approveModalDate').textContent = form.dataset.approveDate || '-';
-            document.getElementById('approveModalType').textContent = form.dataset.approveType || '-';
-            document.getElementById('approveModalRequestedBy').textContent = form.dataset.approveRequestedBy || '-';
             document.getElementById('approveModalAmount').textContent = form.dataset.approveAmountDetail || form.dataset.approveAmount || '-';
 
             modal.classList.remove('hidden');
@@ -358,7 +341,6 @@
             approveModalForm = null;
         }
 
-        document.getElementById('approveModalCancel').addEventListener('click', closeApproveModal);
         document.getElementById('approveModalConfirm').addEventListener('click', function () {
             if (approveModalForm) {
                 const form = approveModalForm;
@@ -367,43 +349,22 @@
             }
         });
 
-        function openRejectPopup(message, options = {}) {
+        function openRejectModal(item, action) {
             const popup = document.getElementById('rejectPopup');
-            const popupMessage = document.getElementById('rejectPopupMessage');
             const popupTitle = document.getElementById('rejectPopupTitle');
-            const popupIcon = document.getElementById('rejectPopupIconWrap');
-            const popupNote = document.getElementById('rejectPopupNote');
-            const popupConfirm = document.getElementById('rejectPopupConfirm');
-            const popupCancel = document.getElementById('rejectPopupCancel');
+            const popupMessage = document.getElementById('rejectPopupMessage');
+            const popupForm = document.getElementById('rejectPopupForm');
+            const popupTextarea = document.getElementById('rejectPopupTextarea');
 
-            if (!popup || !popupMessage || !popupTitle || !popupIcon || !popupNote || !popupConfirm || !popupCancel) {
+            if (!popup || !popupTitle || !popupMessage || !popupForm || !popupTextarea) {
                 return;
             }
 
-            popupMessage.textContent = message;
-            popupTitle.textContent = options.title || 'Perhatian';
-            popupNote.textContent = message || '-';
-            popupIcon.textContent = options.icon || '!';
-            popupIcon.className = options.iconClass || 'mx-auto flex h-20 w-20 items-center justify-center rounded-full border-4 border-red-200 bg-white text-4xl font-bold leading-none text-[#B42318]';
-
-            popupConfirm.textContent = options.confirmText || 'Ya';
-            popupCancel.textContent = options.cancelText || 'Batal';
-            popupConfirm.classList.toggle('hidden', !!options.hideConfirm);
-            popupCancel.classList.toggle('hidden', !!options.hideCancel);
-            popupConfirm.classList.toggle('w-full', !!options.hideCancel);
-            popupConfirm.classList.toggle('flex-1', !options.hideCancel);
-            popupConfirm.classList.toggle('w-24', !options.hideCancel);
-            popupConfirm.classList.toggle('shrink-0', !options.hideCancel);
-            if (typeof options.onConfirm === 'function') {
-                popupConfirm.onclick = null;
-                popupConfirm.onclick = function () {
-                    closeRejectPopup();
-                    options.onConfirm();
-                };
-            } else {
-                popupConfirm.onclick = null;
-                popupConfirm.onclick = closeRejectPopup;
-            }
+            popupTitle.textContent = 'Tolak ' + item;
+            popupMessage.textContent = 'Berikan alasan penolakan untuk ' + item + '.';
+            popupForm.action = action;
+            popupTextarea.value = '';
+            popupTextarea.focus();
 
             popup.classList.remove('hidden');
             popup.classList.add('flex');
@@ -419,29 +380,77 @@
             popup.classList.remove('flex');
         }
 
+        // Client-side validation for reject popup: show red error if note < 10 chars
+        (function () {
+            const form = document.getElementById('rejectPopupForm');
+            const textarea = document.getElementById('rejectPopupTextarea');
+            const errorEl = document.getElementById('rejectPopupError');
+
+            if (!form || !textarea || !errorEl) return;
+
+            function showError() {
+                errorEl.classList.remove('hidden');
+            }
+
+            function hideError() {
+                errorEl.classList.add('hidden');
+            }
+
+            form.addEventListener('submit', function (e) {
+                const value = (textarea.value || '').trim();
+                if (value.length < 10) {
+                    e.preventDefault();
+                    showError();
+                    textarea.focus();
+                    return false;
+                }
+                hideError();
+                return true;
+            });
+
+            textarea.addEventListener('input', function () {
+                const value = (textarea.value || '').trim();
+                if (value.length >= 10) {
+                    hideError();
+                }
+            });
+
+            // hide error when opening or closing popup
+            const originalOpen = openRejectModal;
+            openRejectModal = function (item, action) {
+                originalOpen(item, action);
+                hideError();
+            };
+        })();
+
         document.addEventListener('click', function (event) {
             const detailButton = event.target.closest('.detail-button');
-                if (detailButton) {
-                    try {
-                        const points = JSON.parse(detailButton.dataset.points || '[]');
-                        const buktiPath = detailButton.dataset.bukti || '';
-                        // transform points into fields expected by shared modal
-                        const fields = (points || []).map(p => ({
-                            label: p.label,
-                            value: p.value,
-                            isPeso: /jumlah/i.test(String(p.label)) || (typeof p.value === 'string' && String(p.value).trim().startsWith('Rp'))
-                        }));
+            if (detailButton) {
+                try {
+                    const points = JSON.parse(detailButton.dataset.points || '[]');
+                    const buktiPath = detailButton.dataset.bukti || '';
+                    const fields = (points || []).map(p => ({
+                        label: p.label,
+                        value: p.value,
+                        isPeso: /jumlah/i.test(String(p.label)) || (typeof p.value === 'string' && String(p.value).trim().startsWith('Rp'))
+                    }));
 
-                        if (typeof openDetailTransaksi === 'function') {
-                            openDetailTransaksi(fields, buktiPath);
-                        } else {
-                            openDetailModal(detailButton.dataset.title || 'Detail Transaksi', detailButton.dataset.subtitle || '', points, buktiPath);
-                        }
-                    } catch (error) {
-                        console.error(error);
+                    if (typeof openDetailTransaksi === 'function') {
+                        openDetailTransaksi(fields, buktiPath);
+                    } else {
+                        openDetailModal(detailButton.dataset.title || 'Detail Transaksi', detailButton.dataset.subtitle || '', points, buktiPath);
                     }
-                    return;
+                } catch (error) {
+                    console.error(error);
                 }
+                return;
+            }
+
+            const rejectButton = event.target.closest('.reject-button');
+            if (rejectButton) {
+                openRejectModal(rejectButton.dataset.rejectItem || 'data ini', rejectButton.dataset.rejectAction || '');
+                return;
+            }
 
             if (event.target.matches('[data-detail-close]') || event.target.closest('[data-detail-close]')) {
                 closeDetailModal();
@@ -450,67 +459,16 @@
             if (event.target.matches('[data-approve-close]') || event.target.closest('[data-approve-close]')) {
                 closeApproveModal();
             }
-        });
 
-        document.addEventListener('keydown', function (event) {
-            if (event.key === 'Escape') {
-                closeDetailModal();
-                closeApproveModal();
-            }
-        });
-
-        /**
-         * Konfirmasi reject dengan pengecekan catatan
-         */
-        function confirmReject(item, evt) {
-            const form = evt && evt.target ? evt.target : event.target;
-            const catatan = form.querySelector('textarea[name="catatan_kepsek"]').value.trim();
-
-            if (catatan.length < 10) {
-                openRejectPopup('Catatan penolakan harus minimal 10 karakter.', {
-                    title: 'Catatan tidak valid',
-                    icon: '!',
-                    hideCancel: true,
-                    confirmText: 'OK',
-                    iconClass: 'mx-auto flex h-20 w-20 items-center justify-center rounded-full border-4 border-red-200 bg-white text-4xl font-bold leading-none text-[#B42318]'
-                });
-                return false;
-            }
-
-            evt.preventDefault();
-            openRejectPopup(
-                'Anda yakin ingin menolak ' + item + ' ini?\n\nCatatan: ' + catatan.substring(0, 50) + (catatan.length > 50 ? '...' : ''),
-                {
-                    title: 'Yakin tolak data?',
-                    icon: '!',
-                    confirmText: 'Ya',
-                    cancelText: 'Batal',
-                    iconClass: 'mx-auto flex h-20 w-20 items-center justify-center rounded-full border-4 border-red-200 bg-white text-4xl font-bold leading-none text-[#B42318]',
-                    onConfirm: function () {
-                        form.submit();
-                    }
-                }
-            );
-
-            return false;
-        }
-
-        document.addEventListener('input', function (event) {
-            if (!event.target || event.target.name !== 'catatan_kepsek') {
-                return;
-            }
-
-            closeRejectPopup();
-        });
-
-        document.addEventListener('click', function (event) {
-            if (event.target && (event.target.matches('[data-reject-close]') || event.target.closest('[data-reject-close]'))) {
+            if (event.target.matches('[data-reject-close]') || event.target.closest('[data-reject-close]')) {
                 closeRejectPopup();
             }
         });
 
         document.addEventListener('keydown', function (event) {
             if (event.key === 'Escape') {
+                closeDetailModal();
+                closeApproveModal();
                 closeRejectPopup();
             }
         });

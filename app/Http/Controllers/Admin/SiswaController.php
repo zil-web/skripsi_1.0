@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -16,11 +15,11 @@ class SiswaController extends Controller
     {
         $query = Siswa::query();
 
-        // Filter search NIK atau nama
+        // Filter search NIS atau nama
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('nik', 'like', '%'.$search.'%')
+                $q->where('nis', 'like', '%'.$search.'%')
                   ->orWhere('nama', 'like', '%'.$search.'%')
                   ->orWhere('nama_orangtua', 
                             'like', '%'.$search.'%');
@@ -68,10 +67,10 @@ class SiswaController extends Controller
     {
         $q = $request->q;
 
-        $results = Siswa::where('nik', 'like', "%{$q}%")
+        $results = Siswa::where('nis', 'like', "%{$q}%")
             ->orWhere('nama', 'like', "%{$q}%")
             ->orWhere('kelas', 'like', "%{$q}%")
-            ->select('id', 'nik', 'nama', 'kelas', 'jenis_kelamin')
+            ->select('id', 'nis', 'nama', 'kelas', 'jenis_kelamin')
             ->limit(20)
             ->get();
 
@@ -89,7 +88,7 @@ class SiswaController extends Controller
                 . auth()->user()->name 
                 . ' menambahkan data siswa ' 
                 . $siswa->nama 
-                . ' (NIK: ' . $siswa->nik . ')'
+                . ' (NIS: ' . $siswa->nis . ')'
                 . ' Kelas ' . $siswa->kelas,
             'tanggal'      => now(),
             'id_admin'     => auth()->id(),
@@ -124,7 +123,7 @@ class SiswaController extends Controller
                 . auth()->user()->name 
                 . ' mengubah data siswa ' 
                 . $siswa->nama 
-                . ' (NIK: ' . $siswa->nik . ')',
+                . ' (NIS: ' . $siswa->nis . ')',
             'tanggal'      => now(),
             'id_admin'     => auth()->id(),
         ]);
@@ -149,7 +148,7 @@ class SiswaController extends Controller
     public function destroy(Siswa $siswa)
     {
         $nama = $siswa->nama;
-        $nik  = $siswa->nik;
+        $nis  = $siswa->nis;
 
         $siswa->delete(); // soft delete
 
@@ -159,7 +158,7 @@ class SiswaController extends Controller
                 . auth()->user()->name 
                 . ' menghapus data siswa ' 
                 . $nama 
-                . ' (NIK: ' . $nik . ')',
+                . ' (NIS: ' . $nis . ')',
             'tanggal'      => now(),
             'id_admin'     => auth()->id(),
         ]);
@@ -171,3 +170,4 @@ class SiswaController extends Controller
                 . ' berhasil dihapus');
     }
 }
+

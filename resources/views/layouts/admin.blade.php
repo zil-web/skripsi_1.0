@@ -6,6 +6,15 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin') - SIKEU</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    {{-- Flatpickr CDN --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
+
+    {{-- Stack untuk styles dari child view --}}
+    @stack('styles')
+
         <style>
             :root { --accent: #1D9E75; }
 

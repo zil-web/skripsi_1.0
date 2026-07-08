@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -21,11 +20,11 @@ class UpdateSiswaRequest extends FormRequest
             : $siswaRoute;
 
         return [
-            'nik' => [
+            'nis' => [
                 'required',
                 'string',
                 'size:16',
-                Rule::unique('siswas', 'nik')->ignore($ignoreId),
+                Rule::unique('siswas', 'nis')->ignore($ignoreId),
                 'regex:/^[0-9]+$/',
             ],
             'nama' => [
@@ -56,10 +55,10 @@ class UpdateSiswaRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'nik.required'           => 'NIK wajib diisi',
-            'nik.size'               => 'NIK harus 16 digit',
-            'nik.unique'             => 'NIK sudah terdaftar',
-            'nik.regex'              => 'NIK hanya boleh angka',
+            'nis.required'           => 'NIS wajib diisi',
+            'nis.size'               => 'NIS harus 16 digit',
+            'nis.unique'             => 'NIS sudah terdaftar',
+            'nis.regex'              => 'NIS hanya boleh angka',
             'nama.required'          => 'Nama siswa wajib diisi',
             'nama.regex'             => 'Nama hanya boleh huruf',
             'nama_orangtua.required' => 'Nama orang tua wajib diisi',
@@ -75,3 +74,4 @@ class UpdateSiswaRequest extends FormRequest
     // Intentionally no prepareForValidation here to avoid implicitly
     // changing `is_active` when the field is omitted on update.
 }
+

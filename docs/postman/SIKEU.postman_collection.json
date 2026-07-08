@@ -1,4 +1,4 @@
-{
+﻿{
   "info": {
     "_postman_id": "c2c5f4f7-2f4f-4c1c-8e5f-6a2b1b2d7a11",
     "name": "SIKEU Laravel Blackbox Tests",
@@ -212,7 +212,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nik\": \"1234567890123456\",\n  \"nama\": \"Budi Santoso\",\n  \"nama_orangtua\": \"Siti Aminah\",\n  \"kelas\": \"7A\",\n  \"jenis_kelamin\": \"L\",\n  \"no_telepon\": \"081234567890\",\n  \"alamat\": \"Jl. Merdeka No. 1\",\n  \"is_active\": 1\n}"
+              "raw": "{\n  \"nis\": \"1234567890123456\",\n  \"nama\": \"Budi Santoso\",\n  \"nama_orangtua\": \"Siti Aminah\",\n  \"kelas\": \"7A\",\n  \"jenis_kelamin\": \"L\",\n  \"no_telepon\": \"081234567890\",\n  \"alamat\": \"Jl. Merdeka No. 1\",\n  \"is_active\": 1\n}"
             },
             "url": {
               "raw": "http://{{base_url}}/admin/siswa",
@@ -291,7 +291,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nik\": \"6543210987654321\",\n  \"nama\": \"Budi Update\",\n  \"nama_orangtua\": \"Siti Aminah\",\n  \"kelas\": \"8B\",\n  \"jenis_kelamin\": \"L\",\n  \"no_telepon\": \"081234567891\",\n  \"alamat\": \"Jl. Merdeka No. 2\",\n  \"is_active\": 1\n}"
+              "raw": "{\n  \"nis\": \"6543210987654321\",\n  \"nama\": \"Budi Update\",\n  \"nama_orangtua\": \"Siti Aminah\",\n  \"kelas\": \"8B\",\n  \"jenis_kelamin\": \"L\",\n  \"no_telepon\": \"081234567891\",\n  \"alamat\": \"Jl. Merdeka No. 2\",\n  \"is_active\": 1\n}"
             },
             "url": {
               "raw": "http://{{base_url}}/admin/siswa/{{siswa_id}}",

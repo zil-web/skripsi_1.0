@@ -24,7 +24,7 @@
                 <div class="flex items-start justify-between gap-4">
                     <div>
                         <p class="text-sm text-gray-500">Total Pemasukan</p>
-                        <div class="mt-2 text-2xl font-bold text-emerald-700">{{ $formatRupiah($total_pemasukan_bulan) }}</div>
+                        <div class="mt-2 text-2xl font-bold text-emerald-700">{{ $formatRupiah($total_pemasukan_bulan ?? 0) }}</div>
                         <p class="mt-2 text-xs text-gray-400">Transaksi approved bulan ini</p>
                     </div>
                     <div class="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -39,7 +39,7 @@
                 <div class="flex items-start justify-between gap-4">
                     <div>
                         <p class="text-sm text-gray-500">Total Pengeluaran</p>
-                        <div class="mt-2 text-2xl font-bold text-rose-700">{{ $formatRupiah($total_pengeluaran_bulan) }}</div>
+                        <div class="mt-2 text-2xl font-bold text-rose-700">{{ $formatRupiah($total_pengeluaran_bulan ?? 0) }}</div>
                         <p class="mt-2 text-xs text-gray-400">Transaksi approved bulan ini</p>
                     </div>
                     <div class="h-12 w-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center">
@@ -54,7 +54,7 @@
                 <div class="flex items-start justify-between gap-4">
                     <div>
                         <p class="text-sm text-gray-500">Saldo Bersih</p>
-                        <div class="mt-2 text-2xl font-bold text-sky-700">{{ $formatRupiah($saldo_bersih) }}</div>
+                        <div class="mt-2 text-2xl font-bold text-sky-700">{{ $formatRupiah($saldo_bersih ?? 0) }}</div>
                         <p class="mt-2 text-xs text-gray-400">Pemasukan - pengeluaran</p>
                     </div>
                     <div class="h-12 w-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center">

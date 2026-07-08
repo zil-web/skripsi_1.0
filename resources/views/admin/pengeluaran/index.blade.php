@@ -40,7 +40,7 @@
             Total Pengeluaran
         </p>
         <p style="font-size:22px; font-weight:700; color:#dc2626; margin:0; line-height:1.2;">
-            {{ $formatRupiah($totalPengeluaran) }}
+            {{ $formatRupiah($totalPengeluaran ?? 0) }}
         </p>
     </div>
 
@@ -50,7 +50,7 @@
             Pending Review
         </p>
         <p style="font-size:22px; font-weight:700; color:#d97706; margin:0; line-height:1.2;">
-            {{ $formatRupiah($totalPending) }}
+            {{ $formatRupiah($totalPending ?? 0) }}
         </p>
     </div>
 
@@ -60,7 +60,7 @@
             Sudah Disetujui
         </p>
         <p style="font-size:22px; font-weight:700; color:#10b981; margin:0; line-height:1.2;">
-            {{ $formatRupiah($totalApproved) }}
+            {{ $formatRupiah($totalApproved ?? 0) }}
         </p>
     </div>
 

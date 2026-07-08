@@ -1,4 +1,4 @@
-@extends('layouts.app')
+npx newman run docs/postman/SIKEU.postman_collection.json -e docs/postman/SIKEU.local.postman_environment.json --reporters cli@extends('layouts.app')
 
 @section('title','Dashboard')
 
